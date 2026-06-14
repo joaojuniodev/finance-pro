@@ -1,0 +1,15 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    url:
+    username: developer
+    password: 1234567
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+    show-sql: false
+    open-in-view: false
