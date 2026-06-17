@@ -23,7 +23,7 @@ public class Wallet {
     @Column
     private BigDecimal balance;
 
-    @OneToOne(mappedBy = "wallet")
+    @OneToOne
     @JoinColumn(name = "goal_id")
     private Goal goal;
 

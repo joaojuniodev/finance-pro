@@ -32,7 +32,6 @@ public class Goal {
     private Category category;
 
     @OneToOne(mappedBy = "goal")
-    @JoinColumn(name = "wallet_id")
     private Wallet wallet;
 
     public Goal() {}

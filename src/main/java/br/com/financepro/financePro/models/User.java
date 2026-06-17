@@ -41,7 +41,7 @@ public class User implements UserDetails {
     @Column
     private Boolean enabled;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_role",
         joinColumns = @JoinColumn(name = "user_id"),
