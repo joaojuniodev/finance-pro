@@ -1,7 +1,7 @@
 package br.com.financepro.financePro.mapper;
 
-public interface ObjectMapper<E, D> {
+public interface ObjectMapper<E, D, R> {
 
-    E toEntity(D dto);
+    E toEntity(R request);
     D toResponse(E entity);
 }

@@ -1,3 +1,5 @@
+cors:
+  originPatterns: http://localhost:5173,http://localhost:5174,https://finance-pro-client-alpha.vercel.app
 spring:
   application:
     name: financePro
@@ -13,3 +15,8 @@ spring:
     locations: classpath:db/migration
     schemas: public
     default-schema: public
+security:
+  jwt:
+    token:
+      secret-key: 57cr37
+      expire-length: 3600000

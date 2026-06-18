@@ -1,6 +1,5 @@
 package br.com.financepro.financePro.data.dtos.request.account;
 
-import br.com.financepro.financePro.data.dtos.request.account.AccountRequestDTO;
 import br.com.financepro.financePro.models.enums.Category;
 
 import java.math.BigDecimal;
