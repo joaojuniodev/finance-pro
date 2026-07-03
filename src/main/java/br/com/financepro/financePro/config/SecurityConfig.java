@@ -1,7 +1,7 @@
 package br.com.financepro.financePro.config;
 
-import br.com.financepro.financePro.infrastructure.security.JwtTokenFilter;
-import br.com.financepro.financePro.infrastructure.security.JwtTokenProvider;
+import br.com.financepro.financePro.security.jwt.JwtTokenFilter;
+import br.com.financepro.financePro.security.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,7 +61,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
             .sessionManagement(
-                session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(
                 authorizeRequests -> authorizeRequests
@@ -72,9 +72,10 @@ public class SecurityConfig {
                     "/swagger-ui/**",
                     "/v3/api-docs/**"
                 ).permitAll()
-                .requestMatchers("/api/v1/**").authenticated()
+                .requestMatchers("/api/**").authenticated()
                 .requestMatchers("/user").denyAll()
             )
+            .cors(cors -> {})
             .build();
     }
 }

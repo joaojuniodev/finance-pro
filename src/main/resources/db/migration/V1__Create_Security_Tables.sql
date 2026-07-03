@@ -49,12 +49,11 @@ CREATE TABLE role_permission (
 -- ------------------------------------------------------------
 -- users
 -- Usuários da aplicação
--- password VARCHAR(12) conforme definido na entidade
 -- ------------------------------------------------------------
 CREATE TABLE users (
     id                      UUID         NOT NULL DEFAULT gen_random_uuid(),
     username                VARCHAR(100) NOT NULL,
-    password                VARCHAR(12)  NOT NULL,
+    password                VARCHAR(100) NOT NULL,
     full_name               VARCHAR(150),
     email                   VARCHAR(255),
     recovery_email          VARCHAR(255),
