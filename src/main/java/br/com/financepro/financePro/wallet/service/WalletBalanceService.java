@@ -52,7 +52,8 @@ public class WalletBalanceService implements WalletBalanceOperations {
     @Transactional
     @Override
     public void debit(Wallet wallet, BigDecimal amount, Boolean isTransaction) {
-        validateSufficientBalance(wallet, amount);
+        validateAmount(amount);
+        // validateSufficientBalance(wallet, amount);
 
         wallet.setBalance(wallet.getBalance().subtract(amount));
         walletRepository.save(wallet);

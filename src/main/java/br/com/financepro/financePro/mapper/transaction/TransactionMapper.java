@@ -67,7 +67,10 @@ public class TransactionMapper implements ObjectMapper<Transaction, TransactionR
             entity.getType(),
             entity.getStatus(),
             category,
-            entity.getRegisteredAt()
+            entity.getRegisteredAt(),
+            entity.getRecurrence() != null
+                ? entity.getRecurrence().getId()
+                : null
         );
     }
 }

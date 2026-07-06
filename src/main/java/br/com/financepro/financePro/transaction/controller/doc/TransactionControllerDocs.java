@@ -1,6 +1,7 @@
 package br.com.financepro.financePro.transaction.controller.doc;
 
 import br.com.financepro.financePro.account.controller.AccountController;
+import br.com.financepro.financePro.transaction.dto.AllTransactionResponseDTO;
 import br.com.financepro.financePro.transaction.dto.OverviewResponseDTO;
 import br.com.financepro.financePro.transaction.dto.TransactionRequestDTO;
 import br.com.financepro.financePro.transaction.dto.TransactionResponseDTO;
@@ -37,7 +38,7 @@ public interface TransactionControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<List<TransactionResponseDTO>> getAll(UUID accountId, Integer month, Integer year);
+    ResponseEntity<AllTransactionResponseDTO> getAll(UUID accountId, Integer month, Integer year);
 
     @Operation(
         tags = {"Transaction"},

@@ -5,6 +5,7 @@ import br.com.financepro.financePro.recurrence.dto.RecurrenceRequestDTO;
 import br.com.financepro.financePro.recurrence.dto.RecurrenceResponseDTO;
 import br.com.financepro.financePro.recurrence.service.RecurrenceService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.aspectj.apache.bcel.classfile.Module;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,8 +23,10 @@ public class RecurrenceController implements RecurrenceControllerDocs {
 
     @GetMapping
     @Override
-    public ResponseEntity<List<RecurrenceResponseDTO>> getAll() {
-        return ResponseEntity.ok().body(service.getAll(null));
+    public ResponseEntity<List<RecurrenceResponseDTO>> getAll(
+        @RequestParam(required = false, name = "accountId") UUID accountId
+    ) {
+        return ResponseEntity.ok().body(service.getAll(accountId));
     }
 
     @GetMapping("/{id}")

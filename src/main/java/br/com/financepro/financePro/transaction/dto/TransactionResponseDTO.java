@@ -20,10 +20,11 @@ public class TransactionResponseDTO {
     private TransactionStatus status;
     private CategoryResponseDTO category;
     private LocalDateTime registeredAt;
+    private UUID recurrenceId;
 
     public TransactionResponseDTO() {}
 
-    public TransactionResponseDTO(UUID id, BigDecimal amount, String description, String observation, TransactionType type, TransactionStatus status, CategoryResponseDTO category, LocalDateTime registeredAt) {
+    public TransactionResponseDTO(UUID id, BigDecimal amount, String description, String observation, TransactionType type, TransactionStatus status, CategoryResponseDTO category, LocalDateTime registeredAt, UUID recurrenceId) {
         this.id = id;
         this.amount = amount;
         this.description = description;
@@ -32,6 +33,7 @@ public class TransactionResponseDTO {
         this.status = status;
         this.category = category;
         this.registeredAt = registeredAt;
+        this.recurrenceId = recurrenceId;
     }
 
     public UUID getId() {
@@ -103,7 +105,7 @@ public class TransactionResponseDTO {
         if (o == null || getClass() != o.getClass()) return false;
 
         TransactionResponseDTO that = (TransactionResponseDTO) o;
-        return Objects.equals(getId(), that.getId()) && Objects.equals(getAmount(), that.getAmount()) && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getObservation(), that.getObservation()) && getType() == that.getType() && getStatus() == that.getStatus() && Objects.equals(getCategory(), that.getCategory()) && Objects.equals(getRegisteredAt(), that.getRegisteredAt());
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getAmount(), that.getAmount()) && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getObservation(), that.getObservation()) && getType() == that.getType() && getStatus() == that.getStatus() && Objects.equals(getCategory(), that.getCategory()) && Objects.equals(getRegisteredAt(), that.getRegisteredAt()) && Objects.equals(recurrenceId, that.recurrenceId);
     }
 
     @Override
@@ -116,6 +118,7 @@ public class TransactionResponseDTO {
         result = 31 * result + Objects.hashCode(getStatus());
         result = 31 * result + Objects.hashCode(getCategory());
         result = 31 * result + Objects.hashCode(getRegisteredAt());
+        result = 31 * result + Objects.hashCode(recurrenceId);
         return result;
     }
 }

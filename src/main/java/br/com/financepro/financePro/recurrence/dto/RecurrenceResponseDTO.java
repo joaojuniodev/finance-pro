@@ -13,7 +13,7 @@ public class RecurrenceResponseDTO {
     private UUID id;
     private BigDecimal amount;
     private RecurrenceType type;
-    private FrequencyType billingTimeType;
+    private FrequencyType frequencyType;
     private Integer dayOne;
     private Integer dayTwo;
     private Integer monthOfTheYear;
@@ -24,11 +24,11 @@ public class RecurrenceResponseDTO {
 
     public RecurrenceResponseDTO() {}
 
-    public RecurrenceResponseDTO(UUID id, BigDecimal amount, RecurrenceType type, FrequencyType billingTimeType, Integer dayOne, Integer dayTwo, Integer monthOfTheYear, LocalDate nextExecutionDate, LocalDate lastExecutionDate, Boolean active, String description) {
+    public RecurrenceResponseDTO(UUID id, BigDecimal amount, RecurrenceType type, FrequencyType frequencyType, Integer dayOne, Integer dayTwo, Integer monthOfTheYear, LocalDate nextExecutionDate, LocalDate lastExecutionDate, Boolean active, String description) {
         this.id = id;
         this.amount = amount;
         this.type = type;
-        this.billingTimeType = billingTimeType;
+        this.frequencyType = frequencyType;
         this.dayOne = dayOne;
         this.dayTwo = dayTwo;
         this.monthOfTheYear = monthOfTheYear;
@@ -62,12 +62,12 @@ public class RecurrenceResponseDTO {
         this.type = type;
     }
 
-    public FrequencyType getBillingTimeType() {
-        return billingTimeType;
+    public FrequencyType getFrequencyType() {
+        return frequencyType;
     }
 
-    public void setBillingTimeType(FrequencyType billingTimeType) {
-        this.billingTimeType = billingTimeType;
+    public void setFrequencyType(FrequencyType frequencyType) {
+        this.frequencyType = frequencyType;
     }
 
     public Integer getDayOne() {
@@ -131,7 +131,7 @@ public class RecurrenceResponseDTO {
         if (o == null || getClass() != o.getClass()) return false;
 
         RecurrenceResponseDTO that = (RecurrenceResponseDTO) o;
-        return Objects.equals(getId(), that.getId()) && Objects.equals(getAmount(), that.getAmount()) && getType() == that.getType() && getBillingTimeType() == that.getBillingTimeType() && Objects.equals(getDayOne(), that.getDayOne()) && Objects.equals(getDayTwo(), that.getDayTwo()) && Objects.equals(getMonthOfTheYear(), that.getMonthOfTheYear()) && Objects.equals(getNextExecutionDate(), that.getNextExecutionDate()) && Objects.equals(getLastExecutionDate(), that.getLastExecutionDate()) && Objects.equals(getActive(), that.getActive()) && Objects.equals(getDescription(), that.getDescription());
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getAmount(), that.getAmount()) && getType() == that.getType() && getFrequencyType() == that.getFrequencyType() && Objects.equals(getDayOne(), that.getDayOne()) && Objects.equals(getDayTwo(), that.getDayTwo()) && Objects.equals(getMonthOfTheYear(), that.getMonthOfTheYear()) && Objects.equals(getNextExecutionDate(), that.getNextExecutionDate()) && Objects.equals(getLastExecutionDate(), that.getLastExecutionDate()) && Objects.equals(getActive(), that.getActive()) && Objects.equals(getDescription(), that.getDescription());
     }
 
     @Override
@@ -139,7 +139,7 @@ public class RecurrenceResponseDTO {
         int result = Objects.hashCode(getId());
         result = 31 * result + Objects.hashCode(getAmount());
         result = 31 * result + Objects.hashCode(getType());
-        result = 31 * result + Objects.hashCode(getBillingTimeType());
+        result = 31 * result + Objects.hashCode(getFrequencyType());
         result = 31 * result + Objects.hashCode(getDayOne());
         result = 31 * result + Objects.hashCode(getDayTwo());
         result = 31 * result + Objects.hashCode(getMonthOfTheYear());

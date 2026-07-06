@@ -2,6 +2,7 @@ package br.com.financepro.financePro.transaction.controller;
 
 
 import br.com.financepro.financePro.transaction.controller.doc.TransactionControllerDocs;
+import br.com.financepro.financePro.transaction.dto.AllTransactionResponseDTO;
 import br.com.financepro.financePro.transaction.dto.OverviewResponseDTO;
 import br.com.financepro.financePro.transaction.dto.TransactionRequestDTO;
 import br.com.financepro.financePro.transaction.dto.TransactionResponseDTO;
@@ -22,7 +23,7 @@ public class TransactionController implements TransactionControllerDocs {
 
     @GetMapping
     @Override
-    public ResponseEntity<List<TransactionResponseDTO>> getAll(
+    public ResponseEntity<AllTransactionResponseDTO> getAll(
         @RequestParam(required = false, name = "accountId") UUID accountId,
         @RequestParam(required = false, name = "month") Integer month,
         @RequestParam(required = false, name = "year") Integer year

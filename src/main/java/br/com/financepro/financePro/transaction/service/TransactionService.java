@@ -1,17 +1,16 @@
 package br.com.financepro.financePro.transaction.service;
 
 
+import br.com.financepro.financePro.account.service.AccountService;
 import br.com.financepro.financePro.common.enums.RecurrenceType;
 import br.com.financepro.financePro.common.enums.TransactionStatus;
 import br.com.financepro.financePro.common.enums.TransactionType;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.mapper.transaction.TransactionMapper;
+import br.com.financepro.financePro.recurrence.dto.RecurrenceResponseDTO;
 import br.com.financepro.financePro.recurrence.model.Recurrence;
 import br.com.financepro.financePro.recurrence.service.RecurrenceService;
-import br.com.financepro.financePro.transaction.dto.OverviewResponseDTO;
-import br.com.financepro.financePro.transaction.dto.TransactionRequestDTO;
-import br.com.financepro.financePro.transaction.dto.TransactionResponseDTO;
-import br.com.financepro.financePro.transaction.dto.WeekOverviewResponse;
+import br.com.financepro.financePro.transaction.dto.*;
 import br.com.financepro.financePro.transaction.model.Transaction;
 import br.com.financepro.financePro.transaction.repository.TransactionRepository;
 import br.com.financepro.financePro.transaction.repository.projection.WeeklyOverviewProjection;
@@ -21,6 +20,7 @@ import br.com.financepro.financePro.wallet.service.WalletBalanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,22 +43,66 @@ public class TransactionService {
     private WalletBalanceService walletBalanceService;
 
     @Autowired
+    private AccountService accountService;
+
+    @Autowired
     private RecurrenceService recurrenceService;
 
     @Autowired
     private TransactionMapper mapper;
 
-    public List<TransactionResponseDTO> getAll(UUID accountId, Integer month, Integer year) {
+    public AllTransactionResponseDTO getAll(UUID accountId, Integer month, Integer year) {
         log.info("Getting All Transactions");
 
         TransactionSpecification spec = new TransactionSpecification();
         spec.addToSpecifications(accountId, month, year);
 
-        return repository
-            .findAll(spec.apply())
+        var transactions = repository
+            .findAll(
+                spec.apply(),
+                Sort.by(Sort.Direction.DESC, "registeredAt")
+            )
             .stream()
             .map(this.mapper::toResponse)
             .toList();
+
+        var account = accountService.getById(accountId);
+        var recurrences = recurrenceService.getAll(accountId);
+
+        AllTransactionResponseDTO response = new AllTransactionResponseDTO();
+
+        BigDecimal commitment =recurrences.stream()
+            .filter(rec -> rec.getType() == RecurrenceType.DEBIT)
+            .filter(rec -> rec.getNextExecutionDate().isAfter(LocalDate.now()))
+            .map(RecurrenceResponseDTO::getAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        response.setCurrentBalance(account.getCurrentBalance());
+        response.setAvailableToSpend(account.getCurrentBalance().subtract(commitment));
+        response.setIncome(account.getIncome());
+        response.setExpenses(account.getExpenses());
+        response.setNetIncome(account.getNetIncome());
+        response.setCommitment(commitment);
+        response.setExpenseOfTheMonth(calculateBiggestExpenseOfTheMonth(transactions));
+        response.setIncomeOfTheMonth(calculateBiggestIncomeOfTheMonth(transactions));
+        response.setTransactions(transactions);
+
+        return response;
+    }
+
+    private BiggestIncomeOfTheMonth calculateBiggestIncomeOfTheMonth(List<TransactionResponseDTO> transactions) {
+        Optional<TransactionResponseDTO> transactionBigIncome = transactions.stream()
+            .filter(transaction -> transaction.getType() == TransactionType.CREDIT)
+            .max(Comparator.comparing(TransactionResponseDTO::getAmount));
+        var biggestIncome = transactionBigIncome.get();
+        return new BiggestIncomeOfTheMonth(biggestIncome.getAmount(), biggestIncome.getCategory());
+    }
+
+    private BiggestExpenseOfTheMonth calculateBiggestExpenseOfTheMonth(List<TransactionResponseDTO> transactions) {
+        Optional<TransactionResponseDTO> transactionBigExpense = transactions.stream()
+            .filter(transaction -> transaction.getType() == TransactionType.DEBIT)
+            .max(Comparator.comparing(TransactionResponseDTO::getAmount));
+        var biggestExpense = transactionBigExpense.get();
+        return new BiggestExpenseOfTheMonth(biggestExpense.getAmount(), biggestExpense.getCategory());
     }
 
     public TransactionResponseDTO getById(UUID id) {

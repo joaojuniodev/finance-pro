@@ -36,7 +36,7 @@ public interface RecurrenceControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<List<RecurrenceResponseDTO>> getAll();
+    ResponseEntity<List<RecurrenceResponseDTO>> getAll(UUID accountId);
 
     @Operation(
         tags = {"Recurrence"},
