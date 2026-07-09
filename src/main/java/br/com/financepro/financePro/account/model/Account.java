@@ -35,19 +35,19 @@ public class Account {
     @JoinColumn(name = "biggest_expense_category_id")
     private Category biggestExpenseCategory;
 
-    @Column
+    @Column(name = "biggest_expense_value")
     private BigDecimal biggestExpenseValue;
 
-    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "account", fetch = FetchType.EAGER)
     private List<Category> categories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "account", fetch = FetchType.EAGER)
     private Set<Transaction> transactions = new HashSet<>();
 
-    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "account", fetch = FetchType.EAGER)
     private Set<Recurrence> recurrences = new HashSet<>();
 
-    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "account", fetch = FetchType.EAGER)
     private Set<Wallet> wallets = new HashSet<>();
 
     @OneToOne

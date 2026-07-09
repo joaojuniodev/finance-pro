@@ -82,27 +82,25 @@ public class TransactionService {
         response.setExpenses(account.getExpenses());
         response.setNetIncome(account.getNetIncome());
         response.setCommitment(commitment);
-        response.setExpenseOfTheMonth(calculateBiggestExpenseOfTheMonth(transactions));
-        response.setIncomeOfTheMonth(calculateBiggestIncomeOfTheMonth(transactions));
+        response.setTransactionBiggestIncome(getTransactionBiggestIncome(transactions));
+        response.setTransactionBiggestExpense(getTransactionBiggestExpense(transactions));
         response.setTransactions(transactions);
 
         return response;
     }
 
-    private BiggestIncomeOfTheMonth calculateBiggestIncomeOfTheMonth(List<TransactionResponseDTO> transactions) {
+    private TransactionResponseDTO getTransactionBiggestIncome(List<TransactionResponseDTO> transactions) {
         Optional<TransactionResponseDTO> transactionBigIncome = transactions.stream()
             .filter(transaction -> transaction.getType() == TransactionType.CREDIT)
             .max(Comparator.comparing(TransactionResponseDTO::getAmount));
-        var biggestIncome = transactionBigIncome.get();
-        return new BiggestIncomeOfTheMonth(biggestIncome.getAmount(), biggestIncome.getCategory());
+        return transactionBigIncome.get();
     }
 
-    private BiggestExpenseOfTheMonth calculateBiggestExpenseOfTheMonth(List<TransactionResponseDTO> transactions) {
+    private TransactionResponseDTO getTransactionBiggestExpense(List<TransactionResponseDTO> transactions) {
         Optional<TransactionResponseDTO> transactionBigExpense = transactions.stream()
             .filter(transaction -> transaction.getType() == TransactionType.DEBIT)
             .max(Comparator.comparing(TransactionResponseDTO::getAmount));
-        var biggestExpense = transactionBigExpense.get();
-        return new BiggestExpenseOfTheMonth(biggestExpense.getAmount(), biggestExpense.getCategory());
+        return transactionBigExpense.get();
     }
 
     public TransactionResponseDTO getById(UUID id) {
@@ -145,17 +143,11 @@ public class TransactionService {
     public TransactionResponseDTO create(TransactionRequestDTO transaction) {
         log.info("Creating Transaction");
 
-        final BigDecimal amount = transaction.getAmount();
         Wallet wallet = walletBalanceService.getWallet(transaction.getWalletId());
 
-        if (transaction.getType().equals(TransactionType.CREDIT)) {
-            walletBalanceService.credit(wallet, amount, true);
-        } else {
-            walletBalanceService.debit(wallet, amount, true);
-        }
+        perform(wallet, transaction.getAmount(), transaction.getType(), true);
 
         var transactionCreated = repository.save(mapper.toEntity(transaction));
-        walletBalanceService.updateBiggestExpenseCategory(wallet.getAccount());
         return mapper.toResponse(transactionCreated);
     }
 
@@ -163,33 +155,25 @@ public class TransactionService {
     public void createByRecurrence(Recurrence recurrence, LocalDate executionDate) {
         log.info("Creating Transaction by Recurrence");
 
-        final BigDecimal amount = recurrence.getAmount();
-        Wallet wallet = recurrence.getWallet();
-
-        if (recurrence.getType().equals(RecurrenceType.CREDIT)) {
-            walletBalanceService.credit(wallet, amount, true);
-        } else {
-            walletBalanceService.debit(wallet, amount, true);
-        }
-
-        Transaction transaction = new Transaction();
-
-        transaction.setAmount(recurrence.getAmount());
-        transaction.setDescription(recurrence.getDescription());
-        transaction.setAccount(recurrence.getAccount());
-        transaction.setWallet(recurrence.getWallet());
-        transaction.setRecurrence(recurrence);
-        transaction.setRegisteredAt(executionDate.atStartOfDay());
-
-        transaction.setType(
-            recurrence.getType().equals(RecurrenceType.CREDIT)
-                ? TransactionType.CREDIT
-                : TransactionType.DEBIT
-        );
-
+        Transaction transaction = mapper.getTransactionByRecurrence(recurrence, executionDate);
         repository.save(transaction);
 
-        walletBalanceService.updateBiggestExpenseCategory(wallet.getAccount());
+        perform(
+            recurrence.getWallet(),
+            recurrence.getAmount(),
+            recurrence.getType() == RecurrenceType.CREDIT
+                ? TransactionType.CREDIT
+                : TransactionType.DEBIT,
+            true
+        );
+    }
+
+    private void perform(Wallet wallet, BigDecimal amount, TransactionType type, Boolean isTransaction) {
+        if (type.equals(RecurrenceType.CREDIT)) {
+            walletBalanceService.credit(wallet, amount, isTransaction);
+        } else {
+            walletBalanceService.debit(wallet, amount, isTransaction);
+        }
     }
 
     public TransactionResponseDTO update(TransactionRequestDTO transaction) {

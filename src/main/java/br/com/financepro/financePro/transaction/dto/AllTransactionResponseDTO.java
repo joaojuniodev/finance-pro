@@ -7,28 +7,17 @@ import java.util.Objects;
 public class AllTransactionResponseDTO {
 
     private BigDecimal currentBalance;
+    private Integer upLastMonth;
     private BigDecimal availableToSpend; // currentBalance - committed
     private BigDecimal income;
     private BigDecimal expenses;
     private BigDecimal netIncome;
     private BigDecimal commitment; // recorrências somadas
-    private BiggestExpenseOfTheMonth expenseOfTheMonth;
-    private BiggestIncomeOfTheMonth incomeOfTheMonth;
+    private TransactionResponseDTO transactionBiggestExpense;
+    private TransactionResponseDTO transactionBiggestIncome;
     private List<TransactionResponseDTO> transactions;
 
     public AllTransactionResponseDTO() {}
-
-    public AllTransactionResponseDTO(BigDecimal currentBalance, BigDecimal availableToSpend, BigDecimal income, BigDecimal expenses, BigDecimal netIncome, BigDecimal commitment, BiggestExpenseOfTheMonth expenseOfTheMonth, BiggestIncomeOfTheMonth incomeOfTheMonth, List<TransactionResponseDTO> transactions) {
-        this.currentBalance = currentBalance;
-        this.availableToSpend = availableToSpend;
-        this.income = income;
-        this.expenses = expenses;
-        this.netIncome = netIncome;
-        this.commitment = commitment;
-        this.expenseOfTheMonth = expenseOfTheMonth;
-        this.incomeOfTheMonth = incomeOfTheMonth;
-        this.transactions = transactions;
-    }
 
     public BigDecimal getCurrentBalance() {
         return currentBalance;
@@ -36,6 +25,14 @@ public class AllTransactionResponseDTO {
 
     public void setCurrentBalance(BigDecimal currentBalance) {
         this.currentBalance = currentBalance;
+    }
+
+    public Integer getUpLastMonth() {
+        return upLastMonth;
+    }
+
+    public void setUpLastMonth(Integer upLastMonth) {
+        this.upLastMonth = upLastMonth;
     }
 
     public BigDecimal getAvailableToSpend() {
@@ -78,20 +75,20 @@ public class AllTransactionResponseDTO {
         this.commitment = commitment;
     }
 
-    public BiggestExpenseOfTheMonth getExpenseOfTheMonth() {
-        return expenseOfTheMonth;
+    public TransactionResponseDTO getTransactionBiggestExpense() {
+        return transactionBiggestExpense;
     }
 
-    public void setExpenseOfTheMonth(BiggestExpenseOfTheMonth expenseOfTheMonth) {
-        this.expenseOfTheMonth = expenseOfTheMonth;
+    public void setTransactionBiggestExpense(TransactionResponseDTO transactionBiggestExpense) {
+        this.transactionBiggestExpense = transactionBiggestExpense;
     }
 
-    public BiggestIncomeOfTheMonth getIncomeOfTheMonth() {
-        return incomeOfTheMonth;
+    public TransactionResponseDTO getTransactionBiggestIncome() {
+        return transactionBiggestIncome;
     }
 
-    public void setIncomeOfTheMonth(BiggestIncomeOfTheMonth incomeOfTheMonth) {
-        this.incomeOfTheMonth = incomeOfTheMonth;
+    public void setTransactionBiggestIncome(TransactionResponseDTO transactionBiggestIncome) {
+        this.transactionBiggestIncome = transactionBiggestIncome;
     }
 
     public List<TransactionResponseDTO> getTransactions() {
@@ -107,19 +104,20 @@ public class AllTransactionResponseDTO {
         if (o == null || getClass() != o.getClass()) return false;
 
         AllTransactionResponseDTO that = (AllTransactionResponseDTO) o;
-        return Objects.equals(getCurrentBalance(), that.getCurrentBalance()) && Objects.equals(getAvailableToSpend(), that.getAvailableToSpend()) && Objects.equals(getIncome(), that.getIncome()) && Objects.equals(getExpenses(), that.getExpenses()) && Objects.equals(getNetIncome(), that.getNetIncome()) && Objects.equals(getCommitment(), that.getCommitment()) && Objects.equals(getExpenseOfTheMonth(), that.getExpenseOfTheMonth()) && Objects.equals(getIncomeOfTheMonth(), that.getIncomeOfTheMonth()) && Objects.equals(getTransactions(), that.getTransactions());
+        return Objects.equals(getCurrentBalance(), that.getCurrentBalance()) && Objects.equals(getUpLastMonth(), that.getUpLastMonth()) && Objects.equals(getAvailableToSpend(), that.getAvailableToSpend()) && Objects.equals(getIncome(), that.getIncome()) && Objects.equals(getExpenses(), that.getExpenses()) && Objects.equals(getNetIncome(), that.getNetIncome()) && Objects.equals(getCommitment(), that.getCommitment()) && Objects.equals(getTransactionBiggestExpense(), that.getTransactionBiggestExpense()) && Objects.equals(getTransactionBiggestIncome(), that.getTransactionBiggestIncome()) && Objects.equals(getTransactions(), that.getTransactions());
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hashCode(getCurrentBalance());
+        result = 31 * result + Objects.hashCode(getUpLastMonth());
         result = 31 * result + Objects.hashCode(getAvailableToSpend());
         result = 31 * result + Objects.hashCode(getIncome());
         result = 31 * result + Objects.hashCode(getExpenses());
         result = 31 * result + Objects.hashCode(getNetIncome());
         result = 31 * result + Objects.hashCode(getCommitment());
-        result = 31 * result + Objects.hashCode(getExpenseOfTheMonth());
-        result = 31 * result + Objects.hashCode(getIncomeOfTheMonth());
+        result = 31 * result + Objects.hashCode(getTransactionBiggestExpense());
+        result = 31 * result + Objects.hashCode(getTransactionBiggestIncome());
         result = 31 * result + Objects.hashCode(getTransactions());
         return result;
     }

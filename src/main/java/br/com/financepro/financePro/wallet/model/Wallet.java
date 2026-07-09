@@ -1,6 +1,7 @@
 package br.com.financepro.financePro.wallet.model;
 
 import br.com.financepro.financePro.account.model.Account;
+import br.com.financepro.financePro.bank.model.Bank;
 import br.com.financepro.financePro.goal.model.Goal;
 import jakarta.persistence.*;
 
@@ -25,23 +26,32 @@ public class Wallet {
     @Column
     private BigDecimal balance;
 
+    @Column(name = "card_digits", length = 4)
+    private String cardDigits;
+
     @OneToOne
     @JoinColumn(name = "goal_id")
     private Goal goal;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bank_id")
+    private Bank bank;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")
     private Account account;
 
     public Wallet() {}
 
-    public Wallet(UUID id, String name, String description, BigDecimal balance, Goal goal, Account account) {
+    public Wallet(UUID id, String name, String description, BigDecimal balance, String cardDigits, Goal goal, Account account, Bank bank) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.balance = balance;
+        this.cardDigits = cardDigits;
         this.goal = goal;
         this.account = account;
+        this.bank = bank;
     }
 
     public Wallet(String initialWalletName, String initialWalletDescription, BigDecimal initialBalance, Account accountCreated) {
@@ -87,8 +97,24 @@ public class Wallet {
         return goal;
     }
 
+    public String getCardDigits() {
+        return cardDigits;
+    }
+
+    public void setCardDigits(String cardDigits) {
+        this.cardDigits = cardDigits;
+    }
+
     public void setGoal(Goal goal) {
         this.goal = goal;
+    }
+
+    public Bank getBank() {
+        return bank;
+    }
+
+    public void setBank(Bank bank) {
+        this.bank = bank;
     }
 
     public Account getAccount() {

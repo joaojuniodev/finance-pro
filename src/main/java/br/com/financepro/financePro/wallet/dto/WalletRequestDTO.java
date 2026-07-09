@@ -10,18 +10,22 @@ public class WalletRequestDTO {
     private String name;
     private String description;
     private BigDecimal balance;
+    private String cardDigits;
     private UUID goalId;
     private UUID accountId;
+    private UUID bankId;
 
     public WalletRequestDTO() {}
 
-    public WalletRequestDTO(UUID id, String name, String description, BigDecimal balance, UUID goalId, UUID accountId) {
+    public WalletRequestDTO(UUID id, String name, String description, BigDecimal balance, String cardDigits, UUID goalId, UUID accountId, UUID bankId) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.balance = balance;
+        this.cardDigits = cardDigits;
         this.goalId = goalId;
         this.accountId = accountId;
+        this.bankId = bankId;
     }
 
     public UUID getId() {
@@ -56,6 +60,14 @@ public class WalletRequestDTO {
         this.balance = balance;
     }
 
+    public String getCardDigits() {
+        return cardDigits;
+    }
+
+    public void setCardDigits(String cardDigits) {
+        this.cardDigits = cardDigits;
+    }
+
     public UUID getGoalId() {
         return goalId;
     }
@@ -72,12 +84,20 @@ public class WalletRequestDTO {
         this.accountId = accountId;
     }
 
+    public UUID getBankId() {
+        return bankId;
+    }
+
+    public void setBankId(UUID bankId) {
+        this.bankId = bankId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
 
         WalletRequestDTO that = (WalletRequestDTO) o;
-        return Objects.equals(getId(), that.getId()) && Objects.equals(getName(), that.getName()) && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getBalance(), that.getBalance()) && Objects.equals(getGoalId(), that.getGoalId()) && Objects.equals(getAccountId(), that.getAccountId());
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getName(), that.getName()) && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getBalance(), that.getBalance()) && Objects.equals(getCardDigits(), that.getCardDigits()) && Objects.equals(getGoalId(), that.getGoalId()) && Objects.equals(getAccountId(), that.getAccountId()) && Objects.equals(getBankId(), that.getBankId());
     }
 
     @Override
@@ -86,8 +106,10 @@ public class WalletRequestDTO {
         result = 31 * result + Objects.hashCode(getName());
         result = 31 * result + Objects.hashCode(getDescription());
         result = 31 * result + Objects.hashCode(getBalance());
+        result = 31 * result + Objects.hashCode(getCardDigits());
         result = 31 * result + Objects.hashCode(getGoalId());
         result = 31 * result + Objects.hashCode(getAccountId());
+        result = 31 * result + Objects.hashCode(getBankId());
         return result;
     }
 }

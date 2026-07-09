@@ -32,9 +32,6 @@ public class AccountService {
     private UserRepository userRepository;
 
     @Autowired
-    private WalletService walletService;
-
-    @Autowired
     private AccountMapper mapper;
 
     public List<AccountResponseDTO> getAll() {
@@ -67,28 +64,16 @@ public class AccountService {
     public AccountResponseDTO startAccount(String username) {
         log.info("Start User Account");
 
-        final String DEFAULT_WALLET_NAME = "Conta Corrente";
-        final String DEFAULT_WALLET_DESCRIPTION = "Conta Corrente";
-
         User user = userRepository.findByUserName(username);
 
         Account account = new Account(user);
+        account.setCurrentBalance(BigDecimal.ZERO);
+        account.setIncome(BigDecimal.ZERO);
+        account.setExpenses(BigDecimal.ZERO);
+        account.setNetIncome(BigDecimal.ZERO);
+
         var accountCreated = repository.save(account);
-
-        var walletCreated = walletService.create(new WalletRequestDTO(
-            null,
-            DEFAULT_WALLET_NAME,
-            DEFAULT_WALLET_DESCRIPTION,
-            BigDecimal.ZERO,
-            null,
-            accountCreated.getId()
-        ));
-
-        account.setCurrentBalance(walletCreated.getBalance());
-        account.setIncome(walletCreated.getBalance());
-
-        var accountUpdated = repository.save(account);
-        return mapper.toResponse(accountUpdated);
+        return mapper.toResponse(accountCreated);
     }
 
     @Transactional

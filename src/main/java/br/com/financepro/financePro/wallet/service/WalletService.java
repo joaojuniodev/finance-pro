@@ -1,18 +1,22 @@
 package br.com.financepro.financePro.wallet.service;
 
 
-import br.com.financepro.financePro.wallet.dto.WalletRequestDTO;
-import br.com.financepro.financePro.wallet.dto.WalletResponseDTO;
+import br.com.financepro.financePro.account.model.Account;
+import br.com.financepro.financePro.account.service.AccountBalanceService;
+import br.com.financepro.financePro.common.enums.TransactionType;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.mapper.wallet.WalletMapper;
-import br.com.financepro.financePro.wallet.model.Wallet;
+import br.com.financepro.financePro.transaction.service.TransactionService;
+import br.com.financepro.financePro.wallet.dto.WalletRequestDTO;
+import br.com.financepro.financePro.wallet.dto.WalletResponseDTO;
 import br.com.financepro.financePro.wallet.repository.WalletRepository;
 import br.com.financepro.financePro.wallet.repository.spec.WalletSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,6 +31,9 @@ public class WalletService {
     private WalletRepository repository;
 
     @Autowired
+    private AccountBalanceService accountBalanceService;
+
+    @Autowired
     private WalletMapper mapper;
 
     public List<WalletResponseDTO> getAll(UUID accountId) {
@@ -36,7 +43,10 @@ public class WalletService {
         spec.addToSpecifications(accountId);
 
         return repository
-            .findAll(spec.apply())
+            .findAll(
+                spec.apply(),
+                Sort.by(Sort.Direction.ASC, "name")
+            )
             .stream()
             .map(entity -> mapper.toResponse(entity))
             .toList();
@@ -50,10 +60,17 @@ public class WalletService {
         return mapper.toResponse(entity);
     }
 
+    @Transactional
     public WalletResponseDTO create(WalletRequestDTO wallet) {
         log.info("Creating Wallet");
 
         var walletCreated = repository.save(mapper.toEntity(wallet));
+        accountBalanceService.updateBalance(
+            walletCreated.getAccount(),
+            walletCreated.getBalance(),
+            TransactionType.CREDIT,
+            false
+        );
         return mapper.toResponse(walletCreated);
     }
 
@@ -65,6 +82,7 @@ public class WalletService {
         entity.setName(wallet.getName());
         entity.setDescription(wallet.getDescription());
         entity.setBalance(wallet.getBalance());
+        entity.setCardDigits(wallet.getCardDigits());
 
         var walletUpdated = repository.save(entity);
         return mapper.toResponse(walletUpdated);
@@ -81,6 +99,7 @@ public class WalletService {
         return mapper.toResponse(walletUpdated);
     }
 
+    @Transactional
     public void delete(UUID id) {
         log.info("Deleting Wallet");
 

@@ -3,6 +3,9 @@ package br.com.financepro.financePro.mapper.transaction;
 import br.com.financepro.financePro.category.dto.CategoryResponseDTO;
 import br.com.financepro.financePro.category.model.Category;
 import br.com.financepro.financePro.category.repository.CategoryRepository;
+import br.com.financepro.financePro.common.enums.RecurrenceType;
+import br.com.financepro.financePro.common.enums.TransactionType;
+import br.com.financepro.financePro.recurrence.model.Recurrence;
 import br.com.financepro.financePro.transaction.dto.TransactionRequestDTO;
 import br.com.financepro.financePro.transaction.dto.TransactionResponseDTO;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
@@ -14,6 +17,8 @@ import br.com.financepro.financePro.wallet.model.Wallet;
 import br.com.financepro.financePro.wallet.repository.WalletRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
 
 @Component
 public class TransactionMapper implements ObjectMapper<Transaction, TransactionResponseDTO, TransactionRequestDTO> {
@@ -72,5 +77,22 @@ public class TransactionMapper implements ObjectMapper<Transaction, TransactionR
                 ? entity.getRecurrence().getId()
                 : null
         );
+    }
+
+    public Transaction getTransactionByRecurrence(Recurrence recurrence, LocalDate executionDate) {
+        Transaction transaction = new Transaction();
+        transaction.setAmount(recurrence.getAmount());
+        transaction.setDescription(recurrence.getDescription());
+        transaction.setAccount(recurrence.getAccount());
+        transaction.setWallet(recurrence.getWallet());
+        transaction.setRecurrence(recurrence);
+        transaction.setRegisteredAt(executionDate.atStartOfDay());
+
+        transaction.setType(
+            recurrence.getType().equals(RecurrenceType.CREDIT)
+                ? TransactionType.CREDIT
+                : TransactionType.DEBIT
+        );
+        return transaction;
     }
 }
