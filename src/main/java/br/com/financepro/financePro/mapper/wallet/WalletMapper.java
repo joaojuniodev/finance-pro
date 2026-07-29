@@ -1,19 +1,21 @@
 package br.com.financepro.financePro.mapper.wallet;
 
-import br.com.financepro.financePro.bank.dto.BankResponseDTO;
-import br.com.financepro.financePro.bank.model.Bank;
+import br.com.financepro.financePro.account.repository.AccountRepository;
 import br.com.financepro.financePro.bank.repository.BankRepository;
+import br.com.financepro.financePro.common.exceptions.NotFoundException;
+import br.com.financepro.financePro.goal.repository.GoalRepository;
+import br.com.financepro.financePro.mapper.ObjectMapper;
+import br.com.financepro.financePro.mapper.bank.BankMapper;
+import br.com.financepro.financePro.transaction.dto.response.TransactionSummaryDTO;
 import br.com.financepro.financePro.wallet.dto.WalletRequestDTO;
 import br.com.financepro.financePro.wallet.dto.WalletResponseDTO;
-import br.com.financepro.financePro.common.exceptions.NotFoundException;
-import br.com.financepro.financePro.mapper.ObjectMapper;
-import br.com.financepro.financePro.account.model.Account;
-import br.com.financepro.financePro.goal.model.Goal;
+import br.com.financepro.financePro.wallet.dto.WalletSummaryDTO;
 import br.com.financepro.financePro.wallet.model.Wallet;
-import br.com.financepro.financePro.account.repository.AccountRepository;
-import br.com.financepro.financePro.goal.repository.GoalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 @Component
 public class WalletMapper implements ObjectMapper<Wallet, WalletResponseDTO, WalletRequestDTO> {
@@ -27,15 +29,18 @@ public class WalletMapper implements ObjectMapper<Wallet, WalletResponseDTO, Wal
     @Autowired
     private BankRepository bankRepository;
 
+    @Autowired
+    private BankMapper bankMapper;
+
     @Override
     public Wallet toEntity(WalletRequestDTO request) {
-        Goal goal = request.getGoalId() != null
+        var goal = request.getGoalId() != null
             ? goalRepository.findById(request.getGoalId())
                 .orElseThrow(() -> new NotFoundException("Not found this Goal Id: " + request.getGoalId()))
             : null;
-        Account account = accountRepository.findById(request.getAccountId())
+        var account = accountRepository.findById(request.getAccountId())
             .orElseThrow(() -> new NotFoundException("Not found this Account Id: " + request.getAccountId()));
-        Bank bank = request.getBankId() != null
+        var bank = request.getBankId() != null
             ? bankRepository.findById(request.getBankId())
                 .orElseThrow(() -> new NotFoundException("Not found this Bank Id: " + request.getBankId()))
             : null;
@@ -53,14 +58,8 @@ public class WalletMapper implements ObjectMapper<Wallet, WalletResponseDTO, Wal
 
     @Override
     public WalletResponseDTO toResponse(Wallet entity) {
-        BankResponseDTO bank = entity.getBank() != null
-            ? new BankResponseDTO(
-                entity.getBank().getId(),
-                entity.getBank().getName(),
-                entity.getBank().getIcon(),
-                entity.getBank().getColor(),
-                entity.getBank().getGradient(),
-                entity.getBank().getShadow())
+        var bank = entity.getBank() != null
+            ? bankMapper.toResponse(entity.getBank())
             : null;
         return new WalletResponseDTO(
             entity.getId(),
@@ -69,6 +68,15 @@ public class WalletMapper implements ObjectMapper<Wallet, WalletResponseDTO, Wal
             entity.getCardDigits(),
             entity.getBalance(),
             bank
+        );
+    }
+
+    public WalletSummaryDTO toSummary(Wallet entity, BigDecimal income, BigDecimal expense, List<TransactionSummaryDTO> transactions) {
+        return new WalletSummaryDTO(
+            income,
+            expense,
+            toResponse(entity),
+            transactions
         );
     }
 }

@@ -1,9 +1,11 @@
 package br.com.financepro.financePro.account.controller;
 
 import br.com.financepro.financePro.account.controller.doc.AccountControllerDocs;
-import br.com.financepro.financePro.account.dto.AccountRequestDTO;
-import br.com.financepro.financePro.account.dto.AccountResponseDTO;
+import br.com.financepro.financePro.account.dto.request.AccountRequestDTO;
+import br.com.financepro.financePro.account.dto.response.AccountResponseDTO;
+import br.com.financepro.financePro.account.dto.response.DashboardOverviewResponseDTO;
 import br.com.financepro.financePro.account.service.AccountService;
+import br.com.financepro.financePro.account.service.DashboardService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +22,19 @@ public class AccountController implements AccountControllerDocs {
     @Autowired
     private AccountService service;
 
+    @Autowired
+    private DashboardService dashboardService;
+
     @GetMapping
     @Override
     public ResponseEntity<List<AccountResponseDTO>> getAll() {
         return ResponseEntity.ok().body(service.getAll());
+    }
+
+    @GetMapping("/dashboard/overview/{accountId}")
+    @Override
+    public ResponseEntity<DashboardOverviewResponseDTO> getDashboardOverview(@PathVariable UUID accountId) {
+        return ResponseEntity.ok().body(dashboardService.getDashboardOverview(accountId));
     }
 
     @GetMapping("/by-username/{username}")

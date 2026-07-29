@@ -7,6 +7,6 @@ import java.math.BigDecimal;
 
 public interface AccountBalanceOperations {
 
-    void updateBalance(Account account, BigDecimal amount, TransactionType type, Boolean isTransaction);
+    void updateBalance(Account account, BigDecimal amount, TransactionType type, Boolean isTransaction, Boolean isDeletingTransaction);
     void updateBiggestCategory(Account account);
 }

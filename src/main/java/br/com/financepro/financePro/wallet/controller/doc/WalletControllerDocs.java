@@ -1,6 +1,7 @@
 package br.com.financepro.financePro.wallet.controller.doc;
 
 import br.com.financepro.financePro.account.controller.AccountController;
+import br.com.financepro.financePro.wallet.dto.WalletSummaryDTO;
 import br.com.financepro.financePro.wallet.dto.WalletRequestDTO;
 import br.com.financepro.financePro.wallet.dto.WalletResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +39,22 @@ public interface WalletControllerDocs {
         }
     )
     ResponseEntity<List<WalletResponseDTO>> getAll(UUID accountId);
+
+    @Operation(
+        tags = {"Wallet"},
+        description = "API route to return a details this Wallet",
+        summary = "Getting details Wallet",
+        responses = {
+            @ApiResponse(description = "Success", responseCode = "200", content = @Content),
+            @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+            @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+            @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+            @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+            @ApiResponse(description = "No Content", responseCode = "204", content = @Content),
+            @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+        }
+    )
+    ResponseEntity<WalletSummaryDTO> getSummary(@PathVariable UUID accountId, @PathVariable UUID walletId);
 
     @Operation(
         tags = {"Wallet"},

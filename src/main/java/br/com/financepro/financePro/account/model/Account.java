@@ -1,11 +1,10 @@
 package br.com.financepro.financePro.account.model;
 
 import br.com.financepro.financePro.category.model.Category;
-import br.com.financepro.financePro.common.enums.CategoryType;
 import br.com.financepro.financePro.recurrence.model.Recurrence;
+import br.com.financepro.financePro.security.model.User;
 import br.com.financepro.financePro.transaction.model.Transaction;
 import br.com.financepro.financePro.wallet.model.Wallet;
-import br.com.financepro.financePro.security.model.User;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -38,16 +37,16 @@ public class Account {
     @Column(name = "biggest_expense_value")
     private BigDecimal biggestExpenseValue;
 
-    @OneToMany(mappedBy = "account", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "account")
     private List<Category> categories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "account", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "account")
     private Set<Transaction> transactions = new HashSet<>();
 
-    @OneToMany(mappedBy = "account", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "account")
     private Set<Recurrence> recurrences = new HashSet<>();
 
-    @OneToMany(mappedBy = "account", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "account")
     private Set<Wallet> wallets = new HashSet<>();
 
     @OneToOne
@@ -55,17 +54,6 @@ public class Account {
     private User user;
 
     public Account() {}
-
-    public Account(User user) {
-        this.user = user;
-        this.id = null;
-        this.currentBalance = new BigDecimal("0.0");
-        this.income = new BigDecimal("0.0");
-        this.expenses = new BigDecimal("0.0");
-        this.netIncome = new BigDecimal("0.0");
-        this.biggestExpenseCategory = null;
-        this.biggestExpenseValue = null;
-    }
 
     public Account(UUID id, BigDecimal currentBalance, BigDecimal income, BigDecimal expenses, BigDecimal netIncome) {
         this.id = id;
@@ -75,21 +63,6 @@ public class Account {
         this.netIncome = netIncome;
         this.biggestExpenseCategory = null;
         this.biggestExpenseValue = null;
-    }
-
-    public Account(UUID id, BigDecimal currentBalance, BigDecimal income, BigDecimal expenses, BigDecimal netIncome, Category biggestExpenseCategory, BigDecimal biggestExpenseValue, List<Category> categories, Set<Transaction> transactions, Set<Recurrence> recurrences, Set<Wallet> wallets, User user) {
-        this.id = id;
-        this.currentBalance = currentBalance;
-        this.income = income;
-        this.expenses = expenses;
-        this.netIncome = netIncome;
-        this.biggestExpenseCategory = biggestExpenseCategory;
-        this.biggestExpenseValue = biggestExpenseValue;
-        this.categories = categories;
-        this.transactions = transactions;
-        this.recurrences = recurrences;
-        this.wallets = wallets;
-        this.user = user;
     }
 
     public UUID getId() {

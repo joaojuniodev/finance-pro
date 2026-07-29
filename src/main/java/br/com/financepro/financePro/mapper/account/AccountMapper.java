@@ -1,24 +1,22 @@
 package br.com.financepro.financePro.mapper.account;
 
-import br.com.financepro.financePro.account.dto.AccountRequestDTO;
-import br.com.financepro.financePro.account.dto.AccountResponseDTO;
-import br.com.financepro.financePro.account.dto.BiggestExpense;
+import br.com.financepro.financePro.account.dto.request.AccountRequestDTO;
+import br.com.financepro.financePro.account.dto.response.AccountResponseDTO;
+import br.com.financepro.financePro.account.dto.response.BiggestExpenseResponseDTO;
 import br.com.financepro.financePro.account.model.Account;
 import br.com.financepro.financePro.category.dto.CategoryResponseDTO;
 import br.com.financepro.financePro.mapper.ObjectMapper;
-import br.com.financepro.financePro.mapper.wallet.WalletMapper;
-import br.com.financepro.financePro.wallet.model.Wallet;
+import br.com.financepro.financePro.mapper.category.CategoryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.Set;
 
 @Component
 public class AccountMapper implements ObjectMapper<Account, AccountResponseDTO, AccountRequestDTO> {
 
     @Autowired
-    private WalletMapper walletMapper;
+    private CategoryMapper categoryMapper;
 
     @Override
     public Account toEntity(AccountRequestDTO dto) {
@@ -33,43 +31,22 @@ public class AccountMapper implements ObjectMapper<Account, AccountResponseDTO, 
 
     @Override
     public AccountResponseDTO toResponse(Account entity) {
-        final BigDecimal CURRENT_BALANCE = calculateCurrentBalance(entity.getWallets());
-        final BigDecimal NET_INCOME = calculateNetIncome(entity.getIncome(), entity.getExpenses());
-
-        var wallets = entity.getWallets()
-            .stream()
-            .map(wallet -> walletMapper.toResponse(wallet)).toList();
+        final BigDecimal NET_INCOME = entity.getIncome().subtract(entity.getExpenses());
 
         CategoryResponseDTO category = entity.getBiggestExpenseCategory() != null
-            ? new CategoryResponseDTO(
-                entity.getBiggestExpenseCategory().getId(),
-                entity.getBiggestExpenseCategory().getName(),
-                entity.getBiggestExpenseCategory().getType(),
-                entity.getBiggestExpenseCategory().getIcon(),
-                entity.getBiggestExpenseCategory().getSystem())
+            ? categoryMapper.toResponse(entity.getBiggestExpenseCategory())
             : null;
 
         return new AccountResponseDTO(
             entity.getId(),
-            CURRENT_BALANCE,
+            entity.getCurrentBalance(),
             entity.getIncome(),
             entity.getExpenses(),
             NET_INCOME,
-            new BiggestExpense(
+            new BiggestExpenseResponseDTO(
                 entity.getBiggestExpenseValue(),
                 category
-            ),
-            wallets
+            )
         );
-    }
-
-    private BigDecimal calculateNetIncome(BigDecimal income, BigDecimal expenses) {
-        return income.subtract(expenses);
-    }
-
-    private BigDecimal calculateCurrentBalance(Set<Wallet> wallets) {
-        return wallets.stream()
-            .map(Wallet::getBalance)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

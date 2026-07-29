@@ -3,6 +3,7 @@ package br.com.financepro.financePro.wallet.model;
 import br.com.financepro.financePro.account.model.Account;
 import br.com.financepro.financePro.bank.model.Bank;
 import br.com.financepro.financePro.goal.model.Goal;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -33,11 +34,11 @@ public class Wallet {
     @JoinColumn(name = "goal_id")
     private Goal goal;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "bank_id")
     private Bank bank;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
 
@@ -117,6 +118,7 @@ public class Wallet {
         this.bank = bank;
     }
 
+    @JsonIgnore
     public Account getAccount() {
         return account;
     }

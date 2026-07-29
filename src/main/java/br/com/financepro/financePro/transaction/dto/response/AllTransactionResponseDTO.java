@@ -1,4 +1,4 @@
-package br.com.financepro.financePro.transaction.dto;
+package br.com.financepro.financePro.transaction.dto.response;
 
 import java.math.BigDecimal;
 import java.util.List;

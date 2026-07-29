@@ -1,10 +1,9 @@
 package br.com.financepro.financePro.transaction.controller.doc;
 
 import br.com.financepro.financePro.account.controller.AccountController;
-import br.com.financepro.financePro.transaction.dto.AllTransactionResponseDTO;
-import br.com.financepro.financePro.transaction.dto.OverviewResponseDTO;
-import br.com.financepro.financePro.transaction.dto.TransactionRequestDTO;
-import br.com.financepro.financePro.transaction.dto.TransactionResponseDTO;
+import br.com.financepro.financePro.transaction.dto.request.TransactionRequestDTO;
+import br.com.financepro.financePro.transaction.dto.response.AllTransactionResponseDTO;
+import br.com.financepro.financePro.transaction.dto.response.TransactionResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,7 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.UUID;
@@ -38,7 +38,7 @@ public interface TransactionControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<AllTransactionResponseDTO> getAll(UUID accountId, Integer month, Integer year);
+    ResponseEntity<List<TransactionResponseDTO>> getAll(UUID accountId, UUID walletId, Integer month, Integer year);
 
     @Operation(
         tags = {"Transaction"},
@@ -70,7 +70,7 @@ public interface TransactionControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<OverviewResponseDTO> overview(UUID accountId);
+    ResponseEntity<AllTransactionResponseDTO> overview(UUID accountId, UUID walletId,Integer month,Integer year);
 
     @Operation(
         tags = {"Transaction"},

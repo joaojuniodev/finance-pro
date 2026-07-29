@@ -1,6 +1,7 @@
 package br.com.financepro.financePro.account.repository;
 
 import br.com.financepro.financePro.account.model.Account;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,4 +15,10 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
 
     @Query("SELECT a FROM Account a WHERE a.user.username = :username")
     Optional<Account> findByUsername(@Param("username") String username);
+
+    @EntityGraph(attributePaths = {
+        "wallets",
+        "wallets.bank"
+    })
+    Optional<Account> findWithDashboardById(UUID id);
 }

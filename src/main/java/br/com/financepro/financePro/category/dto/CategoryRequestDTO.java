@@ -11,16 +11,18 @@ public class CategoryRequestDTO {
     private String name;
     private CategoryType type;
     private String icon;
+    private String color;
     private Boolean system = false;
     private UUID accountId;
 
     public CategoryRequestDTO() {}
 
-    public CategoryRequestDTO(UUID id, String name, CategoryType type, String icon, Boolean system, UUID accountId) {
+    public CategoryRequestDTO(UUID id, String name, CategoryType type, String icon, String color, Boolean system, UUID accountId) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.icon = icon;
+        this.color = color;
         this.system = system;
         this.accountId = accountId;
     }
@@ -57,6 +59,14 @@ public class CategoryRequestDTO {
         this.icon = icon;
     }
 
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
     public Boolean getSystem() {
         return system;
     }
@@ -78,7 +88,7 @@ public class CategoryRequestDTO {
         if (o == null || getClass() != o.getClass()) return false;
 
         CategoryRequestDTO that = (CategoryRequestDTO) o;
-        return Objects.equals(getId(), that.getId()) && Objects.equals(getName(), that.getName()) && getType() == that.getType() && Objects.equals(getSystem(), that.getSystem()) && Objects.equals(getAccountId(), that.getAccountId());
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getName(), that.getName()) && getType() == that.getType() && Objects.equals(getIcon(), that.getIcon()) && Objects.equals(getColor(), that.getColor()) && Objects.equals(getSystem(), that.getSystem()) && Objects.equals(getAccountId(), that.getAccountId());
     }
 
     @Override
@@ -86,6 +96,8 @@ public class CategoryRequestDTO {
         int result = Objects.hashCode(getId());
         result = 31 * result + Objects.hashCode(getName());
         result = 31 * result + Objects.hashCode(getType());
+        result = 31 * result + Objects.hashCode(getIcon());
+        result = 31 * result + Objects.hashCode(getColor());
         result = 31 * result + Objects.hashCode(getSystem());
         result = 31 * result + Objects.hashCode(getAccountId());
         return result;

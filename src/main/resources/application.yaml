@@ -8,8 +8,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
-    open-in-view: true
+      generate_statistics: true
+    show-sql: false
+    open-in-view: false
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -20,3 +21,14 @@ security:
     token:
       secret-key: 57cr37
       expire-length: 3600000
+mercadopago:
+  access-token: ${MERCADO_PAGO_ACCESS_TOKEN}
+  webhook-secret: ${MERCADO_PAGO_WEBHOOK_SECRET}
+  back-urls:
+    success: ${APP_FRONTEND_URL}/checkout/success
+    failure: ${APP_FRONTEND_URL}/checkout/failure
+    pending: ${APP_FRONTEND_URL}/checkout/pending
+  notification-url: ${APP_BACKEND_URL}/api/webhooks/mercadopago
+logging:
+  level:
+    org.hibernate.stat: DEBUG

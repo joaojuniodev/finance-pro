@@ -3,6 +3,7 @@ package br.com.financepro.financePro.category.model;
 import br.com.financepro.financePro.account.model.Account;
 import br.com.financepro.financePro.common.enums.CategoryType;
 import br.com.financepro.financePro.transaction.model.Transaction;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -29,22 +30,26 @@ public class Category {
     private String icon;
 
     @Column
+    private String color;
+
+    @Column
     private Boolean system;
 
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "category")
     private List<Transaction> transactions = new ArrayList<>();
 
     public Category() {}
 
-    public Category(UUID id, String name, CategoryType type, String icon, Boolean system, Account account) {
+    public Category(UUID id, String name, CategoryType type, String icon, String color, Boolean system, Account account) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.icon = icon;
+        this.color = color;
         this.system = system;
         this.account = account;
     }
@@ -85,10 +90,19 @@ public class Category {
         return system;
     }
 
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
     public void setSystem(Boolean system) {
         this.system = system;
     }
 
+    @JsonIgnore
     public Account getAccount() {
         return account;
     }
@@ -97,6 +111,7 @@ public class Category {
         this.account = account;
     }
 
+    @JsonIgnore
     public List<Transaction> getTransactions() {
         return transactions;
     }

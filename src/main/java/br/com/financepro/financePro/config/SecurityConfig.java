@@ -70,7 +70,8 @@ public class SecurityConfig {
                     "/auth/refresh/**",
                     "/auth/register",
                     "/swagger-ui/**",
-                    "/v3/api-docs/**"
+                    "/v3/api-docs/**",
+                    "/api/webhooks/**"
                 ).permitAll()
                 .requestMatchers("/api/**").authenticated()
                 .requestMatchers("/user").denyAll()

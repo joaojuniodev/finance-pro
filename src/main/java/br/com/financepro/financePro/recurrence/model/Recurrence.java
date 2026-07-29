@@ -1,6 +1,8 @@
 package br.com.financepro.financePro.recurrence.model;
 
 import br.com.financepro.financePro.account.model.Account;
+import br.com.financepro.financePro.category.model.Category;
+import br.com.financepro.financePro.common.enums.ExecutionType;
 import br.com.financepro.financePro.common.enums.FrequencyType;
 import br.com.financepro.financePro.common.enums.RecurrenceType;
 import br.com.financepro.financePro.wallet.model.Wallet;
@@ -30,6 +32,10 @@ public class Recurrence {
     @Column(name = "frequency_type")
     private FrequencyType frequencyType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "execution_type")
+    private ExecutionType executionType;
+
     @Column(name = "day_one")
     private Integer dayOne;
 
@@ -52,6 +58,10 @@ public class Recurrence {
     private String description;
 
     @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @ManyToOne
     @JoinColumn(name = "wallet_id")
     private Wallet wallet;
 
@@ -61,18 +71,19 @@ public class Recurrence {
 
     public Recurrence() {}
 
-    public Recurrence(UUID id, BigDecimal amount, RecurrenceType type, FrequencyType frequencyType, Integer dayOne, Integer dayTwo, Integer monthOfTheYear, String description, Account account, Wallet wallet) {
+    public Recurrence(UUID id, BigDecimal amount, RecurrenceType type, FrequencyType frequencyType, ExecutionType executionType, Integer dayOne, Integer dayTwo, Integer monthOfTheYear, String description, Category category, Wallet wallet, Account account) {
         this.id = id;
         this.amount = amount;
         this.type = type;
         this.frequencyType = frequencyType;
+        this.executionType = executionType;
         this.dayOne = dayOne;
         this.dayTwo = dayTwo;
         this.monthOfTheYear = monthOfTheYear;
-        this.active = true;
         this.description = description;
-        this.account = account;
+        this.category = category;
         this.wallet = wallet;
+        this.account = account;
     }
 
     public UUID getId() {
@@ -97,6 +108,14 @@ public class Recurrence {
 
     public void setType(RecurrenceType type) {
         this.type = type;
+    }
+
+    public ExecutionType getExecutionType() {
+        return executionType;
+    }
+
+    public void setExecutionType(ExecutionType executionType) {
+        this.executionType = executionType;
     }
 
     public FrequencyType getFrequencyType() {
@@ -161,6 +180,14 @@ public class Recurrence {
 
     public void setMonthOfTheYear(Integer monthOfTheYear) {
         this.monthOfTheYear = monthOfTheYear;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public Wallet getWallet() {

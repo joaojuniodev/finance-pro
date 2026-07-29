@@ -8,6 +8,7 @@ import br.com.financepro.financePro.wallet.model.Wallet;
 import br.com.financepro.financePro.wallet.repository.WalletRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,39 +17,38 @@ import java.util.UUID;
 
 @Service
 public class WalletBalanceService implements WalletBalanceOperations {
+
     private final Logger log = LoggerFactory.getLogger(WalletBalanceService.class.getName());
 
-    private final WalletRepository walletRepository;
-    private final AccountBalanceService accountBalanceService;
+    @Autowired
+    private WalletRepository walletRepository;
 
-    public WalletBalanceService(WalletRepository walletRepository, AccountBalanceService accountBalanceService) {
-        this.walletRepository = walletRepository;
-        this.accountBalanceService = accountBalanceService;
-    }
+    @Autowired
+    private AccountBalanceService accountBalanceService;
 
     @Transactional
     @Override
-    public void credit(Wallet wallet, BigDecimal amount, Boolean isTransaction) {
+    public void credit(Wallet wallet, BigDecimal amount, Boolean isTransaction, Boolean isDeletingTransaction) {
         validateAmount(amount);
 
         wallet.setBalance(wallet.getBalance().add(amount));
         walletRepository.save(wallet);
 
-        accountBalanceService.updateBalance(wallet.getAccount(), amount, TransactionType.CREDIT, isTransaction);
+        accountBalanceService.updateBalance(wallet.getAccount(), amount, TransactionType.CREDIT, isTransaction, isDeletingTransaction);
 
         log.info("Wallet {} creditada em {}", wallet.getId(), amount);
     }
 
     @Transactional
     @Override
-    public void debit(Wallet wallet, BigDecimal amount, Boolean isTransaction) {
+    public void debit(Wallet wallet, BigDecimal amount, Boolean isTransaction, Boolean isDeletingTransaction) {
         validateAmount(amount);
         // validateSufficientBalance(wallet, amount);
 
         wallet.setBalance(wallet.getBalance().subtract(amount));
         walletRepository.save(wallet);
 
-        accountBalanceService.updateBalance(wallet.getAccount(), amount, TransactionType.DEBIT, isTransaction);
+        accountBalanceService.updateBalance(wallet.getAccount(), amount, TransactionType.DEBIT, isTransaction, isDeletingTransaction);
 
         log.info("Wallet {} debitada em {}", wallet.getId(), amount);
     }
@@ -59,8 +59,8 @@ public class WalletBalanceService implements WalletBalanceOperations {
         validateSufficientBalance(from, amount);
         validateAmount(amount);
 
-        debit(from, amount, false);
-        credit(to, amount, false);
+        debit(from, amount, false, false);
+        credit(to, amount, false, false);
 
         log.info("Transferência de {} entre Wallet {} e Wallet {}", amount, from.getId(), to.getId());
     }

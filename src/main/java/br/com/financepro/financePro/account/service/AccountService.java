@@ -1,15 +1,13 @@
 package br.com.financepro.financePro.account.service;
 
-import br.com.financepro.financePro.account.dto.AccountRequestDTO;
-import br.com.financepro.financePro.account.dto.AccountResponseDTO;
+import br.com.financepro.financePro.account.dto.request.AccountRequestDTO;
+import br.com.financepro.financePro.account.dto.response.AccountResponseDTO;
 import br.com.financepro.financePro.account.model.Account;
 import br.com.financepro.financePro.account.repository.AccountRepository;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.mapper.account.AccountMapper;
 import br.com.financepro.financePro.security.model.User;
 import br.com.financepro.financePro.security.repository.UserRepository;
-import br.com.financepro.financePro.wallet.dto.WalletRequestDTO;
-import br.com.financepro.financePro.wallet.service.WalletService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +54,7 @@ public class AccountService {
         log.info("Getting Account by Id");
 
         var entity = repository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Not found this Id: " + id));
+            .orElseThrow(() -> new NotFoundException("Not found Account by id: " + id));
         return mapper.toResponse(entity);
     }
 
@@ -66,7 +64,8 @@ public class AccountService {
 
         User user = userRepository.findByUserName(username);
 
-        Account account = new Account(user);
+        Account account = new Account();
+        account.setUser(user);
         account.setCurrentBalance(BigDecimal.ZERO);
         account.setIncome(BigDecimal.ZERO);
         account.setExpenses(BigDecimal.ZERO);

@@ -1,4 +1,4 @@
-package br.com.financepro.financePro.transaction.dto;
+package br.com.financepro.financePro.transaction.dto.request;
 
 import br.com.financepro.financePro.common.enums.TransactionStatus;
 import br.com.financepro.financePro.common.enums.TransactionType;

@@ -1,19 +1,20 @@
 package br.com.financepro.financePro.transaction.service;
 
-
 import br.com.financepro.financePro.account.service.AccountService;
+import br.com.financepro.financePro.category.model.Category;
+import br.com.financepro.financePro.category.repository.CategoryRepository;
 import br.com.financepro.financePro.common.enums.RecurrenceType;
 import br.com.financepro.financePro.common.enums.TransactionStatus;
 import br.com.financepro.financePro.common.enums.TransactionType;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.mapper.transaction.TransactionMapper;
 import br.com.financepro.financePro.recurrence.dto.RecurrenceResponseDTO;
-import br.com.financepro.financePro.recurrence.model.Recurrence;
-import br.com.financepro.financePro.recurrence.service.RecurrenceService;
-import br.com.financepro.financePro.transaction.dto.*;
-import br.com.financepro.financePro.transaction.model.Transaction;
+import br.com.financepro.financePro.recurrence.service.RecurrenceReadService;
+import br.com.financepro.financePro.recurrence.service.params.RecurrenceSearchParams;
+import br.com.financepro.financePro.transaction.dto.request.TransactionRequestDTO;
+import br.com.financepro.financePro.transaction.dto.response.AllTransactionResponseDTO;
+import br.com.financepro.financePro.transaction.dto.response.TransactionResponseDTO;
 import br.com.financepro.financePro.transaction.repository.TransactionRepository;
-import br.com.financepro.financePro.transaction.repository.projection.WeeklyOverviewProjection;
 import br.com.financepro.financePro.transaction.repository.spec.TransactionSpecification;
 import br.com.financepro.financePro.wallet.model.Wallet;
 import br.com.financepro.financePro.wallet.service.WalletBalanceService;
@@ -22,14 +23,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.format.TextStyle;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class TransactionService {
@@ -40,67 +39,79 @@ public class TransactionService {
     private TransactionRepository repository;
 
     @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
     private WalletBalanceService walletBalanceService;
 
     @Autowired
     private AccountService accountService;
 
     @Autowired
-    private RecurrenceService recurrenceService;
+    private RecurrenceReadService recurrenceService;
 
     @Autowired
     private TransactionMapper mapper;
 
-    public AllTransactionResponseDTO getAll(UUID accountId, Integer month, Integer year) {
+    public List<TransactionResponseDTO> getAll(UUID accountId, UUID walletId, Integer month, Integer year) {
         log.info("Getting All Transactions");
 
         TransactionSpecification spec = new TransactionSpecification();
-        spec.addToSpecifications(accountId, month, year);
+        spec.addToSpecifications(accountId, walletId, month, year);
+
+        return repository
+            .findAll(
+                spec.apply(),
+                Sort.by(Sort.Direction.DESC, "registeredAt"))
+            .stream()
+            .map(this.mapper::toResponse)
+            .toList();
+    }
+
+    public AllTransactionResponseDTO getOverview(UUID accountId, UUID walletId, Integer month, Integer year) {
+        log.info("Getting Overview by Transactions");
+
+        TransactionSpecification spec = new TransactionSpecification();
+        spec.addToSpecifications(accountId, walletId, month, year);
 
         var transactions = repository
             .findAll(
                 spec.apply(),
-                Sort.by(Sort.Direction.DESC, "registeredAt")
-            )
+                Sort.by(Sort.Direction.DESC, "registeredAt"))
             .stream()
             .map(this.mapper::toResponse)
             .toList();
 
         var account = accountService.getById(accountId);
-        var recurrences = recurrenceService.getAll(accountId);
+        var recurrences = recurrenceService.getAll(new RecurrenceSearchParams(accountId, null, null, null, null, null));
 
-        AllTransactionResponseDTO response = new AllTransactionResponseDTO();
-
-        BigDecimal commitment =recurrences.stream()
+        BigDecimal commitment = recurrences.stream()
             .filter(rec -> rec.getType() == RecurrenceType.DEBIT)
             .filter(rec -> rec.getNextExecutionDate().isAfter(LocalDate.now()))
             .map(RecurrenceResponseDTO::getAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
-        response.setCurrentBalance(account.getCurrentBalance());
-        response.setAvailableToSpend(account.getCurrentBalance().subtract(commitment));
-        response.setIncome(account.getIncome());
-        response.setExpenses(account.getExpenses());
-        response.setNetIncome(account.getNetIncome());
-        response.setCommitment(commitment);
-        response.setTransactionBiggestIncome(getTransactionBiggestIncome(transactions));
-        response.setTransactionBiggestExpense(getTransactionBiggestExpense(transactions));
-        response.setTransactions(transactions);
 
-        return response;
+        return mapper.getAllTransactionResponseDTO(
+            commitment,
+            account,
+            getTransactionBiggestIncome(transactions),
+            getTransactionBiggestExpense(transactions),
+            transactions
+        );
     }
 
     private TransactionResponseDTO getTransactionBiggestIncome(List<TransactionResponseDTO> transactions) {
-        Optional<TransactionResponseDTO> transactionBigIncome = transactions.stream()
+        return transactions.stream()
             .filter(transaction -> transaction.getType() == TransactionType.CREDIT)
-            .max(Comparator.comparing(TransactionResponseDTO::getAmount));
-        return transactionBigIncome.get();
+            .max(Comparator.comparing(TransactionResponseDTO::getAmount))
+            .orElse(null);
     }
 
     private TransactionResponseDTO getTransactionBiggestExpense(List<TransactionResponseDTO> transactions) {
-        Optional<TransactionResponseDTO> transactionBigExpense = transactions.stream()
+        return transactions.stream()
             .filter(transaction -> transaction.getType() == TransactionType.DEBIT)
-            .max(Comparator.comparing(TransactionResponseDTO::getAmount));
-        return transactionBigExpense.get();
+            .max(Comparator.comparing(TransactionResponseDTO::getAmount))
+            .orElse(null);
     }
 
     public TransactionResponseDTO getById(UUID id) {
@@ -111,78 +122,23 @@ public class TransactionService {
         return mapper.toResponse(entity);
     }
 
-    public OverviewResponseDTO overview(UUID accountId) {
-        Map<String, List<WeekOverviewResponse>> overview = new HashMap<>();
-
-        for (Month month : Month.values()) {
-            overview.put(
-                month.getDisplayName(TextStyle.FULL, Locale.ENGLISH),
-                new ArrayList<>()
-            );
-        }
-
-        List<WeeklyOverviewProjection> result = repository.findWeeklyOverview(accountId, LocalDateTime.now().getYear());
-
-        for (WeeklyOverviewProjection item : result) {
-            String monthName = Month.of(item.getMonth())
-                .getDisplayName(TextStyle.FULL, Locale.ENGLISH);
-
-            overview.get(monthName).add(
-                new WeekOverviewResponse(
-                    item.getWeek(),
-                    item.getIncome(),
-                    item.getExpenses()
-                )
-            );
-        }
-
-        return new OverviewResponseDTO(overview);
-    }
-
-    @Transactional
-    public TransactionResponseDTO create(TransactionRequestDTO transaction) {
-        log.info("Creating Transaction");
-
-        Wallet wallet = walletBalanceService.getWallet(transaction.getWalletId());
-
-        perform(wallet, transaction.getAmount(), transaction.getType(), true);
-
-        var transactionCreated = repository.save(mapper.toEntity(transaction));
-        return mapper.toResponse(transactionCreated);
-    }
-
-    @Transactional
-    public void createByRecurrence(Recurrence recurrence, LocalDate executionDate) {
-        log.info("Creating Transaction by Recurrence");
-
-        Transaction transaction = mapper.getTransactionByRecurrence(recurrence, executionDate);
-        repository.save(transaction);
-
-        perform(
-            recurrence.getWallet(),
-            recurrence.getAmount(),
-            recurrence.getType() == RecurrenceType.CREDIT
-                ? TransactionType.CREDIT
-                : TransactionType.DEBIT,
-            true
-        );
-    }
-
-    private void perform(Wallet wallet, BigDecimal amount, TransactionType type, Boolean isTransaction) {
-        if (type.equals(RecurrenceType.CREDIT)) {
-            walletBalanceService.credit(wallet, amount, isTransaction);
-        } else {
-            walletBalanceService.debit(wallet, amount, isTransaction);
-        }
-    }
-
     public TransactionResponseDTO update(TransactionRequestDTO transaction) {
         log.info("Updating Transaction");
+
+        Wallet wallet = walletBalanceService.getWallet(transaction.getWalletId());
+        Category category = categoryRepository.findById(transaction.getCategoryId())
+            .orElseThrow(() -> new NotFoundException("Not found this Category Id: " + transaction.getCategoryId()));
 
         var entity = repository.findById(transaction.getId())
             .orElseThrow(() -> new NotFoundException("Not found this Id: " + transaction.getId()));
         entity.setAmount(transaction.getAmount());
+        entity.setDescription(transaction.getDescription());
+        entity.setRegisteredAt(transaction.getRegisteredAt());
         entity.setType(transaction.getType());
+        entity.setWallet(wallet);
+        entity.setCategory(category);
+
+        perform(entity.getWallet(), entity.getAmount(), entity.getType(), true, false);
 
         var transactionUpdated = repository.save(entity);
         return mapper.toResponse(transactionUpdated);
@@ -204,6 +160,21 @@ public class TransactionService {
 
         var entity = repository.findById(id)
             .orElseThrow(() -> new NotFoundException("Not found this Id: " + id));
+
+        TransactionType type = entity.getType().name().equals("CREDIT")
+            ? TransactionType.DEBIT
+            : TransactionType.CREDIT;
+
+        perform(entity.getWallet(), entity.getAmount(), type, false, true);
+
         repository.delete(entity);
+    }
+
+    private void perform(Wallet wallet, BigDecimal amount, TransactionType type, Boolean isTransaction, Boolean isDeletingTransaction) {
+        if (type.name().equals("CREDIT")) {
+            walletBalanceService.credit(wallet, amount, isTransaction, isDeletingTransaction);
+        } else {
+            walletBalanceService.debit(wallet, amount, isTransaction, isDeletingTransaction);
+        }
     }
 }

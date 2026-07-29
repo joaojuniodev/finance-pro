@@ -1,8 +1,9 @@
 package br.com.financepro.financePro.recurrence.service;
 
+import br.com.financepro.financePro.common.enums.ExecutionType;
 import br.com.financepro.financePro.recurrence.model.Recurrence;
 import br.com.financepro.financePro.recurrence.repository.RecurrenceRepository;
-import br.com.financepro.financePro.transaction.service.TransactionService;
+import br.com.financepro.financePro.transaction.service.TransactionExecutionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,12 +19,12 @@ public class RecurrenceExecutionService {
     private RecurrenceRepository recurrenceRepository;
 
     @Autowired
-    private TransactionService transactionService;
+    private TransactionExecutionService transactionExecutionService;
 
     @Transactional
     public void executeDueRecurrences(LocalDate today) {
         List<Recurrence> recurrences =
-            recurrenceRepository.findByActiveTrueAndNextExecutionDateLessThanEqual(today);
+            recurrenceRepository.findPendingAutomaticRecurrences(ExecutionType.AUTOMATIC, today);
 
         for (Recurrence recurrence : recurrences) {
             execute(recurrence, today);
@@ -31,7 +32,7 @@ public class RecurrenceExecutionService {
     }
 
     private void execute(Recurrence recurrence, LocalDate executionDate) {
-        transactionService.createByRecurrence(recurrence, executionDate);
+        transactionExecutionService.createByRecurrence(recurrence, executionDate);
 
         recurrence.setLastExecutionDate(executionDate);
         recurrence.setNextExecutionDate(calculateNextExecutionDate(recurrence, executionDate));
@@ -39,7 +40,7 @@ public class RecurrenceExecutionService {
         recurrenceRepository.save(recurrence);
     }
 
-    private LocalDate calculateNextExecutionDate(Recurrence recurrence, LocalDate lastExecutionDate) {
+    public LocalDate calculateNextExecutionDate(Recurrence recurrence, LocalDate lastExecutionDate) {
         return switch (recurrence.getFrequencyType()) {
             case MONTHLY -> dateInMonth(
                 YearMonth.from(lastExecutionDate).plusMonths(1),

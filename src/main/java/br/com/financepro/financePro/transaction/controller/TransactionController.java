@@ -2,10 +2,10 @@ package br.com.financepro.financePro.transaction.controller;
 
 
 import br.com.financepro.financePro.transaction.controller.doc.TransactionControllerDocs;
-import br.com.financepro.financePro.transaction.dto.AllTransactionResponseDTO;
-import br.com.financepro.financePro.transaction.dto.OverviewResponseDTO;
-import br.com.financepro.financePro.transaction.dto.TransactionRequestDTO;
-import br.com.financepro.financePro.transaction.dto.TransactionResponseDTO;
+import br.com.financepro.financePro.transaction.dto.request.TransactionRequestDTO;
+import br.com.financepro.financePro.transaction.dto.response.AllTransactionResponseDTO;
+import br.com.financepro.financePro.transaction.dto.response.TransactionResponseDTO;
+import br.com.financepro.financePro.transaction.service.TransactionExecutionService;
 import br.com.financepro.financePro.transaction.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,14 +21,18 @@ public class TransactionController implements TransactionControllerDocs {
     @Autowired
     private TransactionService service;
 
+    @Autowired
+    private TransactionExecutionService transactionExecutionService;
+
     @GetMapping
     @Override
-    public ResponseEntity<AllTransactionResponseDTO> getAll(
+    public ResponseEntity<List<TransactionResponseDTO>> getAll(
         @RequestParam(required = false, name = "accountId") UUID accountId,
+        @RequestParam(required = false, name = "walletId") UUID walletId,
         @RequestParam(required = false, name = "month") Integer month,
         @RequestParam(required = false, name = "year") Integer year
     ) {
-        return ResponseEntity.ok().body(service.getAll(accountId, month, year));
+        return ResponseEntity.ok().body(service.getAll(accountId, walletId, month, year));
     }
 
     @GetMapping("/{id}")
@@ -37,16 +41,21 @@ public class TransactionController implements TransactionControllerDocs {
         return ResponseEntity.ok().body(service.getById(id));
     }
 
-    @GetMapping("/overview/{accountId}")
+    @GetMapping("/overview")
     @Override
-    public ResponseEntity<OverviewResponseDTO> overview(@PathVariable UUID accountId) {
-        return ResponseEntity.ok().body(service.overview(accountId));
+    public ResponseEntity<AllTransactionResponseDTO> overview(
+        @RequestParam(required = false, name = "accountId") UUID accountId,
+        @RequestParam(required = false, name = "walletId") UUID walletId,
+        @RequestParam(required = false, name = "month") Integer month,
+        @RequestParam(required = false, name = "year") Integer year
+    ) {
+        return ResponseEntity.ok().body(service.getOverview(accountId, walletId, month, year));
     }
 
     @PostMapping
     @Override
     public ResponseEntity<TransactionResponseDTO> create(@RequestBody TransactionRequestDTO transaction) {
-        return ResponseEntity.ok().body(service.create(transaction));
+        return ResponseEntity.ok().body(transactionExecutionService.create(transaction));
     }
 
     @PutMapping

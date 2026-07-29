@@ -2,7 +2,6 @@ package br.com.financepro.financePro.transaction.model;
 
 import br.com.financepro.financePro.account.model.Account;
 import br.com.financepro.financePro.category.model.Category;
-import br.com.financepro.financePro.common.enums.CategoryType;
 import br.com.financepro.financePro.common.enums.TransactionStatus;
 import br.com.financepro.financePro.common.enums.TransactionType;
 import br.com.financepro.financePro.recurrence.model.Recurrence;
@@ -46,7 +45,7 @@ public class Transaction {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "recurrence_id")
     private Recurrence recurrence;
 

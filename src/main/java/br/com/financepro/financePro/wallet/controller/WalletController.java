@@ -1,7 +1,7 @@
 package br.com.financepro.financePro.wallet.controller;
 
-
 import br.com.financepro.financePro.wallet.controller.doc.WalletControllerDocs;
+import br.com.financepro.financePro.wallet.dto.WalletSummaryDTO;
 import br.com.financepro.financePro.wallet.dto.WalletRequestDTO;
 import br.com.financepro.financePro.wallet.dto.WalletResponseDTO;
 import br.com.financepro.financePro.wallet.service.WalletService;
@@ -28,6 +28,12 @@ public class WalletController implements WalletControllerDocs {
         @RequestParam(required = false, name = "accountId") UUID accountId
     ) {
         return ResponseEntity.ok().body(service.getAll(accountId));
+    }
+
+    @GetMapping("/summary/{accountId}/{walletId}")
+    @Override
+    public ResponseEntity<WalletSummaryDTO> getSummary(@PathVariable UUID accountId, @PathVariable UUID walletId) {
+        return ResponseEntity.ok().body(service.summary(accountId, walletId));
     }
 
     @GetMapping("/{id}")

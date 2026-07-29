@@ -11,15 +11,17 @@ public class CategoryResponseDTO {
     private String name;
     private CategoryType type;
     private String icon;
+    private String color;
     private Boolean system;
 
     public CategoryResponseDTO() {}
 
-    public CategoryResponseDTO(UUID id, String name, CategoryType type, String icon, Boolean system) {
+    public CategoryResponseDTO(UUID id, String name, CategoryType type, String icon, String color, Boolean system) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.icon = icon;
+        this.color = color;
         this.system = system;
     }
 
@@ -53,6 +55,14 @@ public class CategoryResponseDTO {
 
     public void setIcon(String icon) {
         this.icon = icon;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 
     public Boolean getSystem() {

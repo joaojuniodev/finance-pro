@@ -7,9 +7,10 @@ import br.com.financepro.financePro.category.repository.CategoryRepository;
 import br.com.financepro.financePro.common.enums.TransactionType;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.transaction.repository.TransactionRepository;
-import br.com.financepro.financePro.transaction.repository.projection.TopCategoryProjection;
+import br.com.financepro.financePro.transaction.dto.projection.TopCategoryProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,39 +20,32 @@ import java.math.BigDecimal;
 public class AccountBalanceService implements AccountBalanceOperations {
     private final Logger log = LoggerFactory.getLogger(AccountBalanceService.class.getName());
 
-    private final AccountRepository accountRepository;
-    private final TransactionRepository transactionRepository;
-    private final CategoryRepository categoryRepository;
+    @Autowired
+    private AccountRepository accountRepository;
 
-    public AccountBalanceService(AccountRepository accountRepository, TransactionRepository transactionRepository, CategoryRepository categoryRepository) {
-        this.accountRepository = accountRepository;
-        this.transactionRepository = transactionRepository;
-        this.categoryRepository = categoryRepository;
-    }
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Transactional
     @Override
-    public void updateBalance(Account account, BigDecimal amount, TransactionType type, Boolean isTransaction) {
+    public void updateBalance(Account account, BigDecimal amount, TransactionType type, Boolean isTransaction, Boolean isDeletingTransaction) {
         log.info("Updating balance this Account");
 
-        if (type.equals(TransactionType.CREDIT)) {
+        if (type.name().equals("CREDIT")) {
             account.setCurrentBalance(account.getCurrentBalance().add(amount));
-        }
-        else {
+        } else {
             account.setCurrentBalance(account.getCurrentBalance().subtract(amount));
         }
 
-        if (isTransaction) {
-            if (type.equals(TransactionType.CREDIT)) {
-                account.setIncome(account.getIncome().add(amount));
-            }
-            else {
-                account.setExpenses(account.getExpenses().add(amount));
-            }
-        }
+        if (isTransaction) updateWhenCreateTransaction(account, amount, type);
+        if (isDeletingTransaction) updateWhenDeletingTransaction(account, amount, type);
 
         final BigDecimal NET_INCOME = account.getIncome().subtract(account.getExpenses());
         account.setNetIncome(NET_INCOME);
+        //updateBiggestCategory(account);
 
         accountRepository.save(account);
     }
@@ -71,5 +65,21 @@ public class AccountBalanceService implements AccountBalanceOperations {
 
         account.setBiggestExpenseCategory(category);
         account.setBiggestExpenseValue(total);
+    }
+
+    private void updateWhenCreateTransaction(Account account, BigDecimal amount, TransactionType type) {
+        if (type.name().equals("CREDIT")) {
+            account.setIncome(account.getIncome().add(amount));
+        } else {
+            account.setExpenses(account.getExpenses().add(amount));
+        }
+    }
+
+    private void updateWhenDeletingTransaction(Account account, BigDecimal amount, TransactionType type) {
+        if (type.name().equals("CREDIT")) {
+            account.setExpenses(account.getExpenses().subtract(amount));
+        } else {
+            account.setIncome(account.getIncome().subtract(amount));
+        }
     }
 }

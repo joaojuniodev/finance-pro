@@ -54,8 +54,11 @@ CREATE TABLE recurrences (
     -- Enum RecurrenceType (ex: FIXED, VARIABLE)
     type                VARCHAR(50),
 
-    -- Enum BillingTimeType (ex: DAILY, WEEKLY, MONTHLY, YEARLY)
+    -- Enum FrequencyType (ex: DAILY, WEEKLY, MONTHLY, YEARLY)
     frequency_type  VARCHAR(50),
+
+    -- Enum ExecutionType (ex: AUTOMATIC, MANUALLY)
+    execution_type  VARCHAR(50),
 
     -- day_one e day_two: dias do mês/semana de cobrança
     -- Exemplo: cobrança nos dias 5 e 20 do mês
@@ -76,17 +79,22 @@ CREATE TABLE recurrences (
 
     wallet_id           UUID          NOT NULL,
 
+    category_id         UUID          NOT NULL,
+
     account_id          UUID          NOT NULL,
 
     CONSTRAINT pk_recurrences PRIMARY KEY (id),
     CONSTRAINT fk_recurrences_account
         FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE,
     CONSTRAINT fk_recurrences_wallet
-            FOREIGN KEY (wallet_id) REFERENCES wallets (id) ON DELETE CASCADE
+        FOREIGN KEY (wallet_id) REFERENCES wallets (id) ON DELETE CASCADE,
+    CONSTRAINT fk_recurrences_category
+        FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_recurrences_account_id            ON recurrences (account_id);
 CREATE INDEX idx_recurrences_WALLET_id             ON recurrences (wallet_id);
+CREATE INDEX idx_recurrences_category_id           ON recurrences (category_id);
 CREATE INDEX idx_recurrences_next_execution_date   ON recurrences (next_execution_date);
 CREATE INDEX idx_recurrences_active                ON recurrences (active);
 

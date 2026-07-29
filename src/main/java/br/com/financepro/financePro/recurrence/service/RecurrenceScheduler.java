@@ -12,7 +12,7 @@ public class RecurrenceScheduler {
     @Autowired
     private RecurrenceExecutionService recurrenceExecutionService;
 
-    @Scheduled(cron = "0 5 0 * * *", zone = "America/Sao_Paulo")
+    @Scheduled(cron = "*/10 * * * * *", zone = "America/Sao_Paulo")
     public void executeDailyRecurrences() {
         recurrenceExecutionService.executeDueRecurrences(LocalDate.now());
     }

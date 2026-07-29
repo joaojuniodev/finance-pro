@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 public interface WalletBalanceOperations {
 
-    void credit(Wallet wallet, BigDecimal amount, Boolean isTransaction);
-    void debit(Wallet wallet, BigDecimal amount, Boolean isTransaction);
+    void credit(Wallet wallet, BigDecimal amount, Boolean isTransaction, Boolean isDeletingTransaction);
+    void debit(Wallet wallet, BigDecimal amount, Boolean isTransaction, Boolean isDeletingTransaction);
     void transfer(Wallet from, Wallet to, BigDecimal amount);
 }

@@ -8,6 +8,7 @@ import br.com.financepro.financePro.goal.dto.GoalResponseDTO;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.mapper.ObjectMapper;
 import br.com.financepro.financePro.goal.model.Goal;
+import br.com.financepro.financePro.mapper.category.CategoryMapper;
 import br.com.financepro.financePro.wallet.model.Wallet;
 import br.com.financepro.financePro.wallet.repository.WalletRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ public class GoalMapper implements ObjectMapper<Goal, GoalResponseDTO, GoalReque
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private CategoryMapper categoryMapper;
 
     @Override
     public Goal toEntity(GoalRequestDTO request) {
@@ -41,19 +45,14 @@ public class GoalMapper implements ObjectMapper<Goal, GoalResponseDTO, GoalReque
 
     @Override
     public GoalResponseDTO toResponse(Goal entity) {
+        var category = categoryMapper.toResponse(entity.getCategory());
         return new GoalResponseDTO(
             entity.getId(),
             entity.getName(),
             entity.getDescription(),
             entity.getTotalAmount(),
             entity.getCurrentAmount(),
-            new CategoryResponseDTO(
-                entity.getCategory().getId(),
-                entity.getCategory().getName(),
-                entity.getCategory().getType(),
-                entity.getCategory().getIcon(),
-                entity.getCategory().getSystem()
-            )
+            category
         );
     }
 }

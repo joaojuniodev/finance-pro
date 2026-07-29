@@ -20,8 +20,9 @@ public class TransactionSpecification {
         return this.spec;
     }
 
-    public void addToSpecifications(UUID accountId, Integer month, Integer year) {
+    public void addToSpecifications(UUID accountId, UUID walletId, Integer month, Integer year) {
         if (accountId != null) hasAccount(accountId);
+        if (walletId != null) hasWallet(walletId);
 
         if (year != null && month != null) {
             betweenMonthYear(month, year);
@@ -33,6 +34,11 @@ public class TransactionSpecification {
     private void hasAccount(UUID accountId) {
         this.spec = this.spec.and((root, query, cb ) ->
             cb.equal(root.get("account").get("id"), accountId));
+    }
+
+    private void hasWallet(UUID walletId) {
+        this.spec = this.spec.and((root, query, cb ) ->
+            cb.equal(root.get("wallet").get("id"), walletId));
     }
 
     private void betweenMonthYear(Integer month, Integer year) {

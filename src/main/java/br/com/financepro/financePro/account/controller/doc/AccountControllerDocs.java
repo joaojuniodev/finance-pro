@@ -1,8 +1,9 @@
 package br.com.financepro.financePro.account.controller.doc;
 
 import br.com.financepro.financePro.account.controller.AccountController;
-import br.com.financepro.financePro.account.dto.AccountRequestDTO;
-import br.com.financepro.financePro.account.dto.AccountResponseDTO;
+import br.com.financepro.financePro.account.dto.request.AccountRequestDTO;
+import br.com.financepro.financePro.account.dto.response.AccountResponseDTO;
+import br.com.financepro.financePro.account.dto.response.DashboardOverviewResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,6 +39,20 @@ public interface AccountControllerDocs {
         }
     )
     ResponseEntity<List<AccountResponseDTO>> getAll();
+
+    @Operation(
+        tags = {"Account"},
+        description = "API route to return Dashboard Overview by Account",
+        summary = "Getting Dashboard Overview",
+        responses = {
+            @ApiResponse(description = "Success", responseCode = "200", content = @Content),
+            @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+            @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+            @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+            @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+        }
+    )
+    ResponseEntity<DashboardOverviewResponseDTO> getDashboardOverview(UUID accountId);
 
     @Operation(
         tags = {"Account"},

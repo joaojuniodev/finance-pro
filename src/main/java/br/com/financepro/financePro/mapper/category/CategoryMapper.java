@@ -25,6 +25,7 @@ public class CategoryMapper implements ObjectMapper<Category, CategoryResponseDT
             request.getName(),
             request.getType(),
             request.getIcon(),
+            request.getColor(),
             request.getSystem(),
             account
         );
@@ -37,6 +38,7 @@ public class CategoryMapper implements ObjectMapper<Category, CategoryResponseDT
             entity.getName(),
             entity.getType(),
             entity.getIcon(),
+            entity.getColor(),
             entity.getSystem()
         );
     }

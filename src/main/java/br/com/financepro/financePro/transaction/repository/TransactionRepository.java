@@ -1,14 +1,16 @@
 package br.com.financepro.financePro.transaction.repository;
 
-import br.com.financepro.financePro.transaction.repository.projection.TopCategoryProjection;
-import br.com.financepro.financePro.transaction.repository.projection.WeeklyOverviewProjection;
+import br.com.financepro.financePro.transaction.dto.projection.CategoryExpenseProjection;
+import br.com.financepro.financePro.transaction.dto.projection.TopCategoryProjection;
 import br.com.financepro.financePro.transaction.model.Transaction;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,39 +19,31 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID>,
 
     List<Transaction> findAll(Specification<Transaction> spec);
 
-    @Query(value = """
-        SELECT
-            EXTRACT(MONTH FROM t.registered_at) AS month,
-            CASE
-                WHEN EXTRACT(DAY FROM t.registered_at) BETWEEN 1  AND 7  THEN 1
-                WHEN EXTRACT(DAY FROM t.registered_at) BETWEEN 8  AND 14 THEN 2
-                WHEN EXTRACT(DAY FROM t.registered_at) BETWEEN 15 AND 21 THEN 3
-                ELSE 4
-            END AS week,
-            COALESCE(SUM(
-                CASE WHEN t.type = 'CREDIT' THEN t.amount ELSE 0 END
-            ), 0) AS income,
-            COALESCE(SUM(
-                CASE WHEN t.type = 'DEBIT' THEN t.amount ELSE 0 END
-            ), 0) AS expenses
-        FROM transactions t
-        WHERE
-            t.account_id = :accountId
-            AND EXTRACT(YEAR FROM t.registered_at) = :year
-        GROUP BY
-            EXTRACT(MONTH FROM t.registered_at),
-            CASE
-                WHEN EXTRACT(DAY FROM t.registered_at) BETWEEN 1  AND 7  THEN 1
-                WHEN EXTRACT(DAY FROM t.registered_at) BETWEEN 8  AND 14 THEN 2
-                WHEN EXTRACT(DAY FROM t.registered_at) BETWEEN 15 AND 21 THEN 3
-                ELSE 4
-            END
-        ORDER BY
-            month, week
-    """, nativeQuery = true)
-    List<WeeklyOverviewProjection> findWeeklyOverview(
+    @Query("""
+        SELECT t
+        FROM Transaction t
+        WHERE t.account.id = :accountId
+        ORDER BY t.registeredAt DESC
+    """)
+    List<Transaction> findRecentAccount(UUID accountId, Pageable pageable);
+
+    @Query("""
+        SELECT new br.com.financepro.financePro.transaction.dto.projection.CategoryExpenseProjection(
+            c,
+            SUM(t.amount)
+        )
+        FROM Transaction t
+        JOIN t.category c
+        WHERE t.account.id = :accountId
+            AND t.type = br.com.financepro.financePro.common.enums.TransactionType.DEBIT
+            AND t.registeredAt BETWEEN :startDate AND :endDate
+        GROUP BY c
+        ORDER BY SUM(t.amount) DESC
+    """)
+    List<CategoryExpenseProjection> findExpensesByCategory(
         UUID accountId,
-        Integer year
+        LocalDateTime startDate,
+        LocalDateTime endDate
     );
 
     @Query(value = """

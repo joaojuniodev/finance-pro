@@ -1,19 +1,18 @@
-package br.com.financepro.financePro.account.dto;
+package br.com.financepro.financePro.account.dto.response;
 
 import br.com.financepro.financePro.category.dto.CategoryResponseDTO;
-import br.com.financepro.financePro.common.enums.CategoryType;
 
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class BiggestExpense {
+public class BiggestExpenseResponseDTO {
 
     private BigDecimal value;
     private CategoryResponseDTO category;
 
-    public BiggestExpense() {}
+    public BiggestExpenseResponseDTO() {}
 
-    public BiggestExpense(BigDecimal value, CategoryResponseDTO category) {
+    public BiggestExpenseResponseDTO(BigDecimal value, CategoryResponseDTO category) {
         this.value = value;
         this.category = category;
     }
@@ -39,7 +38,7 @@ public class BiggestExpense {
 
         if (o == null || getClass() != o.getClass()) return false;
 
-        BiggestExpense that = (BiggestExpense) o;
+        BiggestExpenseResponseDTO that = (BiggestExpenseResponseDTO) o;
         return Objects.equals(getValue(), that.getValue()) && getCategory() == that.getCategory();
     }
 

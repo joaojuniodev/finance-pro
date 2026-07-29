@@ -32,6 +32,7 @@
 		<flyway.version>10.20.1</flyway.version>
 		<springdoc.version>2.7.0</springdoc.version>
 		<java-jwt.version>4.4.0</java-jwt.version>
+		<mercadopago.version>2.1.24</mercadopago.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -71,6 +72,17 @@
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-database-postgresql</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>me.paulschwarz</groupId>
+			<artifactId>spring-dotenv</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.mercadopago</groupId>
+			<artifactId>sdk-java</artifactId>
+			<version>${mercadopago.version}</version>
 		</dependency>
 
 		<dependency>

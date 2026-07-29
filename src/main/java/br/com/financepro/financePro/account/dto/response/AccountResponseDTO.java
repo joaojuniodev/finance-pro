@@ -1,25 +1,27 @@
-package br.com.financepro.financePro.account.dto;
+package br.com.financepro.financePro.account.dto.response;
 
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.UUID;
 
-public class AccountRequestDTO {
+public class AccountResponseDTO {
 
     private UUID id;
     private BigDecimal currentBalance;
     private BigDecimal income;
     private BigDecimal expenses;
     private BigDecimal netIncome;
+    private BiggestExpenseResponseDTO biggestExpense;
 
-    public AccountRequestDTO() {}
+    public AccountResponseDTO() {}
 
-    public AccountRequestDTO(UUID id, BigDecimal currentBalance, BigDecimal income, BigDecimal expenses, BigDecimal netIncome) {
+    public AccountResponseDTO(UUID id, BigDecimal currentBalance, BigDecimal income, BigDecimal expenses, BigDecimal netIncome, BiggestExpenseResponseDTO biggestExpense) {
         this.id = id;
         this.currentBalance = currentBalance;
         this.income = income;
         this.expenses = expenses;
         this.netIncome = netIncome;
+        this.biggestExpense = biggestExpense;
     }
 
     public UUID getId() {
@@ -62,12 +64,20 @@ public class AccountRequestDTO {
         this.netIncome = netIncome;
     }
 
+    public BiggestExpenseResponseDTO getBiggestExpense() {
+        return biggestExpense;
+    }
+
+    public void setBiggestExpense(BiggestExpenseResponseDTO biggestExpense) {
+        this.biggestExpense = biggestExpense;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
 
-        AccountRequestDTO that = (AccountRequestDTO) o;
-        return Objects.equals(getId(), that.getId()) && Objects.equals(getCurrentBalance(), that.getCurrentBalance()) && Objects.equals(getIncome(), that.getIncome()) && Objects.equals(getExpenses(), that.getExpenses()) && Objects.equals(getNetIncome(), that.getNetIncome());
+        AccountResponseDTO that = (AccountResponseDTO) o;
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getCurrentBalance(), that.getCurrentBalance()) && Objects.equals(getIncome(), that.getIncome()) && Objects.equals(getExpenses(), that.getExpenses()) && Objects.equals(getNetIncome(), that.getNetIncome()) && Objects.equals(getBiggestExpense(), that.getBiggestExpense());
     }
 
     @Override
@@ -77,6 +87,7 @@ public class AccountRequestDTO {
         result = 31 * result + Objects.hashCode(getIncome());
         result = 31 * result + Objects.hashCode(getExpenses());
         result = 31 * result + Objects.hashCode(getNetIncome());
+        result = 31 * result + Objects.hashCode(getBiggestExpense());
         return result;
     }
 }
