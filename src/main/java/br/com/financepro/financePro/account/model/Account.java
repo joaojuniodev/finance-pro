@@ -3,6 +3,7 @@ package br.com.financepro.financePro.account.model;
 import br.com.financepro.financePro.category.model.Category;
 import br.com.financepro.financePro.recurrence.model.Recurrence;
 import br.com.financepro.financePro.security.model.User;
+import br.com.financepro.financePro.subscription.model.Subscription;
 import br.com.financepro.financePro.transaction.model.Transaction;
 import br.com.financepro.financePro.wallet.model.Wallet;
 import jakarta.persistence.*;

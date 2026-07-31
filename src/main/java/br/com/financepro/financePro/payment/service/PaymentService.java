@@ -6,6 +6,7 @@ import br.com.financepro.financePro.payment.dto.response.PaymentStatusResponse;
 import br.com.financepro.financePro.payment.gateway.PaymentGateway;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -13,11 +14,8 @@ import java.math.BigDecimal;
 @Service
 public class PaymentService {
 
-    private final PaymentGateway paymentGateway;
-
-    public PaymentService(PaymentGateway paymentGateway) {
-        this.paymentGateway = paymentGateway;
-    }
+    @Autowired
+    private PaymentGateway paymentGateway;
 
     public CheckoutResponse createCheckout() {
         CheckoutRequest request = new CheckoutRequest(
