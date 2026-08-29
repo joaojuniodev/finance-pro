@@ -1,6 +1,7 @@
 package br.com.financepro.financePro.transaction.repository;
 
 import br.com.financepro.financePro.transaction.dto.projection.CategoryAmountProjection;
+import br.com.financepro.financePro.transaction.dto.projection.DailyFlowProjection;
 import br.com.financepro.financePro.transaction.model.Transaction;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -11,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,4 +59,17 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID>,
         LIMIT 1
         """, nativeQuery = true)
     Optional<Object[]> findTopSpendingCategoryNative(@Param("accountId") UUID accountId);
+
+    @Query("""
+        SELECT CAST(t.registeredAt AS date) AS date, t.type AS type, SUM(t.amount) AS total
+        FROM Transaction t
+        WHERE t.account.id = :accountId
+          AND t.registeredAt >= :startDate
+        GROUP BY CAST(t.registeredAt AS date), t.type
+        ORDER BY date ASC
+    """)
+    List<DailyFlowProjection> findDailyFlow(
+        @Param("accountId") UUID accountId,
+        @Param("startDate") LocalDateTime startDate
+    );
 }

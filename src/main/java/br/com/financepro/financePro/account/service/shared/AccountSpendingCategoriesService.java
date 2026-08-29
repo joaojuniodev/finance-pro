@@ -1,7 +1,7 @@
 package br.com.financepro.financePro.account.service.shared;
 
 import br.com.financepro.financePro.transaction.dto.projection.CategoryAmountProjection;
-import br.com.financepro.financePro.transaction.dto.projection.CategorySpendingDTO;
+import br.com.financepro.financePro.transaction.dto.response.CategorySpendingDTO;
 import br.com.financepro.financePro.transaction.repository.TransactionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;

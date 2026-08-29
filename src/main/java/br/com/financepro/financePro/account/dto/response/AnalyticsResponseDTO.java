@@ -1,7 +1,8 @@
 package br.com.financepro.financePro.account.dto.response;
 
 import br.com.financepro.financePro.recurrence.dto.response.RecurrenceResponseDTO;
-import br.com.financepro.financePro.transaction.dto.projection.CategorySpendingDTO;
+import br.com.financepro.financePro.transaction.dto.response.CategorySpendingDTO;
+import br.com.financepro.financePro.transaction.dto.response.EvolutionDataPointDTO;
 import br.com.financepro.financePro.transaction.dto.response.TransactionResponseDTO;
 
 import java.math.BigDecimal;
@@ -14,6 +15,7 @@ public record AnalyticsResponseDTO(
     BigDecimal commitments,
     List<TransactionResponseDTO> transactions,
     List<RecurrenceResponseDTO> recurrences,
-    List<CategorySpendingDTO> categorySpending
+    List<CategorySpendingDTO> categorySpending,
+    List<EvolutionDataPointDTO> evolution
 ) {
 }

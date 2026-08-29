@@ -7,7 +7,7 @@ import br.com.financepro.financePro.category.model.Category;
 import br.com.financepro.financePro.category.repository.CategoryRepository;
 import br.com.financepro.financePro.common.enums.TransactionType;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
-import br.com.financepro.financePro.transaction.dto.projection.CategorySpendingDTO;
+import br.com.financepro.financePro.transaction.dto.response.CategorySpendingDTO;
 import br.com.financepro.financePro.transaction.repository.TransactionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 public class AccountBalanceService implements AccountBalanceOperations {

@@ -1,6 +1,6 @@
 package br.com.financepro.financePro.account.dto.response;
 
-import br.com.financepro.financePro.transaction.dto.projection.CategorySpendingDTO;
+import br.com.financepro.financePro.transaction.dto.response.CategorySpendingDTO;
 import br.com.financepro.financePro.recurrence.dto.response.RecurrenceSummaryDTO;
 import br.com.financepro.financePro.transaction.dto.response.TransactionResponseDTO;
 import br.com.financepro.financePro.wallet.dto.WalletResponseDTO;

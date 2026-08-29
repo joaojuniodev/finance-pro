@@ -2,6 +2,7 @@ package br.com.financepro.financePro.account.service.analytics;
 
 import br.com.financepro.financePro.account.dto.response.AnalyticsResponseDTO;
 import br.com.financepro.financePro.account.repository.AccountRepository;
+import br.com.financepro.financePro.account.service.shared.AccountEvolutionService;
 import br.com.financepro.financePro.account.service.shared.AccountSpendingCategoriesService;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.mapper.recurrence.RecurrenceMapper;
@@ -45,6 +46,9 @@ public class AnalyticsService {
     @Autowired
     private AccountSpendingCategoriesService spendingCategoriesService;
 
+    @Autowired
+    private AccountEvolutionService evolutionService;
+
     public AnalyticsResponseDTO getAnalytics(UUID accountId, int limit) {
 
         log.info("Getting Analytics by Account ID");
@@ -76,6 +80,8 @@ public class AnalyticsService {
 
         var categorySpending = spendingCategoriesService.getTopSpendingCategories(accountId, limit);
 
+        var evolution = evolutionService.getWeeklyEvolution(accountId);
+
         final BigDecimal commitments = recurrences.stream()
             .map(RecurrenceResponseDTO::getAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -89,7 +95,8 @@ public class AnalyticsService {
             commitments,
             transactions,
             recurrences,
-            categorySpending
+            categorySpending,
+            evolution
         );
     }
 }
