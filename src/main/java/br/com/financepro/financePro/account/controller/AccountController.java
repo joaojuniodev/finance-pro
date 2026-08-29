@@ -3,9 +3,13 @@ package br.com.financepro.financePro.account.controller;
 import br.com.financepro.financePro.account.controller.doc.AccountControllerDocs;
 import br.com.financepro.financePro.account.dto.request.AccountRequestDTO;
 import br.com.financepro.financePro.account.dto.response.AccountResponseDTO;
-import br.com.financepro.financePro.account.dto.response.DashboardOverviewResponseDTO;
+import br.com.financepro.financePro.account.dto.response.ActivitiesResponseDTO;
+import br.com.financepro.financePro.account.dto.response.AnalyticsResponseDTO;
+import br.com.financepro.financePro.account.dto.response.DashboardResponseDTO;
 import br.com.financepro.financePro.account.service.AccountService;
-import br.com.financepro.financePro.account.service.DashboardService;
+import br.com.financepro.financePro.account.service.activities.ActivitiesService;
+import br.com.financepro.financePro.account.service.analytics.AnalyticsService;
+import br.com.financepro.financePro.account.service.dashboard.DashboardService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,16 +29,43 @@ public class AccountController implements AccountControllerDocs {
     @Autowired
     private DashboardService dashboardService;
 
+    @Autowired
+    private ActivitiesService activitiesService;
+
+    @Autowired
+    private AnalyticsService analyticsService;
+
     @GetMapping
     @Override
     public ResponseEntity<List<AccountResponseDTO>> getAll() {
-        return ResponseEntity.ok().body(service.getAll());
+        return ResponseEntity.ok().body(service.getAll()); 
     }
 
-    @GetMapping("/dashboard/overview/{accountId}")
+    @GetMapping("/dashboard/{accountId}")
     @Override
-    public ResponseEntity<DashboardOverviewResponseDTO> getDashboardOverview(@PathVariable UUID accountId) {
-        return ResponseEntity.ok().body(dashboardService.getDashboardOverview(accountId));
+    public ResponseEntity<DashboardResponseDTO> getDashboard(
+        @PathVariable UUID accountId,
+        @RequestParam(defaultValue = "5") int limit
+    ) {
+        return ResponseEntity.ok().body(dashboardService.getDashboard(accountId, limit));
+    }
+
+    @GetMapping("/activities/{accountId}")
+    @Override
+    public ResponseEntity<ActivitiesResponseDTO> getActivities(
+        @PathVariable UUID accountId,
+        @RequestParam(name = "month", required = false) Integer month,
+        @RequestParam(name = "year", required = false) Integer year
+    ) {
+        return ResponseEntity.ok().body(activitiesService.getActivities(accountId, month, year));
+    }
+
+    @GetMapping("/analytics/{accountId}")
+    public ResponseEntity<AnalyticsResponseDTO> getAnalytics(
+        @PathVariable UUID accountId,
+        @RequestParam(defaultValue = "6") int limit
+    ) {
+        return ResponseEntity.ok().body(analyticsService.getAnalytics(accountId, limit));
     }
 
     @GetMapping("/by-username/{username}")

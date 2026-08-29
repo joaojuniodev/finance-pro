@@ -1,6 +1,8 @@
 package br.com.financepro.financePro.wallet.service;
 
 import br.com.financepro.financePro.account.service.AccountBalanceService;
+import br.com.financepro.financePro.bank.model.Bank;
+import br.com.financepro.financePro.bank.repository.BankRepository;
 import br.com.financepro.financePro.common.enums.TransactionType;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.mapper.transaction.TransactionMapper;
@@ -32,6 +34,9 @@ public class WalletService {
 
     @Autowired
     private WalletRepository repository;
+
+    @Autowired
+    private BankRepository bankRepository;
 
     @Autowired
     private TransactionRepository transactionRepository;
@@ -117,12 +122,21 @@ public class WalletService {
     public WalletResponseDTO update(WalletRequestDTO wallet) {
         log.info("Updating Wallet");
 
+        Bank bank = null;
+
         var entity = repository.findById(wallet.getId())
             .orElseThrow(() -> new NotFoundException("Not found this Id: " + wallet.getId()));
+        if (wallet.getBankId() != null) {
+            bank = bankRepository.findById(wallet.getBankId()).get();
+        }
+
         entity.setName(wallet.getName());
         entity.setDescription(wallet.getDescription());
         entity.setBalance(wallet.getBalance());
         entity.setCardDigits(wallet.getCardDigits());
+        entity.setType(wallet.getType());
+        entity.setColor(wallet.getColor());
+        entity.setBank(bank);
 
         var walletUpdated = repository.save(entity);
         return mapper.toResponse(walletUpdated);

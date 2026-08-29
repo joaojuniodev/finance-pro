@@ -1,10 +1,10 @@
 package br.com.financepro.financePro.recurrence.controller.doc;
 
 import br.com.financepro.financePro.account.controller.AccountController;
-import br.com.financepro.financePro.recurrence.dto.AllRecurrenceResponseDTO;
-import br.com.financepro.financePro.recurrence.dto.RecurrenceRequestDTO;
-import br.com.financepro.financePro.recurrence.dto.RecurrenceResponseDTO;
-import br.com.financepro.financePro.recurrence.service.params.RecurrenceSearchParams;
+import br.com.financepro.financePro.recurrence.dto.response.AllRecurrenceResponseDTO;
+import br.com.financepro.financePro.recurrence.dto.request.RecurrenceRequestDTO;
+import br.com.financepro.financePro.recurrence.dto.response.RecurrenceConfirmResponseDTO;
+import br.com.financepro.financePro.recurrence.dto.response.RecurrenceResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,7 +38,7 @@ public interface RecurrenceControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<List<RecurrenceResponseDTO>> getAll(RecurrenceSearchParams params);
+    ResponseEntity<List<RecurrenceResponseDTO>> getAll(UUID accountId);
 
     @Operation(
         tags = {"Recurrence"},
@@ -59,7 +59,7 @@ public interface RecurrenceControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<AllRecurrenceResponseDTO> getOverview(UUID id);
+    ResponseEntity<AllRecurrenceResponseDTO> getOverview(UUID accountId);
 
     @Operation(
         tags = {"Recurrence"},
@@ -105,6 +105,21 @@ public interface RecurrenceControllerDocs {
         }
     )
     ResponseEntity<RecurrenceResponseDTO> update(@RequestBody RecurrenceRequestDTO recurrence);
+
+    @Operation(
+        tags = {"Recurrence"},
+        description = "API route to confirm execution a Recurrence",
+        summary = "Confirm a Recurrence",
+        responses = {
+            @ApiResponse(description = "Success", responseCode = "200", content = @Content),
+            @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+            @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+            @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+            @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+            @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+        }
+    )
+    ResponseEntity<?> confirm(@PathVariable UUID recurrenceId);
 
     @Operation(
         tags = {"Recurrence"},

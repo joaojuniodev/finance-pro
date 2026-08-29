@@ -1,6 +1,7 @@
 package br.com.financepro.financePro.infrastructure.payment.mercadopago.gateway;
 
 import br.com.financepro.financePro.payment.dto.request.CheckoutRequest;
+import br.com.financepro.financePro.payment.dto.request.PaymentGatewayCheckoutRequest;
 import br.com.financepro.financePro.payment.dto.response.CheckoutResponse;
 import br.com.financepro.financePro.payment.dto.response.PaymentStatusResponse;
 import br.com.financepro.financePro.payment.gateway.PaymentGateway;
@@ -12,6 +13,7 @@ import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.payment.Payment;
 import com.mercadopago.resources.preference.Preference;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,16 +21,14 @@ import java.util.List;
 @Component
 public class MercadoPagoPaymentGateway implements PaymentGateway {
 
-    private final PreferenceClient preferenceClient;
-    private final PaymentClient paymentClient;
+    @Autowired
+    private PreferenceClient preferenceClient;
 
-    public MercadoPagoPaymentGateway(PreferenceClient preferenceClient, PaymentClient paymentClient) {
-        this.preferenceClient = preferenceClient;
-        this.paymentClient = paymentClient;
-    }
+    @Autowired
+    private PaymentClient paymentClient;
 
     @Override
-    public CheckoutResponse createCheckout(CheckoutRequest request) throws MPException, MPApiException {
+    public CheckoutResponse createCheckout(PaymentGatewayCheckoutRequest request) throws MPException, MPApiException {
         PreferenceItemRequest item = PreferenceItemRequest.builder()
             .title(request.title())
             .description(request.description())
@@ -39,11 +39,12 @@ public class MercadoPagoPaymentGateway implements PaymentGateway {
 
         PreferenceRequest preferenceRequest = PreferenceRequest.builder()
             .items(List.of(item))
+            .externalReference(request.externalReference())
             .build();
 
         Preference preference = preferenceClient.create(preferenceRequest);
 
-        return new CheckoutResponse(preference.getInitPoint());
+        return new CheckoutResponse(preference.getId(), preference.getInitPoint());
     }
 
     @Override
@@ -53,7 +54,8 @@ public class MercadoPagoPaymentGateway implements PaymentGateway {
             String.valueOf(payment.getId()),
             payment.getStatus(),
             payment.getStatusDetail(),
-            payment.getTransactionAmount()
+            payment.getTransactionAmount(),
+            payment.getExternalReference()
         );
     }
 }

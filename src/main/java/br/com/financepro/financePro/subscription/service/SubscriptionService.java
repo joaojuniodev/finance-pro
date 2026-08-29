@@ -2,14 +2,20 @@ package br.com.financepro.financePro.subscription.service;
 
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.mapper.subscription.SubscriptionMapper;
+import br.com.financepro.financePro.payment.model.Payment;
 import br.com.financepro.financePro.subscription.dto.request.SubscriptionRequestDTO;
 import br.com.financepro.financePro.subscription.dto.response.SubscriptionResponseDTO;
+import br.com.financepro.financePro.subscription.enums.SubscriptionStatus;
+import br.com.financepro.financePro.subscription.model.Subscription;
 import br.com.financepro.financePro.subscription.repository.SubscriptionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -63,5 +69,40 @@ public class SubscriptionService {
         var subscription = repository.findById(id)
             .orElseThrow(() -> new NotFoundException("Not found this ID: " + id));
         repository.delete(subscription);
+    }
+
+    @Transactional
+    public Subscription activateFromPayment(Payment payment) {
+        Subscription subscription = repository
+            .findByAccountId(payment.getAccount().getId())
+            .orElseGet(Subscription::new);
+
+        LocalDate startDate = payment.getPaidAt().toLocalDate();;
+        LocalDate endDate = startDate.plusMonths(1);
+
+        subscription.setAccount(payment.getAccount());
+        subscription.setPlan(payment.getPlan());
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
+
+        if (subscription.getStartedAt() == null) {
+            subscription.setStartedAt(payment.getPaidAt());
+        }
+
+        subscription.setCurrentPeriodStart(startDate);
+        subscription.setCurrentPeriodEnd(endDate);
+
+        subscription.setCancelAtPeriodEnd(false);
+        subscription.setUpdatedAt(LocalDateTime.now());
+
+        if (subscription.getCreatedAt() == null) {
+            subscription.setCreatedAt(LocalDateTime.now());
+        }
+
+        var savedSubscription = repository.save(subscription);
+
+        payment.setSubscription(savedSubscription);
+
+        return savedSubscription;
+
     }
 }

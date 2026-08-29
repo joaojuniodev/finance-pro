@@ -18,7 +18,8 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
 
     @EntityGraph(attributePaths = {
         "wallets",
-        "wallets.bank"
+        "wallets.bank",
+        "recurrences"
     })
     Optional<Account> findWithDashboardById(UUID id);
 }

@@ -1,9 +1,10 @@
-package br.com.financepro.financePro.recurrence.dto;
+package br.com.financepro.financePro.recurrence.dto.response;
 
 import br.com.financepro.financePro.category.dto.CategoryResponseDTO;
 import br.com.financepro.financePro.common.enums.ExecutionType;
 import br.com.financepro.financePro.common.enums.FrequencyType;
 import br.com.financepro.financePro.common.enums.RecurrenceType;
+import br.com.financepro.financePro.recurrence.common.enums.RecurrenceStatus;
 import br.com.financepro.financePro.wallet.dto.WalletResponseDTO;
 
 import java.math.BigDecimal;
@@ -23,14 +24,14 @@ public class RecurrenceResponseDTO {
     private Integer monthOfTheYear;
     private LocalDate nextExecutionDate;
     private LocalDate lastExecutionDate;
-    private Boolean active = true;
+    private RecurrenceStatus status;
     private String description;
     private CategoryResponseDTO category;
     private WalletResponseDTO wallet;
 
     public RecurrenceResponseDTO() {}
 
-    public RecurrenceResponseDTO(UUID id, BigDecimal amount, RecurrenceType type, FrequencyType frequencyType, ExecutionType executionType, Integer dayOne, Integer dayTwo, Integer monthOfTheYear, LocalDate nextExecutionDate, LocalDate lastExecutionDate, Boolean active, String description, CategoryResponseDTO category, WalletResponseDTO wallet) {
+    public RecurrenceResponseDTO(UUID id, BigDecimal amount, RecurrenceType type, FrequencyType frequencyType, ExecutionType executionType, Integer dayOne, Integer dayTwo, Integer monthOfTheYear, LocalDate nextExecutionDate, LocalDate lastExecutionDate, RecurrenceStatus status, String description, CategoryResponseDTO category, WalletResponseDTO wallet) {
         this.id = id;
         this.amount = amount;
         this.type = type;
@@ -41,7 +42,7 @@ public class RecurrenceResponseDTO {
         this.monthOfTheYear = monthOfTheYear;
         this.nextExecutionDate = nextExecutionDate;
         this.lastExecutionDate = lastExecutionDate;
-        this.active = active;
+        this.status = status;
         this.description = description;
         this.category = category;
         this.wallet = wallet;
@@ -119,12 +120,12 @@ public class RecurrenceResponseDTO {
         this.lastExecutionDate = lastExecutionDate;
     }
 
-    public Boolean getActive() {
-        return active;
+    public RecurrenceStatus getStatus() {
+        return status;
     }
 
-    public void setActive(Boolean active) {
-        this.active = active;
+    public void setStatus(RecurrenceStatus status) {
+        this.status = status;
     }
 
     public String getDescription() {
@@ -164,7 +165,7 @@ public class RecurrenceResponseDTO {
         if (o == null || getClass() != o.getClass()) return false;
 
         RecurrenceResponseDTO that = (RecurrenceResponseDTO) o;
-        return Objects.equals(getId(), that.getId()) && Objects.equals(getAmount(), that.getAmount()) && getType() == that.getType() && getFrequencyType() == that.getFrequencyType() && getExecutionType() == that.getExecutionType() && Objects.equals(getDayOne(), that.getDayOne()) && Objects.equals(getDayTwo(), that.getDayTwo()) && Objects.equals(getMonthOfTheYear(), that.getMonthOfTheYear()) && Objects.equals(getNextExecutionDate(), that.getNextExecutionDate()) && Objects.equals(getLastExecutionDate(), that.getLastExecutionDate()) && Objects.equals(getActive(), that.getActive()) && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getCategory(), that.getCategory()) && Objects.equals(getWallet(), that.getWallet());
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getAmount(), that.getAmount()) && getType() == that.getType() && getFrequencyType() == that.getFrequencyType() && getExecutionType() == that.getExecutionType() && Objects.equals(getDayOne(), that.getDayOne()) && Objects.equals(getDayTwo(), that.getDayTwo()) && Objects.equals(getMonthOfTheYear(), that.getMonthOfTheYear()) && Objects.equals(getNextExecutionDate(), that.getNextExecutionDate()) && Objects.equals(getLastExecutionDate(), that.getLastExecutionDate()) && getStatus() == that.getStatus() && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getCategory(), that.getCategory()) && Objects.equals(getWallet(), that.getWallet());
     }
 
     @Override
@@ -179,7 +180,7 @@ public class RecurrenceResponseDTO {
         result = 31 * result + Objects.hashCode(getMonthOfTheYear());
         result = 31 * result + Objects.hashCode(getNextExecutionDate());
         result = 31 * result + Objects.hashCode(getLastExecutionDate());
-        result = 31 * result + Objects.hashCode(getActive());
+        result = 31 * result + Objects.hashCode(getStatus());
         result = 31 * result + Objects.hashCode(getDescription());
         result = 31 * result + Objects.hashCode(getCategory());
         result = 31 * result + Objects.hashCode(getWallet());

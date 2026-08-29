@@ -8,4 +8,6 @@ import java.util.UUID;
 
 @Repository
 public interface WebhookEventRepository extends JpaRepository<WebhookEvent, UUID> {
+
+    boolean existsByExternalEventId(String externalEventId);
 }

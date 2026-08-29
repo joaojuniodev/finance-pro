@@ -1,20 +1,17 @@
 package br.com.financepro.financePro.recurrence.service;
 
 import br.com.financepro.financePro.common.enums.ExecutionType;
-import br.com.financepro.financePro.common.enums.RecurrenceSort;
 import br.com.financepro.financePro.common.enums.RecurrenceType;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.mapper.recurrence.RecurrenceMapper;
-import br.com.financepro.financePro.recurrence.dto.AllRecurrenceResponseDTO;
-import br.com.financepro.financePro.recurrence.dto.RecurrenceResponseDTO;
-import br.com.financepro.financePro.recurrence.model.Recurrence;
+import br.com.financepro.financePro.recurrence.common.enums.RecurrenceStatus;
+import br.com.financepro.financePro.recurrence.dto.response.AllRecurrenceResponseDTO;
+import br.com.financepro.financePro.recurrence.dto.response.RecurrenceResponseDTO;
 import br.com.financepro.financePro.recurrence.repository.RecurrenceRepository;
 import br.com.financepro.financePro.recurrence.repository.spec.RecurrenceSpecification;
-import br.com.financepro.financePro.recurrence.service.params.RecurrenceSearchParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -33,13 +30,14 @@ public class RecurrenceReadService {
     @Autowired
     private RecurrenceMapper mapper;
 
-    public List<RecurrenceResponseDTO> getAll(RecurrenceSearchParams params) {
+    public List<RecurrenceResponseDTO> getAll(UUID accountId) {
         log.info("Getting All Recurrences");
 
-        RecurrenceSpecification spec = new RecurrenceSpecification(params);
+        RecurrenceSpecification spec = new RecurrenceSpecification();
+        spec.addSpecifications(accountId);
 
         return repository
-            .findAll(spec.apply(), sort(params.sort()))
+            .findAll(spec.apply())
             .stream()
             .map(entity -> mapper.toResponse(entity))
             .toList();
@@ -48,43 +46,41 @@ public class RecurrenceReadService {
     public AllRecurrenceResponseDTO getOverview(UUID accountId) {
         log.info("Getting Overview this Recurrence");
 
-        RecurrenceSearchParams params = new RecurrenceSearchParams(accountId, null, null, null, null, null);
-        RecurrenceSpecification spec = new RecurrenceSpecification(params);
+        RecurrenceSpecification spec = new RecurrenceSpecification();
+        spec.addSpecifications(accountId);
 
-        var recurrences = repository.findAll(spec.apply());
+        var recurrences = repository
+            .findAll(spec.apply())
+            .stream()
+            .map(entity -> mapper.toResponse(entity))
+            .toList();
+
+        final Integer totalActives = (int) recurrences.stream()
+            .filter(rec -> rec.getStatus().equals(RecurrenceStatus.ACTIVE))
+            .count();
 
         final BigDecimal totalIncomeAmount = recurrences.stream()
-            .filter(rec -> rec.getActive().equals(Boolean.TRUE))
+            .filter(rec -> rec.getStatus().equals(RecurrenceStatus.ACTIVE))
             .filter(rec -> rec.getType().equals(RecurrenceType.CREDIT))
-            .map(Recurrence::getAmount)
+            .map(RecurrenceResponseDTO::getAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         final BigDecimal totalExpenseAmount = recurrences.stream()
-            .filter(rec -> rec.getActive().equals(Boolean.TRUE))
+            .filter(rec -> rec.getStatus().equals(RecurrenceStatus.ACTIVE))
             .filter(rec -> rec.getType().equals(RecurrenceType.DEBIT))
-            .map(Recurrence::getAmount)
+            .map(RecurrenceResponseDTO::getAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return mapper.getAllRecurrenceResponseDTO(
-            (long) recurrences.size(),
+            totalActives,
+            recurrences,
             getRecurrencesDueToday(),
             getRecurrencesOverdue(),
             getRecurrencesUpcoming(),
+            getHighlightsOfTheWeek(recurrences),
             totalIncomeAmount,
             totalExpenseAmount
         );
-    }
-
-    private Sort sort(RecurrenceSort sortType) {
-        if (sortType == null) {
-            return Sort.by("nextExecutionDate").ascending();
-        }
-
-        return switch (sortType) {
-            case NEAREST_DATE -> Sort.by("nextExecutionDate").ascending();
-            case HIGHEST_AMOUNT -> Sort.by("amount").descending();
-            case ALPHABETICAL -> Sort.by("description").ascending();
-        };
     }
 
     private List<RecurrenceResponseDTO> getRecurrencesDueToday() {
@@ -103,9 +99,17 @@ public class RecurrenceReadService {
 
     private List<RecurrenceResponseDTO> getRecurrencesUpcoming() {
         LocalDate today = LocalDate.now();
-        return repository.findUpcomingRecurrences(today, today.plusDays(6))
+        return repository.findUpcomingRecurrences(today, today.plusMonths(1))
             .stream()
             .map(mapper::toResponse)
+            .toList();
+    }
+
+    private List<RecurrenceResponseDTO> getHighlightsOfTheWeek(List<RecurrenceResponseDTO> recurrences) {
+        LocalDate startDate = LocalDate.now().plusDays(7);
+        return recurrences.stream()
+            .filter(rec -> rec.getStatus().equals(RecurrenceStatus.ACTIVE))
+            .filter(rec -> rec.getNextExecutionDate().isBefore(startDate))
             .toList();
     }
 

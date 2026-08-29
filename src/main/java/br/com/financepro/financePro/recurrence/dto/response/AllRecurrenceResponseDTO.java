@@ -1,4 +1,4 @@
-package br.com.financepro.financePro.recurrence.dto;
+package br.com.financepro.financePro.recurrence.dto.response;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -6,22 +6,32 @@ import java.util.Objects;
 
 public class AllRecurrenceResponseDTO {
 
-    private Long totalRegistered;
+    private Integer totalActives;
     private BigDecimal totalIncomeAmount;
     private BigDecimal totalExpenseAmount;
     private BigDecimal monthlyImpact;
+    private List<RecurrenceResponseDTO> recurrences;
     private List<RecurrenceResponseDTO> recurrencesDueToday;
     private List<RecurrenceResponseDTO> recurrencesOverdue;
     private List<RecurrenceResponseDTO> recurrencesUpcoming;
+    private List<RecurrenceResponseDTO> recurrencesHighlightsOfTheWeek;
 
     public AllRecurrenceResponseDTO() {}
 
-    public Long getTotalRegistered() {
-        return totalRegistered;
+    public Integer getTotalActives() {
+        return totalActives;
     }
 
-    public void setTotalRegistered(Long totalRegistered) {
-        this.totalRegistered = totalRegistered;
+    public void setTotalActives(Integer totalActives) {
+        this.totalActives = totalActives;
+    }
+
+    public List<RecurrenceResponseDTO> getRecurrences() {
+        return recurrences;
+    }
+
+    public void setRecurrences(List<RecurrenceResponseDTO> recurrences) {
+        this.recurrences = recurrences;
     }
 
     public BigDecimal getTotalIncomeAmount() {
@@ -72,23 +82,33 @@ public class AllRecurrenceResponseDTO {
         this.recurrencesUpcoming = recurrencesUpcoming;
     }
 
+    public List<RecurrenceResponseDTO> getRecurrencesHighlightsOfTheWeek() {
+        return recurrencesHighlightsOfTheWeek;
+    }
+
+    public void setRecurrencesHighlightsOfTheWeek(List<RecurrenceResponseDTO> recurrencesHighlightsOfTheWeek) {
+        this.recurrencesHighlightsOfTheWeek = recurrencesHighlightsOfTheWeek;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
 
         AllRecurrenceResponseDTO that = (AllRecurrenceResponseDTO) o;
-        return Objects.equals(getTotalRegistered(), that.getTotalRegistered()) && Objects.equals(getTotalIncomeAmount(), that.getTotalIncomeAmount()) && Objects.equals(getTotalExpenseAmount(), that.getTotalExpenseAmount()) && Objects.equals(getMonthlyImpact(), that.getMonthlyImpact()) && Objects.equals(getRecurrencesDueToday(), that.getRecurrencesDueToday()) && Objects.equals(getRecurrencesOverdue(), that.getRecurrencesOverdue()) && Objects.equals(getRecurrencesUpcoming(), that.getRecurrencesUpcoming());
+        return Objects.equals(getTotalActives(), that.getTotalActives()) && Objects.equals(getTotalIncomeAmount(), that.getTotalIncomeAmount()) && Objects.equals(getTotalExpenseAmount(), that.getTotalExpenseAmount()) && Objects.equals(getMonthlyImpact(), that.getMonthlyImpact()) && Objects.equals(getRecurrences(), that.getRecurrences()) && Objects.equals(getRecurrencesDueToday(), that.getRecurrencesDueToday()) && Objects.equals(getRecurrencesOverdue(), that.getRecurrencesOverdue()) && Objects.equals(getRecurrencesUpcoming(), that.getRecurrencesUpcoming()) && Objects.equals(getRecurrencesHighlightsOfTheWeek(), that.getRecurrencesHighlightsOfTheWeek());
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hashCode(getTotalRegistered());
+        int result = Objects.hashCode(getTotalActives());
         result = 31 * result + Objects.hashCode(getTotalIncomeAmount());
         result = 31 * result + Objects.hashCode(getTotalExpenseAmount());
         result = 31 * result + Objects.hashCode(getMonthlyImpact());
+        result = 31 * result + Objects.hashCode(getRecurrences());
         result = 31 * result + Objects.hashCode(getRecurrencesDueToday());
         result = 31 * result + Objects.hashCode(getRecurrencesOverdue());
         result = 31 * result + Objects.hashCode(getRecurrencesUpcoming());
+        result = 31 * result + Objects.hashCode(getRecurrencesHighlightsOfTheWeek());
         return result;
     }
 }

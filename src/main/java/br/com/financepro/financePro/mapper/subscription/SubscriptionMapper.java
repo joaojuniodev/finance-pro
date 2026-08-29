@@ -3,6 +3,8 @@ package br.com.financepro.financePro.mapper.subscription;
 import br.com.financepro.financePro.account.repository.AccountRepository;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.mapper.ObjectMapper;
+import br.com.financepro.financePro.mapper.account.AccountMapper;
+import br.com.financepro.financePro.mapper.plan.PlanMapper;
 import br.com.financepro.financePro.plan.repository.PlanRepository;
 import br.com.financepro.financePro.subscription.dto.request.SubscriptionRequestDTO;
 import br.com.financepro.financePro.subscription.dto.response.SubscriptionResponseDTO;
@@ -18,6 +20,12 @@ public class SubscriptionMapper implements ObjectMapper<Subscription, Subscripti
 
     @Autowired
     private PlanRepository planRepository;
+
+    @Autowired
+    private AccountMapper accountMapper;
+
+    @Autowired
+    private PlanMapper planMapper;
 
     @Override
     public Subscription toEntity(SubscriptionRequestDTO request) {
@@ -42,6 +50,8 @@ public class SubscriptionMapper implements ObjectMapper<Subscription, Subscripti
 
     @Override
     public SubscriptionResponseDTO toResponse(Subscription entity) {
+        var account = accountMapper.toResponse(entity.getAccount());
+        var plan = planMapper.toResponse(entity.getPlan());
         return new SubscriptionResponseDTO(
             entity.getId(),
             entity.getStatus(),
@@ -55,8 +65,8 @@ public class SubscriptionMapper implements ObjectMapper<Subscription, Subscripti
             entity.getEndedAt(),
             entity.getCreatedAt(),
             entity.getUpdatedAt(),
-            entity.getAccount(),
-            entity.getPlan()
+            account,
+            plan
         );
     }
 }

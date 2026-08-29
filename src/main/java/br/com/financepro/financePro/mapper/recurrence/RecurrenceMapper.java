@@ -6,10 +6,10 @@ import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.mapper.ObjectMapper;
 import br.com.financepro.financePro.mapper.category.CategoryMapper;
 import br.com.financepro.financePro.mapper.wallet.WalletMapper;
-import br.com.financepro.financePro.recurrence.dto.AllRecurrenceResponseDTO;
-import br.com.financepro.financePro.recurrence.dto.RecurrenceRequestDTO;
-import br.com.financepro.financePro.recurrence.dto.RecurrenceResponseDTO;
-import br.com.financepro.financePro.recurrence.dto.RecurrenceSummaryDTO;
+import br.com.financepro.financePro.recurrence.dto.response.AllRecurrenceResponseDTO;
+import br.com.financepro.financePro.recurrence.dto.request.RecurrenceRequestDTO;
+import br.com.financepro.financePro.recurrence.dto.response.RecurrenceResponseDTO;
+import br.com.financepro.financePro.recurrence.dto.response.RecurrenceSummaryDTO;
 import br.com.financepro.financePro.recurrence.model.Recurrence;
 import br.com.financepro.financePro.wallet.repository.WalletRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +48,7 @@ public class RecurrenceMapper implements ObjectMapper<Recurrence, RecurrenceResp
             request.getId(),
             request.getAmount(),
             request.getType(),
+            request.getStatus(),
             request.getFrequencyType(),
             request.getExecutionType(),
             request.getDayOne(),
@@ -75,7 +76,7 @@ public class RecurrenceMapper implements ObjectMapper<Recurrence, RecurrenceResp
             entity.getMonthOfTheYear(),
             entity.getNextExecutionDate(),
             entity.getLastExecutionDate(),
-            entity.getActive(),
+            entity.getStatus(),
             entity.getDescription(),
             category,
             wallet
@@ -94,21 +95,25 @@ public class RecurrenceMapper implements ObjectMapper<Recurrence, RecurrenceResp
     }
 
     public AllRecurrenceResponseDTO getAllRecurrenceResponseDTO(
-        Long totalRegistered,
+        Integer totalActives,
+        List<RecurrenceResponseDTO> recurrences,
         List<RecurrenceResponseDTO> recurrencesDueToday,
         List<RecurrenceResponseDTO> recurrencesOverdue,
         List<RecurrenceResponseDTO> recurrencesUpcoming,
+        List<RecurrenceResponseDTO> recurrencesHighlightsOfTheWeek,
         BigDecimal totalIncomeAmount,
         BigDecimal totalExpenseAmount
     ) {
         AllRecurrenceResponseDTO response = new AllRecurrenceResponseDTO();
-        response.setTotalRegistered(totalRegistered);
+        response.setTotalActives(totalActives);
         response.setTotalIncomeAmount(totalIncomeAmount);
         response.setTotalExpenseAmount(totalExpenseAmount);
         response.setMonthlyImpact(totalIncomeAmount.subtract(totalExpenseAmount));
+        response.setRecurrences(recurrences);
         response.setRecurrencesDueToday(recurrencesDueToday);
         response.setRecurrencesOverdue(recurrencesOverdue);
         response.setRecurrencesUpcoming(recurrencesUpcoming);
+        response.setRecurrencesHighlightsOfTheWeek(recurrencesHighlightsOfTheWeek);
         return response;
     }
 }

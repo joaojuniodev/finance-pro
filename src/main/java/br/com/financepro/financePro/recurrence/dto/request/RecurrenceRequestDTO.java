@@ -1,10 +1,12 @@
-package br.com.financepro.financePro.recurrence.dto;
+package br.com.financepro.financePro.recurrence.dto.request;
 
 import br.com.financepro.financePro.common.enums.ExecutionType;
 import br.com.financepro.financePro.common.enums.FrequencyType;
 import br.com.financepro.financePro.common.enums.RecurrenceType;
+import br.com.financepro.financePro.recurrence.common.enums.RecurrenceStatus;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -15,6 +17,7 @@ public class RecurrenceRequestDTO {
     private RecurrenceType type;
     private FrequencyType frequencyType;
     private ExecutionType executionType;
+    private RecurrenceStatus status;
     private Integer dayOne;
     private Integer dayTwo;
     private Integer monthOfTheYear;
@@ -22,6 +25,8 @@ public class RecurrenceRequestDTO {
     private Boolean dayOneAlreadyOccurred;
     private Boolean dayTwoAlreadyOccurred;
     private Boolean monthOfTheYearAlreadyOccurred;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private UUID categoryId;
     private UUID walletId;
     private UUID accountId;
@@ -92,6 +97,14 @@ public class RecurrenceRequestDTO {
         this.description = description;
     }
 
+    public RecurrenceStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(RecurrenceStatus status) {
+        this.status = status;
+    }
+
     public Integer getMonthOfTheYear() {
         return monthOfTheYear;
     }
@@ -124,6 +137,22 @@ public class RecurrenceRequestDTO {
         this.monthOfTheYearAlreadyOccurred = monthOfTheYearAlreadyOccurred;
     }
 
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
     public UUID getCategoryId() {
         return categoryId;
     }
@@ -153,7 +182,7 @@ public class RecurrenceRequestDTO {
         if (o == null || getClass() != o.getClass()) return false;
 
         RecurrenceRequestDTO that = (RecurrenceRequestDTO) o;
-        return Objects.equals(getId(), that.getId()) && Objects.equals(getAmount(), that.getAmount()) && getType() == that.getType() && getFrequencyType() == that.getFrequencyType() && getExecutionType() == that.getExecutionType() && Objects.equals(getDayOne(), that.getDayOne()) && Objects.equals(getDayTwo(), that.getDayTwo()) && Objects.equals(getMonthOfTheYear(), that.getMonthOfTheYear()) && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getDayOneAlreadyOccurred(), that.getDayOneAlreadyOccurred()) && Objects.equals(getDayTwoAlreadyOccurred(), that.getDayTwoAlreadyOccurred()) && Objects.equals(getMonthOfTheYearAlreadyOccurred(), that.getMonthOfTheYearAlreadyOccurred()) && Objects.equals(getCategoryId(), that.getCategoryId()) && Objects.equals(getWalletId(), that.getWalletId()) && Objects.equals(getAccountId(), that.getAccountId());
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getAmount(), that.getAmount()) && getType() == that.getType() && getFrequencyType() == that.getFrequencyType() && getExecutionType() == that.getExecutionType() && getStatus() == that.getStatus() && Objects.equals(getDayOne(), that.getDayOne()) && Objects.equals(getDayTwo(), that.getDayTwo()) && Objects.equals(getMonthOfTheYear(), that.getMonthOfTheYear()) && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getDayOneAlreadyOccurred(), that.getDayOneAlreadyOccurred()) && Objects.equals(getDayTwoAlreadyOccurred(), that.getDayTwoAlreadyOccurred()) && Objects.equals(getMonthOfTheYearAlreadyOccurred(), that.getMonthOfTheYearAlreadyOccurred()) && Objects.equals(getStartDate(), that.getStartDate()) && Objects.equals(getEndDate(), that.getEndDate()) && Objects.equals(getCategoryId(), that.getCategoryId()) && Objects.equals(getWalletId(), that.getWalletId()) && Objects.equals(getAccountId(), that.getAccountId());
     }
 
     @Override
@@ -163,6 +192,7 @@ public class RecurrenceRequestDTO {
         result = 31 * result + Objects.hashCode(getType());
         result = 31 * result + Objects.hashCode(getFrequencyType());
         result = 31 * result + Objects.hashCode(getExecutionType());
+        result = 31 * result + Objects.hashCode(getStatus());
         result = 31 * result + Objects.hashCode(getDayOne());
         result = 31 * result + Objects.hashCode(getDayTwo());
         result = 31 * result + Objects.hashCode(getMonthOfTheYear());
@@ -170,6 +200,8 @@ public class RecurrenceRequestDTO {
         result = 31 * result + Objects.hashCode(getDayOneAlreadyOccurred());
         result = 31 * result + Objects.hashCode(getDayTwoAlreadyOccurred());
         result = 31 * result + Objects.hashCode(getMonthOfTheYearAlreadyOccurred());
+        result = 31 * result + Objects.hashCode(getStartDate());
+        result = 31 * result + Objects.hashCode(getEndDate());
         result = 31 * result + Objects.hashCode(getCategoryId());
         result = 31 * result + Objects.hashCode(getWalletId());
         result = 31 * result + Objects.hashCode(getAccountId());

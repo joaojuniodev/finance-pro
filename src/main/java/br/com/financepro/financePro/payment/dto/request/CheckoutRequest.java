@@ -1,11 +1,11 @@
 package br.com.financepro.financePro.payment.dto.request;
 
-import java.math.BigDecimal;
+import jakarta.validation.constraints.NotNull;
+
+import java.util.UUID;
 
 public record CheckoutRequest(
-    String title,
-    String description,
-    Integer quantity,
-    BigDecimal unitPrice
+    @NotNull
+    UUID planId
 ){
 }

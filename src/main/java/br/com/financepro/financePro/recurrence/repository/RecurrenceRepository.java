@@ -21,7 +21,7 @@ public interface RecurrenceRepository extends JpaRepository<Recurrence, UUID>, J
     @Query("""
         SELECT r
         FROM Recurrence r
-        WHERE r.active = true
+        WHERE r.status = ACTIVE
           AND r.nextExecutionDate <= :date
     """)
     List<Recurrence> findPendingAutomaticRecurrences(
@@ -32,7 +32,7 @@ public interface RecurrenceRepository extends JpaRepository<Recurrence, UUID>, J
     @Query("""
         SELECT r
         FROM Recurrence r
-        WHERE r.active = true
+        WHERE r.status = ACTIVE
           AND r.executionType = :executionType
           AND r.nextExecutionDate = :date
     """)
@@ -44,7 +44,7 @@ public interface RecurrenceRepository extends JpaRepository<Recurrence, UUID>, J
     @Query("""
         SELECT r
         FROM Recurrence r
-        WHERE r.active = true
+        WHERE r.status = ACTIVE
           AND r.nextExecutionDate < :date
     """)
     List<Recurrence> findDelayedRecurrences(@Param("date") LocalDate date);
@@ -52,7 +52,8 @@ public interface RecurrenceRepository extends JpaRepository<Recurrence, UUID>, J
     @Query("""
         SELECT r
         FROM Recurrence r
-        WHERE r.active = true
+        WHERE r.status = ACTIVE
+          OR r.status = PAUSED
           AND r.nextExecutionDate BETWEEN :startDate AND :endDate
     """)
     List<Recurrence> findUpcomingRecurrences(

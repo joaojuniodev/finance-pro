@@ -60,6 +60,9 @@ CREATE TABLE recurrences (
     -- Enum ExecutionType (ex: AUTOMATIC, MANUALLY)
     execution_type  VARCHAR(50),
 
+    -- Enum RecurrenceStatus (ex: ACTIVE, PAUSED, ENDED)
+    status          VARCHAR(50),
+
     -- day_one e day_two: dias do mês/semana de cobrança
     -- Exemplo: cobrança nos dias 5 e 20 do mês
     day_one             INTEGER,

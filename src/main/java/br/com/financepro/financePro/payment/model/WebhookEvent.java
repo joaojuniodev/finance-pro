@@ -22,7 +22,7 @@ public class WebhookEvent {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "external_event_id", nullable = false, unique = true)
+    @Column(name = "external_event_id", nullable = false)
     private String externalEventId;
 
     @Column(nullable = false)

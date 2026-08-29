@@ -1,6 +1,9 @@
 package br.com.financepro.financePro.subscription.dto.response;
 
+import br.com.financepro.financePro.account.dto.response.AccountResponseDTO;
 import br.com.financepro.financePro.account.model.Account;
+import br.com.financepro.financePro.plan.dto.request.PlanRequestDTO;
+import br.com.financepro.financePro.plan.dto.response.PlanResponseDTO;
 import br.com.financepro.financePro.plan.model.Plan;
 import br.com.financepro.financePro.subscription.enums.SubscriptionStatus;
 
@@ -23,12 +26,12 @@ public class SubscriptionResponseDTO {
     private LocalDate endedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private Account account;
-    private Plan plan;
+    private AccountResponseDTO account;
+    private PlanResponseDTO plan;
 
     public SubscriptionResponseDTO() {}
 
-    public SubscriptionResponseDTO(UUID id, SubscriptionStatus status, String externalSubscriptionId, String externalCustomerId, LocalDateTime startedAt, LocalDate currentPeriodStart, LocalDate currentPeriodEnd, LocalDate canceledAt, Boolean cancelAtPeriodEnd, LocalDate endedAt, LocalDateTime createdAt, LocalDateTime updatedAt, Account account, Plan plan) {
+    public SubscriptionResponseDTO(UUID id, SubscriptionStatus status, String externalSubscriptionId, String externalCustomerId, LocalDateTime startedAt, LocalDate currentPeriodStart, LocalDate currentPeriodEnd, LocalDate canceledAt, Boolean cancelAtPeriodEnd, LocalDate endedAt, LocalDateTime createdAt, LocalDateTime updatedAt, AccountResponseDTO account, PlanResponseDTO plan) {
         this.id = id;
         this.status = status;
         this.externalSubscriptionId = externalSubscriptionId;
@@ -141,19 +144,19 @@ public class SubscriptionResponseDTO {
         this.updatedAt = updatedAt;
     }
 
-    public Account getAccount() {
+    public AccountResponseDTO getAccount() {
         return account;
     }
 
-    public void setAccount(Account account) {
+    public void setAccount(AccountResponseDTO account) {
         this.account = account;
     }
 
-    public Plan getPlan() {
+    public PlanResponseDTO getPlan() {
         return plan;
     }
 
-    public void setPlan(Plan plan) {
+    public void setPlan(PlanResponseDTO plan) {
         this.plan = plan;
     }
 

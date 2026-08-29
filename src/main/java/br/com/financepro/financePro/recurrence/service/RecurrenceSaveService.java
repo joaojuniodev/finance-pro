@@ -5,8 +5,10 @@ import br.com.financepro.financePro.common.enums.FrequencyType;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.common.exceptions.RecurrenceSaveException;
 import br.com.financepro.financePro.mapper.recurrence.RecurrenceMapper;
-import br.com.financepro.financePro.recurrence.dto.RecurrenceRequestDTO;
-import br.com.financepro.financePro.recurrence.dto.RecurrenceResponseDTO;
+import br.com.financepro.financePro.recurrence.common.enums.RecurrenceStatus;
+import br.com.financepro.financePro.recurrence.dto.request.RecurrenceRequestDTO;
+import br.com.financepro.financePro.recurrence.dto.response.RecurrenceConfirmResponseDTO;
+import br.com.financepro.financePro.recurrence.dto.response.RecurrenceResponseDTO;
 import br.com.financepro.financePro.recurrence.model.Recurrence;
 import br.com.financepro.financePro.recurrence.repository.RecurrenceRepository;
 import br.com.financepro.financePro.transaction.service.TransactionExecutionService;
@@ -30,6 +32,9 @@ public class RecurrenceSaveService {
     private RecurrenceRepository repository;
 
     @Autowired
+    private RecurrenceExecutionService executionService;
+
+    @Autowired
     private TransactionExecutionService transactionExecutionService;
 
     @Autowired
@@ -42,7 +47,6 @@ public class RecurrenceSaveService {
         validateSave(recurrence, today);
 
         var entity = mapper.toEntity(recurrence);
-        entity.setActive(true);
         entity.setLastExecutionDate(null);
         entity.setNextExecutionDate(calculateFirstExecutionDate(entity, today, entity.getLastExecutionDate()));
 
@@ -85,6 +89,37 @@ public class RecurrenceSaveService {
 
         var recurrenceUpdated = repository.save(recurrenceInDatabase);
         return mapper.toResponse(recurrenceUpdated);
+    }
+
+    @Transactional
+    public void confirm(UUID recurrenceId) {
+        var entity = repository.findById(recurrenceId)
+            .orElseThrow(() -> new NotFoundException("Not found this Id: " + recurrenceId));
+        executionService.execute(entity, LocalDate.now(), true);
+    }
+
+    @Transactional
+    public void pause(UUID recurrenceId) {
+        var entity = repository.findById(recurrenceId)
+            .orElseThrow(() -> new NotFoundException("Not found this Id: " + recurrenceId));
+        entity.setStatus(RecurrenceStatus.PAUSED);
+        repository.save(entity);
+    }
+
+    @Transactional
+    public void activate(UUID recurrenceId) {
+        var entity = repository.findById(recurrenceId)
+            .orElseThrow(() -> new NotFoundException("Not found this Id: " + recurrenceId));
+        entity.setStatus(RecurrenceStatus.ACTIVE);
+        repository.save(entity);
+    }
+
+    @Transactional
+    public void finish(UUID recurrenceId) {
+        var entity = repository.findById(recurrenceId)
+            .orElseThrow(() -> new NotFoundException("Not found this Id: " + recurrenceId));
+        entity.setStatus(RecurrenceStatus.ENDED);
+        repository.save(entity);
     }
 
     // TODO: ao deletar recorrência, as transações referentes também devem ser deletadas.

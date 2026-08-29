@@ -56,11 +56,11 @@ public class Subscription {
     private LocalDateTime updatedAt;
 
     @OneToOne
-    @JoinColumn(name = "account_id")
+    @JoinColumn(name = "account_id", unique = true)
     private Account account;
 
-    @OneToOne
-    @JoinColumn(name = "plan_id")
+    @ManyToOne
+    @JoinColumn(name = "plan_id", nullable = false)
     private Plan plan;
 
     @OneToMany(mappedBy = "subscription")

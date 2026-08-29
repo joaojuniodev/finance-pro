@@ -1,7 +1,9 @@
 package br.com.financepro.financePro.payment.model;
 
+import br.com.financepro.financePro.account.model.Account;
 import br.com.financepro.financePro.payment.enums.PaymentStatus;
 import br.com.financepro.financePro.payment.enums.PaymentStatusDetail;
+import br.com.financepro.financePro.plan.model.Plan;
 import br.com.financepro.financePro.subscription.model.Subscription;
 import jakarta.persistence.*;
 
@@ -17,6 +19,9 @@ public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    @Column(name = "external_preference_id")
+    private String externalPreferenceId;
 
     @Column(name = "external_payment_id")
     private String externalPaymentId;
@@ -45,6 +50,14 @@ public class Payment {
     private LocalDateTime updatedAt;
 
     @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
+
+    @ManyToOne
+    @JoinColumn(name = "plan_id", nullable = false)
+    private Plan plan;
+
+    @ManyToOne
     @JoinColumn(name = "subscription_id")
     private Subscription subscription;
 
@@ -56,6 +69,14 @@ public class Payment {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public String getExternalPreferenceId() {
+        return externalPreferenceId;
+    }
+
+    public void setExternalPreferenceId(String externalPreferenceId) {
+        this.externalPreferenceId = externalPreferenceId;
     }
 
     public String getExternalPaymentId() {
@@ -120,6 +141,22 @@ public class Payment {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+
+    public Plan getPlan() {
+        return plan;
+    }
+
+    public void setPlan(Plan plan) {
+        this.plan = plan;
     }
 
     public Subscription getSubscription() {

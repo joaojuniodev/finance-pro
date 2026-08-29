@@ -3,6 +3,7 @@ package br.com.financepro.financePro.payment.controller;
 import br.com.financepro.financePro.infrastructure.payment.mercadopago.webhook.MercadoPagoWebHookSignatureValidator;
 import br.com.financepro.financePro.payment.dto.request.MercadoPagoWebHookRequest;
 import br.com.financepro.financePro.payment.webhook.PaymentWebHookService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,13 +12,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/webhooks/mercadopago")
 public class MercadoPagoWebHookController {
 
-    private final PaymentWebHookService paymentWebHookService;
-    private final MercadoPagoWebHookSignatureValidator signatureValidator;
+    @Autowired
+    private PaymentWebHookService paymentWebHookService;
 
-    public MercadoPagoWebHookController(PaymentWebHookService paymentWebHookService, MercadoPagoWebHookSignatureValidator signatureValidator) {
-        this.paymentWebHookService = paymentWebHookService;
-        this.signatureValidator = signatureValidator;
-    }
+    @Autowired
+    private MercadoPagoWebHookSignatureValidator signatureValidator;
 
     @PostMapping
     public ResponseEntity<Void> receiveWebHook(

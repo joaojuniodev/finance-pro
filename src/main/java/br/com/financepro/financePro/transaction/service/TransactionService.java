@@ -8,9 +8,8 @@ import br.com.financepro.financePro.common.enums.TransactionStatus;
 import br.com.financepro.financePro.common.enums.TransactionType;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.mapper.transaction.TransactionMapper;
-import br.com.financepro.financePro.recurrence.dto.RecurrenceResponseDTO;
+import br.com.financepro.financePro.recurrence.dto.response.RecurrenceResponseDTO;
 import br.com.financepro.financePro.recurrence.service.RecurrenceReadService;
-import br.com.financepro.financePro.recurrence.service.params.RecurrenceSearchParams;
 import br.com.financepro.financePro.transaction.dto.request.TransactionRequestDTO;
 import br.com.financepro.financePro.transaction.dto.response.AllTransactionResponseDTO;
 import br.com.financepro.financePro.transaction.dto.response.TransactionResponseDTO;
@@ -83,7 +82,7 @@ public class TransactionService {
             .toList();
 
         var account = accountService.getById(accountId);
-        var recurrences = recurrenceService.getAll(new RecurrenceSearchParams(accountId, null, null, null, null, null));
+        var recurrences = recurrenceService.getAll(accountId);
 
         BigDecimal commitment = recurrences.stream()
             .filter(rec -> rec.getType() == RecurrenceType.DEBIT)
@@ -135,6 +134,7 @@ public class TransactionService {
         entity.setDescription(transaction.getDescription());
         entity.setRegisteredAt(transaction.getRegisteredAt());
         entity.setType(transaction.getType());
+        entity.setStatus(transaction.getStatus());
         entity.setWallet(wallet);
         entity.setCategory(category);
 

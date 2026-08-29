@@ -1,4 +1,4 @@
-package br.com.financepro.financePro.recurrence.dto;
+package br.com.financepro.financePro.recurrence.dto.response;
 
 import br.com.financepro.financePro.category.dto.CategoryResponseDTO;
 import br.com.financepro.financePro.common.enums.RecurrenceType;

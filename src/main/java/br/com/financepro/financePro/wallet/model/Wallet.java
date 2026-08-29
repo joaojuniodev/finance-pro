@@ -2,6 +2,7 @@ package br.com.financepro.financePro.wallet.model;
 
 import br.com.financepro.financePro.account.model.Account;
 import br.com.financepro.financePro.bank.model.Bank;
+import br.com.financepro.financePro.common.enums.WalletType;
 import br.com.financepro.financePro.goal.model.Goal;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -30,6 +31,12 @@ public class Wallet {
     @Column(name = "card_digits", length = 4)
     private String cardDigits;
 
+    @Enumerated(EnumType.STRING)
+    private WalletType type;
+
+    @Column
+    private String color;
+
     @OneToOne
     @JoinColumn(name = "goal_id")
     private Goal goal;
@@ -44,12 +51,14 @@ public class Wallet {
 
     public Wallet() {}
 
-    public Wallet(UUID id, String name, String description, BigDecimal balance, String cardDigits, Goal goal, Account account, Bank bank) {
+    public Wallet(UUID id, String name, String description, BigDecimal balance, String cardDigits, WalletType type, String color, Goal goal, Account account, Bank bank) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.balance = balance;
         this.cardDigits = cardDigits;
+        this.type = type;
+        this.color = color;
         this.goal = goal;
         this.account = account;
         this.bank = bank;
@@ -116,6 +125,22 @@ public class Wallet {
 
     public void setBank(Bank bank) {
         this.bank = bank;
+    }
+
+    public WalletType getType() {
+        return type;
+    }
+
+    public void setType(WalletType type) {
+        this.type = type;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 
     @JsonIgnore

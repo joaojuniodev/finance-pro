@@ -50,6 +50,8 @@ public class WalletMapper implements ObjectMapper<Wallet, WalletResponseDTO, Wal
             request.getDescription(),
             request.getBalance(),
             request.getCardDigits(),
+            request.getType(),
+            request.getColor(),
             goal,
             account,
             bank
@@ -66,6 +68,8 @@ public class WalletMapper implements ObjectMapper<Wallet, WalletResponseDTO, Wal
             entity.getName(),
             entity.getDescription(),
             entity.getCardDigits(),
+            entity.getType(),
+            entity.getColor(),
             entity.getBalance(),
             bank
         );

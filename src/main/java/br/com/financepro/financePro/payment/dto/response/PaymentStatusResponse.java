@@ -6,6 +6,7 @@ public record PaymentStatusResponse(
     String paymentId,
     String status,
     String statusDetail,
-    BigDecimal transactionAmount
+    BigDecimal transactionAmount,
+    String externalReference
 ) {
 }

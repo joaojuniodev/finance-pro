@@ -5,6 +5,7 @@ import br.com.financepro.financePro.category.model.Category;
 import br.com.financepro.financePro.common.enums.ExecutionType;
 import br.com.financepro.financePro.common.enums.FrequencyType;
 import br.com.financepro.financePro.common.enums.RecurrenceType;
+import br.com.financepro.financePro.recurrence.common.enums.RecurrenceStatus;
 import br.com.financepro.financePro.wallet.model.Wallet;
 import jakarta.persistence.*;
 
@@ -36,6 +37,10 @@ public class Recurrence {
     @Column(name = "execution_type")
     private ExecutionType executionType;
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    private RecurrenceStatus status;
+
     @Column(name = "day_one")
     private Integer dayOne;
 
@@ -50,9 +55,6 @@ public class Recurrence {
 
     @Column(name = "last_execution_date")
     private LocalDate lastExecutionDate;
-
-    @Column
-    private Boolean active = true;
 
     @Column(nullable = false, length = 200)
     private String description;
@@ -71,10 +73,11 @@ public class Recurrence {
 
     public Recurrence() {}
 
-    public Recurrence(UUID id, BigDecimal amount, RecurrenceType type, FrequencyType frequencyType, ExecutionType executionType, Integer dayOne, Integer dayTwo, Integer monthOfTheYear, String description, Category category, Wallet wallet, Account account) {
+    public Recurrence(UUID id, BigDecimal amount, RecurrenceType type, RecurrenceStatus status, FrequencyType frequencyType, ExecutionType executionType, Integer dayOne, Integer dayTwo, Integer monthOfTheYear, String description, Category category, Wallet wallet, Account account) {
         this.id = id;
         this.amount = amount;
         this.type = type;
+        this.status = status;
         this.frequencyType = frequencyType;
         this.executionType = executionType;
         this.dayOne = dayOne;
@@ -158,12 +161,12 @@ public class Recurrence {
         this.lastExecutionDate = lastExecutionDate;
     }
 
-    public Boolean getActive() {
-        return active;
+    public RecurrenceStatus getStatus() {
+        return status;
     }
 
-    public void setActive(Boolean active) {
-        this.active = active;
+    public void setStatus(RecurrenceStatus status) {
+        this.status = status;
     }
 
     public String getDescription() {

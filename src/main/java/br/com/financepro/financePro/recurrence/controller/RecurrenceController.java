@@ -1,14 +1,15 @@
 package br.com.financepro.financePro.recurrence.controller;
 
 import br.com.financepro.financePro.recurrence.controller.doc.RecurrenceControllerDocs;
-import br.com.financepro.financePro.recurrence.dto.AllRecurrenceResponseDTO;
-import br.com.financepro.financePro.recurrence.dto.RecurrenceRequestDTO;
-import br.com.financepro.financePro.recurrence.dto.RecurrenceResponseDTO;
+import br.com.financepro.financePro.recurrence.dto.response.AllRecurrenceResponseDTO;
+import br.com.financepro.financePro.recurrence.dto.request.RecurrenceRequestDTO;
+import br.com.financepro.financePro.recurrence.dto.response.RecurrenceConfirmResponseDTO;
+import br.com.financepro.financePro.recurrence.dto.response.RecurrenceResponseDTO;
 import br.com.financepro.financePro.recurrence.service.RecurrenceReadService;
 import br.com.financepro.financePro.recurrence.service.RecurrenceSaveService;
-import br.com.financepro.financePro.recurrence.service.params.RecurrenceSearchParams;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,16 +27,16 @@ public class RecurrenceController implements RecurrenceControllerDocs {
     @Autowired
     private RecurrenceSaveService saveService;
 
-    @GetMapping
+    @GetMapping("/{accountId}")
     @Override
-    public ResponseEntity<List<RecurrenceResponseDTO>> getAll(@ModelAttribute RecurrenceSearchParams params) {
-        return ResponseEntity.ok().body(readService.getAll(params));
+    public ResponseEntity<List<RecurrenceResponseDTO>> getAll(@PathVariable UUID accountId) {
+        return ResponseEntity.ok().body(readService.getAll(accountId));
     }
 
-    @GetMapping("/overview/{id}")
+    @GetMapping("/overview/{accountId}")
     @Override
-    public ResponseEntity<AllRecurrenceResponseDTO> getOverview(@PathVariable UUID id) {
-        return ResponseEntity.ok().body(readService.getOverview(id));
+    public ResponseEntity<AllRecurrenceResponseDTO> getOverview(@PathVariable UUID accountId) {
+        return ResponseEntity.ok().body(readService.getOverview(accountId));
     }
 
     @GetMapping("/{id}")
@@ -54,6 +55,31 @@ public class RecurrenceController implements RecurrenceControllerDocs {
     @Override
     public ResponseEntity<RecurrenceResponseDTO> update(@RequestBody RecurrenceRequestDTO recurrence) {
         return ResponseEntity.ok().body(saveService.update(recurrence));
+    }
+
+    @PatchMapping("/confirm/{recurrenceId}")
+    @Override
+    public ResponseEntity<?> confirm(@PathVariable UUID recurrenceId) {
+        saveService.confirm(recurrenceId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/pause/{recurrenceId}")
+    public ResponseEntity<?> pause(@PathVariable UUID recurrenceId) {
+        saveService.pause(recurrenceId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/activate/{recurrenceId}")
+    public ResponseEntity<?> activate(@PathVariable UUID recurrenceId) {
+        saveService.activate(recurrenceId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/finish/{recurrenceId}")
+    public ResponseEntity<?> finish(@PathVariable UUID recurrenceId) {
+        saveService.finish(recurrenceId);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

@@ -1,9 +1,13 @@
 package br.com.financepro.financePro.payment.enums;
 
 public enum PaymentStatus {
-    CREATED,
-    UPDATED,
     PENDING,
-    PROCESS,
-    CANCEL
+    APPROVED,
+    AUTHORIZED,
+    IN_PROCESS,
+    IN_MEDIATION,
+    REJECTED,
+    CANCELLED,
+    REFUNDED,
+    CHARGED_BACK
 }

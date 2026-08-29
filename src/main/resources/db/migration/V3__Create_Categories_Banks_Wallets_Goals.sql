@@ -191,6 +191,8 @@ CREATE TABLE wallets (
     description VARCHAR(255),
     balance     NUMERIC(19, 2),
     card_digits VARCHAR(4),
+    type        VARCHAR(50),
+    color       VARCHAR(100),
     account_id  UUID          NOT NULL,
     bank_id     UUID,
     goal_id     UUID,
