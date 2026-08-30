@@ -2,6 +2,7 @@ package br.com.financepro.financePro.account.service.analytics;
 
 import br.com.financepro.financePro.account.dto.response.AnalyticsResponseDTO;
 import br.com.financepro.financePro.account.repository.AccountRepository;
+import br.com.financepro.financePro.account.service.shared.AccountBalanceTrajectoryService;
 import br.com.financepro.financePro.account.service.shared.AccountEvolutionService;
 import br.com.financepro.financePro.account.service.shared.AccountSpendingCategoriesService;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.UUID;
 
 @Service
@@ -48,6 +50,9 @@ public class AnalyticsService {
 
     @Autowired
     private AccountEvolutionService evolutionService;
+
+    @Autowired
+    private AccountBalanceTrajectoryService trajectoryService;
 
     public AnalyticsResponseDTO getAnalytics(UUID accountId, int limit) {
 
@@ -82,6 +87,8 @@ public class AnalyticsService {
 
         var evolution = evolutionService.getWeeklyEvolution(accountId);
 
+        var trajectory = trajectoryService.getMonthlyBalanceTrajectory(accountId, YearMonth.now());
+
         final BigDecimal commitments = recurrences.stream()
             .map(RecurrenceResponseDTO::getAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -96,7 +103,8 @@ public class AnalyticsService {
             transactions,
             recurrences,
             categorySpending,
-            evolution
+            evolution,
+            trajectory
         );
     }
 }

@@ -2,6 +2,7 @@ package br.com.financepro.financePro.transaction.repository;
 
 import br.com.financepro.financePro.transaction.dto.projection.CategoryAmountProjection;
 import br.com.financepro.financePro.transaction.dto.projection.DailyFlowProjection;
+import br.com.financepro.financePro.transaction.dto.projection.DailyNetProjection;
 import br.com.financepro.financePro.transaction.model.Transaction;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -71,5 +72,23 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID>,
     List<DailyFlowProjection> findDailyFlow(
         @Param("accountId") UUID accountId,
         @Param("startDate") LocalDateTime startDate
+    );
+
+    @Query("""
+        SELECT CAST(t.registeredAt AS date) AS date,
+               SUM(CASE WHEN t.type = CREDIT
+                        THEN t.amount ELSE -t.amount END) AS netAmount
+        FROM Transaction t
+        WHERE t.account.id = :accountId
+          AND t.status = COMPLETED
+          AND t.registeredAt >= :startDate
+          AND t.registeredAt < :endDate
+        GROUP BY CAST(t.registeredAt AS date)
+        ORDER BY date ASC
+    """)
+    List<DailyNetProjection> findDailyNet(
+        @Param("accountId") UUID accountId,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate
     );
 }

@@ -1,6 +1,7 @@
 package br.com.financepro.financePro.account.dto.response;
 
 import br.com.financepro.financePro.recurrence.dto.response.RecurrenceResponseDTO;
+import br.com.financepro.financePro.transaction.dto.response.BalanceTrajectoryPointDTO;
 import br.com.financepro.financePro.transaction.dto.response.CategorySpendingDTO;
 import br.com.financepro.financePro.transaction.dto.response.EvolutionDataPointDTO;
 import br.com.financepro.financePro.transaction.dto.response.TransactionResponseDTO;
@@ -16,6 +17,7 @@ public record AnalyticsResponseDTO(
     List<TransactionResponseDTO> transactions,
     List<RecurrenceResponseDTO> recurrences,
     List<CategorySpendingDTO> categorySpending,
-    List<EvolutionDataPointDTO> evolution
+    List<EvolutionDataPointDTO> evolution,
+    List<BalanceTrajectoryPointDTO> trajectory
 ) {
 }
