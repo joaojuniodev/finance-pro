@@ -1,14 +1,14 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/financepro?currentSchema=public
-    username: postgres
-    password: 1234567
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
       generate_statistics: true
     show-sql: false
     open-in-view: false

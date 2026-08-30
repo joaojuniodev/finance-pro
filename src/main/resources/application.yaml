@@ -5,12 +5,6 @@ spring:
     name: financePro
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
-  jpa:
-    hibernate:
-      ddl-auto: none
-      generate_statistics: true
-    show-sql: false
-    open-in-view: false
   flyway:
     enabled: true
     locations: classpath:db/migration
