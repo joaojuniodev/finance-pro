@@ -4,6 +4,7 @@ import br.com.financepro.financePro.bank.dto.BankResponseDTO;
 import br.com.financepro.financePro.common.enums.WalletType;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -14,19 +15,24 @@ public class WalletResponseDTO {
     private String description;
     private String cardDigits;
     private WalletType type;
+    private LocalDate closingDate;
+    private LocalDate expirationDate;
+    private Integer daysUntilExpiration;
     private String color;
     private BigDecimal balance;
     private BankResponseDTO bank;
 
-    public WalletResponseDTO() {
-    }
+    public WalletResponseDTO() {}
 
-    public WalletResponseDTO(UUID id, String name, String description, String cardDigits, WalletType type, String color, BigDecimal balance, BankResponseDTO bank) {
+    public WalletResponseDTO(UUID id, String name, String description, String cardDigits, WalletType type, LocalDate closingDate, LocalDate expirationDate, Integer daysUntilExpiration, String color, BigDecimal balance, BankResponseDTO bank) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.cardDigits = cardDigits;
         this.type = type;
+        this.closingDate = closingDate;
+        this.expirationDate = expirationDate;
+        this.daysUntilExpiration = daysUntilExpiration;
         this.color = color;
         this.balance = balance;
         this.bank = bank;
@@ -70,6 +76,30 @@ public class WalletResponseDTO {
 
     public void setType(WalletType type) {
         this.type = type;
+    }
+
+    public LocalDate getClosingDate() {
+        return closingDate;
+    }
+
+    public void setClosingDate(LocalDate closingDate) {
+        this.closingDate = closingDate;
+    }
+
+    public LocalDate getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(LocalDate expirationDate) {
+        this.expirationDate = expirationDate;
+    }
+
+    public Integer getDaysUntilExpiration() {
+        return daysUntilExpiration;
+    }
+
+    public void setDaysUntilExpiration(Integer daysUntilExpiration) {
+        this.daysUntilExpiration = daysUntilExpiration;
     }
 
     public String getColor() {

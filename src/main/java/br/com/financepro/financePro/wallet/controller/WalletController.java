@@ -24,9 +24,7 @@ public class WalletController implements WalletControllerDocs {
 
     @GetMapping
     @Override
-    public ResponseEntity<List<WalletResponseDTO>> getAll(
-        @RequestParam(required = false, name = "accountId") UUID accountId
-    ) {
+    public ResponseEntity<List<WalletResponseDTO>> getAll(@RequestParam(required = false, name = "accountId") UUID accountId) {
         return ResponseEntity.ok().body(service.getAll(accountId));
     }
 
@@ -61,6 +59,11 @@ public class WalletController implements WalletControllerDocs {
         @PathVariable BigDecimal amount
     ) {
         return ResponseEntity.ok().body(service.incrementAmount(id, amount));
+    }
+
+    @PatchMapping("/payCreditCard/{id}")
+    public ResponseEntity<WalletResponseDTO> payCreditCard(@PathVariable UUID id) {
+        return ResponseEntity.ok().body(service.payCreditCard(id));
     }
 
     @DeleteMapping("/{id}")

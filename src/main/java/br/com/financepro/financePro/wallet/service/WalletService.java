@@ -108,7 +108,11 @@ public class WalletService {
     public WalletResponseDTO create(WalletRequestDTO wallet) {
         log.info("Creating Wallet");
 
-        var walletCreated = repository.save(mapper.toEntity(wallet));
+        var entity = mapper.toEntity(wallet);
+        
+        entity.setExpirationDate(calculateNextExpirationDate(wallet.getClosingDate(), wallet.getDaysUntilExpiration()));
+
+        var walletCreated = repository.save(entity);
         accountBalanceService.updateBalance(
             walletCreated.getAccount(),
             walletCreated.getBalance(),
@@ -151,6 +155,24 @@ public class WalletService {
 
         var walletUpdated = repository.save(entity);
         return mapper.toResponse(walletUpdated);
+    }
+
+    public WalletResponseDTO payCreditCard(UUID id) {
+        log.info("Pay Credit Card Bill");
+
+        var entity = repository.findById(id)
+            .orElseThrow(() -> new NotFoundException("Not found this Id: " + id));
+
+        if (entity.getClosingDate() == null && entity.getExpirationDate() == null) {
+            throw new IllegalArgumentException("The Wallet is not a credit card");
+        }
+
+        entity.setExpirationDate(calculateNextExpirationDate(entity.getClosingDate(), entity.getDaysUntilExpiration()));
+        return mapper.toResponse(repository.save(entity));
+    }
+
+    private LocalDate calculateNextExpirationDate(LocalDate date, Integer daysUntilExpiration) {
+        return date.plusDays(daysUntilExpiration);
     }
 
     @Transactional

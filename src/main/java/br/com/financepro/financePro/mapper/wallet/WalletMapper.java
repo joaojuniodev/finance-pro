@@ -51,10 +51,12 @@ public class WalletMapper implements ObjectMapper<Wallet, WalletResponseDTO, Wal
             request.getBalance(),
             request.getCardDigits(),
             request.getType(),
+            request.getClosingDate(),
+            request.getDaysUntilExpiration(),
             request.getColor(),
             goal,
-            account,
-            bank
+            bank,
+            account
         );
     }
 
@@ -69,6 +71,9 @@ public class WalletMapper implements ObjectMapper<Wallet, WalletResponseDTO, Wal
             entity.getDescription(),
             entity.getCardDigits(),
             entity.getType(),
+            entity.getClosingDate(),
+            entity.getExpirationDate(),
+            entity.getDaysUntilExpiration(),
             entity.getColor(),
             entity.getBalance(),
             bank

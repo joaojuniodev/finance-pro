@@ -186,16 +186,19 @@ INSERT INTO banks (id, name, icon, color, gradient, shadow) VALUES
 -- bank_id e card_digits sao opcionais porque nem toda wallet e bancaria.
 -- ------------------------------------------------------------
 CREATE TABLE wallets (
-    id          UUID          NOT NULL DEFAULT gen_random_uuid(),
-    name        VARCHAR(150),
-    description VARCHAR(255),
-    balance     NUMERIC(19, 2),
-    card_digits VARCHAR(4),
-    type        VARCHAR(50),
-    color       VARCHAR(100),
-    account_id  UUID          NOT NULL,
-    bank_id     UUID,
-    goal_id     UUID,
+    id                    UUID           NOT NULL DEFAULT gen_random_uuid(),
+    name                  VARCHAR(150),
+    description           VARCHAR(255),
+    balance               NUMERIC(19, 2),
+    card_digits           VARCHAR(4),
+    type                  VARCHAR(50),
+    closing_date          TIMESTAMP,
+    expiration_date       TIMESTAMP,
+    days_until_expiration NUMERIC(19, 2),
+    color                 VARCHAR(100),
+    account_id  UUID      NOT NULL,
+    bank_id               UUID,
+    goal_id               UUID,
 
     CONSTRAINT pk_wallets PRIMARY KEY (id),
     CONSTRAINT fk_wallets_account

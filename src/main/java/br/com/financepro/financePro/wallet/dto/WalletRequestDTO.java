@@ -3,6 +3,7 @@ package br.com.financepro.financePro.wallet.dto;
 import br.com.financepro.financePro.common.enums.WalletType;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -14,6 +15,8 @@ public class WalletRequestDTO {
     private BigDecimal balance;
     private String cardDigits;
     private WalletType type;
+    private LocalDate closingDate;
+    private Integer daysUntilExpiration;
     private String color;
     private UUID goalId;
     private UUID accountId;
@@ -21,13 +24,15 @@ public class WalletRequestDTO {
 
     public WalletRequestDTO() {}
 
-    public WalletRequestDTO(UUID id, String name, String description, BigDecimal balance, String cardDigits, WalletType type, String color, UUID goalId, UUID accountId, UUID bankId) {
+    public WalletRequestDTO(UUID id, String name, String description, BigDecimal balance, String cardDigits, WalletType type, LocalDate closingDate, Integer daysUntilExpiration, String color, UUID goalId, UUID accountId, UUID bankId) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.balance = balance;
         this.cardDigits = cardDigits;
         this.type = type;
+        this.closingDate = closingDate;
+        this.daysUntilExpiration = daysUntilExpiration;
         this.color = color;
         this.goalId = goalId;
         this.accountId = accountId;
@@ -80,6 +85,22 @@ public class WalletRequestDTO {
 
     public void setType(WalletType type) {
         this.type = type;
+    }
+
+    public LocalDate getClosingDate() {
+        return closingDate;
+    }
+
+    public void setClosingDate(LocalDate closingDate) {
+        this.closingDate = closingDate;
+    }
+
+    public Integer getDaysUntilExpiration() {
+        return daysUntilExpiration;
+    }
+
+    public void setDaysUntilExpiration(Integer daysUntilExpiration) {
+        this.daysUntilExpiration = daysUntilExpiration;
     }
 
     public String getColor() {

@@ -3,7 +3,6 @@ package br.com.financepro.financePro.transaction.repository.spec;
 import br.com.financepro.financePro.transaction.model.Transaction;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.UUID;

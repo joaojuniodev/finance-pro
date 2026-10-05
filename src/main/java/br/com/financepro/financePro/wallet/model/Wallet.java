@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -34,6 +35,15 @@ public class Wallet {
     @Enumerated(EnumType.STRING)
     private WalletType type;
 
+    @Column(name = "closing_date")
+    private LocalDate closingDate;
+
+    @Column(name = "expiration_date")
+    private LocalDate expirationDate;
+
+    @Column(name = "days_until_expiration")
+    private Integer daysUntilExpiration;
+
     @Column
     private String color;
 
@@ -51,17 +61,19 @@ public class Wallet {
 
     public Wallet() {}
 
-    public Wallet(UUID id, String name, String description, BigDecimal balance, String cardDigits, WalletType type, String color, Goal goal, Account account, Bank bank) {
+    public Wallet(UUID id, String name, String description, BigDecimal balance, String cardDigits, WalletType type, LocalDate closingDate, Integer daysUntilExpiration, String color, Goal goal, Bank bank, Account account) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.balance = balance;
         this.cardDigits = cardDigits;
         this.type = type;
+        this.closingDate = closingDate;
+        this.daysUntilExpiration = daysUntilExpiration;
         this.color = color;
         this.goal = goal;
-        this.account = account;
         this.bank = bank;
+        this.account = account;
     }
 
     public Wallet(String initialWalletName, String initialWalletDescription, BigDecimal initialBalance, Account accountCreated) {
@@ -133,6 +145,30 @@ public class Wallet {
 
     public void setType(WalletType type) {
         this.type = type;
+    }
+
+    public LocalDate getClosingDate() {
+        return closingDate;
+    }
+
+    public void setClosingDate(LocalDate closingDate) {
+        this.closingDate = closingDate;
+    }
+
+    public LocalDate getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(LocalDate expirationDate) {
+        this.expirationDate = expirationDate;
+    }
+
+    public Integer getDaysUntilExpiration() {
+        return daysUntilExpiration;
+    }
+
+    public void setDaysUntilExpiration(Integer daysUntilExpiration) {
+        this.daysUntilExpiration = daysUntilExpiration;
     }
 
     public String getColor() {
