@@ -4,6 +4,7 @@ import br.com.financepro.financePro.account.model.Account;
 import br.com.financepro.financePro.category.model.Category;
 import br.com.financepro.financePro.common.enums.TransactionStatus;
 import br.com.financepro.financePro.common.enums.TransactionType;
+import br.com.financepro.financePro.installment.model.Installment;
 import br.com.financepro.financePro.recurrence.model.Recurrence;
 import br.com.financepro.financePro.wallet.model.Wallet;
 import jakarta.persistence.*;
@@ -120,20 +121,20 @@ public class Transaction {
         this.status = status;
     }
 
-    public Category getCategory() {
-        return category;
-    }
-
-    public void setCategory(Category category) {
-        this.category = category;
-    }
-
     public LocalDateTime getRegisteredAt() {
         return registeredAt;
     }
 
     public void setRegisteredAt(LocalDateTime registeredAt) {
         this.registeredAt = registeredAt;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public Recurrence getRecurrence() {

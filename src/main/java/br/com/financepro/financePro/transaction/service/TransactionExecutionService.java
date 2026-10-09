@@ -1,7 +1,12 @@
 package br.com.financepro.financePro.transaction.service;
 
 import br.com.financepro.financePro.common.enums.RecurrenceType;
+import br.com.financepro.financePro.common.enums.TransactionStatus;
 import br.com.financepro.financePro.common.enums.TransactionType;
+import br.com.financepro.financePro.common.enums.WalletType;
+import br.com.financepro.financePro.installment.dto.InstallmentRequestDTO;
+import br.com.financepro.financePro.installment.service.InstallmentService;
+import br.com.financepro.financePro.installmentPlan.service.InstallmentPlanService;
 import br.com.financepro.financePro.mapper.transaction.TransactionMapper;
 import br.com.financepro.financePro.recurrence.model.Recurrence;
 import br.com.financepro.financePro.transaction.dto.request.TransactionRequestDTO;
@@ -18,6 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class TransactionExecutionService {
@@ -40,9 +49,12 @@ public class TransactionExecutionService {
         Wallet wallet = walletBalanceService.getWallet(transaction.getWalletId());
 
         perform(wallet, transaction.getAmount(), transaction.getType(), true, false);
+        return mapper.toResponse(repository.save(mapper.toEntity(transaction)));
+    }
 
-        var transactionCreated = repository.save(mapper.toEntity(transaction));
-        return mapper.toResponse(transactionCreated);
+    private BigDecimal calculateTheInterest(BigDecimal total, Double fees) {
+        var valueInterest = (total.multiply(BigDecimal.valueOf(fees))).divide(BigDecimal.valueOf(100));
+        return total.add(valueInterest);
     }
 
     @Transactional

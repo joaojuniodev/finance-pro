@@ -167,6 +167,8 @@ public class WalletService {
             throw new IllegalArgumentException("The Wallet is not a credit card");
         }
 
+        // seto como COMPLETED todas as parcelas do mês deste wallet
+
         entity.setExpirationDate(calculateNextExpirationDate(entity.getClosingDate(), entity.getDaysUntilExpiration()));
         return mapper.toResponse(repository.save(entity));
     }

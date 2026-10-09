@@ -9,6 +9,8 @@ import br.com.financepro.financePro.common.enums.RecurrenceType;
 import br.com.financepro.financePro.common.enums.TransactionStatus;
 import br.com.financepro.financePro.common.enums.TransactionType;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
+import br.com.financepro.financePro.installment.model.Installment;
+import br.com.financepro.financePro.installment.repository.InstallmentRepository;
 import br.com.financepro.financePro.mapper.ObjectMapper;
 import br.com.financepro.financePro.mapper.category.CategoryMapper;
 import br.com.financepro.financePro.mapper.wallet.WalletMapper;
@@ -79,8 +81,8 @@ public class TransactionMapper implements ObjectMapper<Transaction, TransactionR
             entity.getDescription(),
             entity.getType(),
             entity.getStatus(),
-            category,
             entity.getRegisteredAt(),
+            category,
             wallet,
             entity.getRecurrence() != null
                 ? entity.getRecurrence().getId()

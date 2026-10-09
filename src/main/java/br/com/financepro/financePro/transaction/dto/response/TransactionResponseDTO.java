@@ -24,14 +24,14 @@ public class TransactionResponseDTO {
 
     public TransactionResponseDTO() {}
 
-    public TransactionResponseDTO(UUID id, BigDecimal amount, String description, TransactionType type, TransactionStatus status, CategoryResponseDTO category, LocalDateTime registeredAt, WalletResponseDTO wallet, UUID recurrenceId) {
+    public TransactionResponseDTO(UUID id, BigDecimal amount, String description, TransactionType type, TransactionStatus status, LocalDateTime registeredAt, CategoryResponseDTO category, WalletResponseDTO wallet, UUID recurrenceId) {
         this.id = id;
         this.amount = amount;
         this.description = description;
         this.type = type;
         this.status = status;
-        this.category = category;
         this.registeredAt = registeredAt;
+        this.category = category;
         this.wallet = wallet;
         this.recurrenceId = recurrenceId;
     }

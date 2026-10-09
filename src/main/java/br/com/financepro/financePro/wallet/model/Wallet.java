@@ -4,11 +4,15 @@ import br.com.financepro.financePro.account.model.Account;
 import br.com.financepro.financePro.bank.model.Bank;
 import br.com.financepro.financePro.common.enums.WalletType;
 import br.com.financepro.financePro.goal.model.Goal;
+import br.com.financepro.financePro.installment.model.Installment;
+import br.com.financepro.financePro.installmentPlan.model.InstallmentPlan;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -58,6 +62,9 @@ public class Wallet {
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
+
+    @OneToMany(mappedBy = "wallet")
+    private List<InstallmentPlan> installmentsPlans = new ArrayList<>();
 
     public Wallet() {}
 
@@ -179,13 +186,20 @@ public class Wallet {
         this.color = color;
     }
 
-    @JsonIgnore
     public Account getAccount() {
         return account;
     }
 
     public void setAccount(Account account) {
         this.account = account;
+    }
+
+    public List<InstallmentPlan> getInstallmentsPlans() {
+        return installmentsPlans;
+    }
+
+    public void setInstallmentsPlans(List<InstallmentPlan> installmentsPlans) {
+        this.installmentsPlans = installmentsPlans;
     }
 
     @Override
