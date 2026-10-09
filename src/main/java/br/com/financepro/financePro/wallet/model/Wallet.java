@@ -39,15 +39,6 @@ public class Wallet {
     @Enumerated(EnumType.STRING)
     private WalletType type;
 
-    @Column(name = "closing_date")
-    private LocalDate closingDate;
-
-    @Column(name = "expiration_date")
-    private LocalDate expirationDate;
-
-    @Column(name = "days_until_expiration")
-    private Integer daysUntilExpiration;
-
     @Column
     private String color;
 
@@ -63,20 +54,15 @@ public class Wallet {
     @JoinColumn(name = "account_id")
     private Account account;
 
-    @OneToMany(mappedBy = "wallet")
-    private List<InstallmentPlan> installmentsPlans = new ArrayList<>();
-
     public Wallet() {}
 
-    public Wallet(UUID id, String name, String description, BigDecimal balance, String cardDigits, WalletType type, LocalDate closingDate, Integer daysUntilExpiration, String color, Goal goal, Bank bank, Account account) {
+    public Wallet(UUID id, String name, String description, BigDecimal balance, String cardDigits, WalletType type, String color, Goal goal, Bank bank, Account account) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.balance = balance;
         this.cardDigits = cardDigits;
         this.type = type;
-        this.closingDate = closingDate;
-        this.daysUntilExpiration = daysUntilExpiration;
         this.color = color;
         this.goal = goal;
         this.bank = bank;
@@ -154,30 +140,6 @@ public class Wallet {
         this.type = type;
     }
 
-    public LocalDate getClosingDate() {
-        return closingDate;
-    }
-
-    public void setClosingDate(LocalDate closingDate) {
-        this.closingDate = closingDate;
-    }
-
-    public LocalDate getExpirationDate() {
-        return expirationDate;
-    }
-
-    public void setExpirationDate(LocalDate expirationDate) {
-        this.expirationDate = expirationDate;
-    }
-
-    public Integer getDaysUntilExpiration() {
-        return daysUntilExpiration;
-    }
-
-    public void setDaysUntilExpiration(Integer daysUntilExpiration) {
-        this.daysUntilExpiration = daysUntilExpiration;
-    }
-
     public String getColor() {
         return color;
     }
@@ -192,14 +154,6 @@ public class Wallet {
 
     public void setAccount(Account account) {
         this.account = account;
-    }
-
-    public List<InstallmentPlan> getInstallmentsPlans() {
-        return installmentsPlans;
-    }
-
-    public void setInstallmentsPlans(List<InstallmentPlan> installmentsPlans) {
-        this.installmentsPlans = installmentsPlans;
     }
 
     @Override
