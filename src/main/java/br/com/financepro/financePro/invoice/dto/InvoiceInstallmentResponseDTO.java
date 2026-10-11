@@ -1,9 +1,9 @@
-package br.com.financepro.financePro.wallet.dto;
+package br.com.financepro.financePro.invoice.dto;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public record CreditCardBillInstallmentDTO(
+public record InvoiceInstallmentResponseDTO(
     UUID id,
     UUID installmentPlanId,
     String description,
@@ -11,5 +11,4 @@ public record CreditCardBillInstallmentDTO(
     Boolean paid,
     Integer month,
     Integer year
-) {
-}
+) {}

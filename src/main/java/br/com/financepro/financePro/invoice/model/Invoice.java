@@ -20,7 +20,7 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column
+    @Column(name = "credit_limit", precision = 15, scale = 2)
     private BigDecimal limit;
 
     @Enumerated(EnumType.STRING)
@@ -35,7 +35,8 @@ public class Invoice {
     @Column(name = "days_until_expiration")
     private Integer daysUntilExpiration;
 
-    @OneToOne(mappedBy = "invoice")
+    @ManyToOne
+    @JoinColumn(name = "wallet_id")
     private Wallet wallet;
 
     @OneToMany(mappedBy = "invoice")

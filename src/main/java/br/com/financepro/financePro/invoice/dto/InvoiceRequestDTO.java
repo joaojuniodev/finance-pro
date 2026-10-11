@@ -11,7 +11,6 @@ public record InvoiceRequestDTO(
     BigDecimal limit,
     InvoiceStatus status,
     LocalDate closingDate,
-    LocalDate expirationDate,
     Integer daysUntilExpiration,
     UUID walletId
 ) {}

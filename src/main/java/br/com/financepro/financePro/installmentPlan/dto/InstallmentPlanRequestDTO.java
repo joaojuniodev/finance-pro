@@ -12,6 +12,5 @@ public record InstallmentPlanRequestDTO(
     BigDecimal times,
     BigDecimal fees,
     InstallmentPlanStatus status,
-    UUID walletId
-) {
-}
+    UUID invoiceId
+) {}

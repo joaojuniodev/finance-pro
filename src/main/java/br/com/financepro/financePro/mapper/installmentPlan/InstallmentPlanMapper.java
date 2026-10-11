@@ -4,8 +4,10 @@ import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.installmentPlan.dto.InstallmentPlanRequestDTO;
 import br.com.financepro.financePro.installmentPlan.dto.InstallmentPlanResponseDTO;
 import br.com.financepro.financePro.installmentPlan.model.InstallmentPlan;
+import br.com.financepro.financePro.invoice.repository.InvoiceRepository;
 import br.com.financepro.financePro.mapper.ObjectMapper;
 import br.com.financepro.financePro.mapper.installment.InstallmentMapper;
+import br.com.financepro.financePro.mapper.invoice.InvoiceMapper;
 import br.com.financepro.financePro.mapper.wallet.WalletMapper;
 import br.com.financepro.financePro.wallet.repository.WalletRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,18 +17,18 @@ import org.springframework.stereotype.Component;
 public class InstallmentPlanMapper implements ObjectMapper<InstallmentPlan, InstallmentPlanResponseDTO, InstallmentPlanRequestDTO> {
 
     @Autowired
-    private WalletRepository walletRepository;
+    private InvoiceRepository invoiceRepository;
 
     @Autowired
     private InstallmentMapper installmentMapper;
 
     @Autowired
-    private WalletMapper walletMapper;
+    private InvoiceMapper invoiceMapper;
 
     @Override
     public InstallmentPlan toEntity(InstallmentPlanRequestDTO request) {
-        var wallet = walletRepository.findById(request.walletId())
-            .orElseThrow(() -> new NotFoundException("Not found this Wallet Id: " + request.walletId()));
+        var invoice = invoiceRepository.findById(request.invoiceId())
+            .orElseThrow(() -> new NotFoundException("Not found this Invoice Id: " + request.invoiceId()));
         InstallmentPlan installmentPlan = new InstallmentPlan();
         installmentPlan.setId(request.id());
         installmentPlan.setDescription(request.description());
@@ -34,12 +36,12 @@ public class InstallmentPlanMapper implements ObjectMapper<InstallmentPlan, Inst
         installmentPlan.setTimes(request.times());
         installmentPlan.setFees(request.fees());
         installmentPlan.setStatus(request.status());
+        installmentPlan.setInvoice(invoice);
         return installmentPlan;
     }
 
     @Override
     public InstallmentPlanResponseDTO toResponse(InstallmentPlan entity) {
-        System.out.println("6");
         return new InstallmentPlanResponseDTO(
             entity.getId(),
             entity.getDescription(),
@@ -49,7 +51,7 @@ public class InstallmentPlanMapper implements ObjectMapper<InstallmentPlan, Inst
             entity.getStartDate(),
             entity.getEndDate(),
             entity.getStatus(),
-            walletMapper.toResponse(entity.getWallet()),
+            invoiceMapper.toResponse(entity.getInvoice()),
             entity.getInstallments().stream().map(installmentMapper::toResponse).toList()
         );
     }

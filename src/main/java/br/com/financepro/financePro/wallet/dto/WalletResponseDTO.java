@@ -2,9 +2,12 @@ package br.com.financepro.financePro.wallet.dto;
 
 import br.com.financepro.financePro.bank.dto.BankResponseDTO;
 import br.com.financepro.financePro.common.enums.WalletType;
+import br.com.financepro.financePro.invoice.dto.InvoiceResponseDTO;
+import br.com.financepro.financePro.invoice.model.Invoice;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -15,27 +18,23 @@ public class WalletResponseDTO {
     private String description;
     private String cardDigits;
     private WalletType type;
-    private LocalDate closingDate;
-    private LocalDate expirationDate;
-    private Integer daysUntilExpiration;
     private String color;
     private BigDecimal balance;
     private BankResponseDTO bank;
+    private List<InvoiceResponseDTO> invoices;
 
     public WalletResponseDTO() {}
 
-    public WalletResponseDTO(UUID id, String name, String description, String cardDigits, WalletType type, LocalDate closingDate, LocalDate expirationDate, Integer daysUntilExpiration, String color, BigDecimal balance, BankResponseDTO bank) {
+    public WalletResponseDTO(UUID id, String name, String description, String cardDigits, WalletType type, String color, BigDecimal balance, BankResponseDTO bank, List<InvoiceResponseDTO> invoices) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.cardDigits = cardDigits;
         this.type = type;
-        this.closingDate = closingDate;
-        this.expirationDate = expirationDate;
-        this.daysUntilExpiration = daysUntilExpiration;
         this.color = color;
         this.balance = balance;
         this.bank = bank;
+        this.invoices = invoices;
     }
 
     public UUID getId() {
@@ -78,30 +77,6 @@ public class WalletResponseDTO {
         this.type = type;
     }
 
-    public LocalDate getClosingDate() {
-        return closingDate;
-    }
-
-    public void setClosingDate(LocalDate closingDate) {
-        this.closingDate = closingDate;
-    }
-
-    public LocalDate getExpirationDate() {
-        return expirationDate;
-    }
-
-    public void setExpirationDate(LocalDate expirationDate) {
-        this.expirationDate = expirationDate;
-    }
-
-    public Integer getDaysUntilExpiration() {
-        return daysUntilExpiration;
-    }
-
-    public void setDaysUntilExpiration(Integer daysUntilExpiration) {
-        this.daysUntilExpiration = daysUntilExpiration;
-    }
-
     public String getColor() {
         return color;
     }
@@ -126,12 +101,20 @@ public class WalletResponseDTO {
         this.bank = bank;
     }
 
+    public List<InvoiceResponseDTO> getInvoices() {
+        return invoices;
+    }
+
+    public void setInvoices(List<InvoiceResponseDTO> invoices) {
+        this.invoices = invoices;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
 
         WalletResponseDTO that = (WalletResponseDTO) o;
-        return Objects.equals(getId(), that.getId()) && Objects.equals(getName(), that.getName()) && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getCardDigits(), that.getCardDigits()) && getType() == that.getType() && Objects.equals(getColor(), that.getColor()) && Objects.equals(getBalance(), that.getBalance()) && Objects.equals(getBank(), that.getBank());
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getName(), that.getName()) && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getCardDigits(), that.getCardDigits()) && getType() == that.getType() && Objects.equals(getColor(), that.getColor()) && Objects.equals(getBalance(), that.getBalance()) && Objects.equals(getBank(), that.getBank()) && Objects.equals(getInvoices(), that.getInvoices());
     }
 
     @Override
@@ -144,6 +127,7 @@ public class WalletResponseDTO {
         result = 31 * result + Objects.hashCode(getColor());
         result = 31 * result + Objects.hashCode(getBalance());
         result = 31 * result + Objects.hashCode(getBank());
+        result = 31 * result + Objects.hashCode(getInvoices());
         return result;
     }
 }

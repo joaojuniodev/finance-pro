@@ -4,8 +4,10 @@ import br.com.financepro.financePro.account.repository.AccountRepository;
 import br.com.financepro.financePro.bank.repository.BankRepository;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.goal.repository.GoalRepository;
+import br.com.financepro.financePro.invoice.repository.InvoiceRepository;
 import br.com.financepro.financePro.mapper.ObjectMapper;
 import br.com.financepro.financePro.mapper.bank.BankMapper;
+import br.com.financepro.financePro.mapper.invoice.InvoiceMapper;
 import br.com.financepro.financePro.transaction.dto.response.TransactionSummaryDTO;
 import br.com.financepro.financePro.wallet.dto.WalletRequestDTO;
 import br.com.financepro.financePro.wallet.dto.WalletResponseDTO;
@@ -32,6 +34,9 @@ public class WalletMapper implements ObjectMapper<Wallet, WalletResponseDTO, Wal
     @Autowired
     private BankMapper bankMapper;
 
+    @Autowired
+    private InvoiceMapper invoiceMapper;
+
     @Override
     public Wallet toEntity(WalletRequestDTO request) {
         var goal = request.getGoalId() != null
@@ -51,8 +56,6 @@ public class WalletMapper implements ObjectMapper<Wallet, WalletResponseDTO, Wal
             request.getBalance(),
             request.getCardDigits(),
             request.getType(),
-            request.getClosingDate(),
-            request.getDaysUntilExpiration(),
             request.getColor(),
             goal,
             bank,
@@ -71,12 +74,10 @@ public class WalletMapper implements ObjectMapper<Wallet, WalletResponseDTO, Wal
             entity.getDescription(),
             entity.getCardDigits(),
             entity.getType(),
-            entity.getClosingDate(),
-            entity.getExpirationDate(),
-            entity.getDaysUntilExpiration(),
             entity.getColor(),
             entity.getBalance(),
-            bank
+            bank,
+            entity.getInvoices().stream().map(invoiceMapper::toResponse).toList()
         );
     }
 

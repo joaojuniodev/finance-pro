@@ -15,27 +15,25 @@ public class WalletRequestDTO {
     private BigDecimal balance;
     private String cardDigits;
     private WalletType type;
-    private LocalDate closingDate;
-    private Integer daysUntilExpiration;
     private String color;
     private UUID goalId;
     private UUID accountId;
+    private UUID invoiceId;
     private UUID bankId;
 
     public WalletRequestDTO() {}
 
-    public WalletRequestDTO(UUID id, String name, String description, BigDecimal balance, String cardDigits, WalletType type, LocalDate closingDate, Integer daysUntilExpiration, String color, UUID goalId, UUID accountId, UUID bankId) {
+    public WalletRequestDTO(UUID id, String name, String description, BigDecimal balance, String cardDigits, WalletType type, String color, UUID goalId, UUID accountId, UUID invoiceId, UUID bankId) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.balance = balance;
         this.cardDigits = cardDigits;
         this.type = type;
-        this.closingDate = closingDate;
-        this.daysUntilExpiration = daysUntilExpiration;
         this.color = color;
         this.goalId = goalId;
         this.accountId = accountId;
+        this.invoiceId = invoiceId;
         this.bankId = bankId;
     }
 
@@ -87,22 +85,6 @@ public class WalletRequestDTO {
         this.type = type;
     }
 
-    public LocalDate getClosingDate() {
-        return closingDate;
-    }
-
-    public void setClosingDate(LocalDate closingDate) {
-        this.closingDate = closingDate;
-    }
-
-    public Integer getDaysUntilExpiration() {
-        return daysUntilExpiration;
-    }
-
-    public void setDaysUntilExpiration(Integer daysUntilExpiration) {
-        this.daysUntilExpiration = daysUntilExpiration;
-    }
-
     public String getColor() {
         return color;
     }
@@ -127,6 +109,14 @@ public class WalletRequestDTO {
         this.accountId = accountId;
     }
 
+    public UUID getInvoiceId() {
+        return invoiceId;
+    }
+
+    public void setInvoiceId(UUID invoiceId) {
+        this.invoiceId = invoiceId;
+    }
+
     public UUID getBankId() {
         return bankId;
     }
@@ -140,7 +130,7 @@ public class WalletRequestDTO {
         if (o == null || getClass() != o.getClass()) return false;
 
         WalletRequestDTO that = (WalletRequestDTO) o;
-        return Objects.equals(getId(), that.getId()) && Objects.equals(getName(), that.getName()) && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getBalance(), that.getBalance()) && Objects.equals(getCardDigits(), that.getCardDigits()) && Objects.equals(getGoalId(), that.getGoalId()) && Objects.equals(getAccountId(), that.getAccountId()) && Objects.equals(getBankId(), that.getBankId());
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getName(), that.getName()) && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getBalance(), that.getBalance()) && Objects.equals(getCardDigits(), that.getCardDigits()) && getType() == that.getType() && Objects.equals(getColor(), that.getColor()) && Objects.equals(getGoalId(), that.getGoalId()) && Objects.equals(getAccountId(), that.getAccountId()) && Objects.equals(getInvoiceId(), that.getInvoiceId()) && Objects.equals(getBankId(), that.getBankId());
     }
 
     @Override
@@ -150,8 +140,11 @@ public class WalletRequestDTO {
         result = 31 * result + Objects.hashCode(getDescription());
         result = 31 * result + Objects.hashCode(getBalance());
         result = 31 * result + Objects.hashCode(getCardDigits());
+        result = 31 * result + Objects.hashCode(getType());
+        result = 31 * result + Objects.hashCode(getColor());
         result = 31 * result + Objects.hashCode(getGoalId());
         result = 31 * result + Objects.hashCode(getAccountId());
+        result = 31 * result + Objects.hashCode(getInvoiceId());
         result = 31 * result + Objects.hashCode(getBankId());
         return result;
     }

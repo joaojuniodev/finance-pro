@@ -50,6 +50,7 @@ public class WalletService {
     @Autowired
     private TransactionMapper transactionMapper;
 
+    @Transactional(readOnly = true)
     public List<WalletResponseDTO> getAll(UUID accountId) {
         log.info("Getting All Wallets");
 
@@ -66,6 +67,7 @@ public class WalletService {
             .toList();
     }
 
+    @Transactional(readOnly = true)
     public WalletResponseDTO getById(UUID id) {
         log.info("Getting Wallet by Id");
 
@@ -109,8 +111,6 @@ public class WalletService {
         log.info("Creating Wallet");
 
         var entity = mapper.toEntity(wallet);
-        
-        entity.setExpirationDate(calculateNextExpirationDate(wallet.getClosingDate(), wallet.getDaysUntilExpiration()));
 
         var walletCreated = repository.save(entity);
         accountBalanceService.updateBalance(
@@ -155,26 +155,6 @@ public class WalletService {
 
         var walletUpdated = repository.save(entity);
         return mapper.toResponse(walletUpdated);
-    }
-
-    public WalletResponseDTO payCreditCard(UUID id) {
-        log.info("Pay Credit Card Bill");
-
-        var entity = repository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Not found this Id: " + id));
-
-        if (entity.getClosingDate() == null && entity.getExpirationDate() == null) {
-            throw new IllegalArgumentException("The Wallet is not a credit card");
-        }
-
-        // seto como COMPLETED todas as parcelas do mês deste wallet
-
-        entity.setExpirationDate(calculateNextExpirationDate(entity.getClosingDate(), entity.getDaysUntilExpiration()));
-        return mapper.toResponse(repository.save(entity));
-    }
-
-    private LocalDate calculateNextExpirationDate(LocalDate date, Integer daysUntilExpiration) {
-        return date.plusDays(daysUntilExpiration);
     }
 
     @Transactional

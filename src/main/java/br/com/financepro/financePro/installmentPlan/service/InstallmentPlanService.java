@@ -1,11 +1,9 @@
 package br.com.financepro.financePro.installmentPlan.service;
 
 import br.com.financepro.financePro.common.contract.ICrud;
-import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.installment.dto.InstallmentRequestDTO;
 import br.com.financepro.financePro.installment.model.Installment;
 import br.com.financepro.financePro.installment.repository.InstallmentRepository;
-import br.com.financepro.financePro.installment.service.InstallmentService;
 import br.com.financepro.financePro.installmentPlan.dto.InstallmentPlanRequestDTO;
 import br.com.financepro.financePro.installmentPlan.dto.InstallmentPlanResponseDTO;
 import br.com.financepro.financePro.installmentPlan.filter.InstallmentPlanFilter;
@@ -13,7 +11,6 @@ import br.com.financepro.financePro.installmentPlan.model.InstallmentPlan;
 import br.com.financepro.financePro.installmentPlan.repository.InstallmentPlanRepository;
 import br.com.financepro.financePro.mapper.installment.InstallmentMapper;
 import br.com.financepro.financePro.mapper.installmentPlan.InstallmentPlanMapper;
-import br.com.financepro.financePro.wallet.repository.WalletRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +33,6 @@ public class InstallmentPlanService implements ICrud<InstallmentPlan, Installmen
     private InstallmentPlanRepository repository;
 
     @Autowired
-    private WalletRepository walletRepository;
-
-    @Autowired
     private InstallmentRepository installmentRepository;
 
     @Autowired
@@ -52,8 +46,16 @@ public class InstallmentPlanService implements ICrud<InstallmentPlan, Installmen
         return List.of();
     }
 
+    @Transactional(readOnly = true)
+    public List<InstallmentPlanResponseDTO> getAllByWallet(UUID walletId) {
+        return repository.findAllByInvoice_Wallet_IdOrderByStartDateDesc(walletId)
+            .stream()
+            .map(mapper::toResponse)
+            .toList();
+    }
+
     @Override
-    public List<InstallmentPlanResponseDTO> filter(InstallmentPlanFilter installmentPlanFilter) {
+    public List<InstallmentPlanResponseDTO> filter(InstallmentPlanFilter filter) {
         return List.of();
     }
 
@@ -70,14 +72,10 @@ public class InstallmentPlanService implements ICrud<InstallmentPlan, Installmen
         LocalDate today = LocalDate.now();
         BigDecimal totalValue = calculateTheInterest(request.value(), request.fees());
 
-        var wallet = walletRepository.findById(request.walletId())
-            .orElseThrow(() -> new NotFoundException("Wallet not found"));
-        
         var entity = mapper.toEntity(request);
         entity.setTotalValue(totalValue);
         entity.setStartDate(today);
         entity.setEndDate(today.plusMonths(request.times().longValue()));
-        entity.setWallet(wallet);
 
         var plan = repository.save(entity);
 

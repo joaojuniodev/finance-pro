@@ -6,6 +6,7 @@ import br.com.financepro.financePro.common.enums.WalletType;
 import br.com.financepro.financePro.goal.model.Goal;
 import br.com.financepro.financePro.installment.model.Installment;
 import br.com.financepro.financePro.installmentPlan.model.InstallmentPlan;
+import br.com.financepro.financePro.invoice.model.Invoice;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
@@ -53,6 +54,9 @@ public class Wallet {
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
+
+    @OneToMany(mappedBy = "wallet", fetch = FetchType.LAZY)
+    private List<Invoice> invoices;
 
     public Wallet() {}
 
@@ -154,6 +158,14 @@ public class Wallet {
 
     public void setAccount(Account account) {
         this.account = account;
+    }
+
+    public List<Invoice> getInvoices() {
+        return invoices;
+    }
+
+    public void setInvoices(List<Invoice> invoices) {
+        this.invoices = invoices;
     }
 
     @Override

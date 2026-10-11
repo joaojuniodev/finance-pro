@@ -10,8 +10,8 @@ import java.util.List;
 @Repository
 public interface InstallmentRepository extends JpaRepository<Installment, UUID> {
 
-    List<Installment> findAllByInstallmentPlanWalletIdAndMonthAndYear(
-        UUID walletId,
+    List<Installment> findAllByInstallmentPlanInvoiceIdAndMonthAndYear(
+        UUID invoiceId,
         Integer month,
         Integer year
     );

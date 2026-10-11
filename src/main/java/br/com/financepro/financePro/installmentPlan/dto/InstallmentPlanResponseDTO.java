@@ -2,7 +2,7 @@ package br.com.financepro.financePro.installmentPlan.dto;
 
 import br.com.financepro.financePro.common.enums.InstallmentPlanStatus;
 import br.com.financepro.financePro.installment.dto.InstallmentResponseDTO;
-import br.com.financepro.financePro.wallet.dto.WalletResponseDTO;
+import br.com.financepro.financePro.invoice.dto.InvoiceResponseDTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,7 +18,7 @@ public record InstallmentPlanResponseDTO(
     LocalDate startDate,
     LocalDate endDate,
     InstallmentPlanStatus status,
-    WalletResponseDTO wallet,
+    InvoiceResponseDTO invoice,
     List<InstallmentResponseDTO> installments
 ) {
 }

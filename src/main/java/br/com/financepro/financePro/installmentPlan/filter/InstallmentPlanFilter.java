@@ -5,5 +5,4 @@ import java.util.UUID;
 public record InstallmentPlanFilter(
     UUID accountId,
     UUID walletId
-) {
-}
+) {}

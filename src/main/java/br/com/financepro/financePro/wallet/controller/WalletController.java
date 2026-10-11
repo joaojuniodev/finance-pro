@@ -1,12 +1,9 @@
 package br.com.financepro.financePro.wallet.controller;
 
 import br.com.financepro.financePro.wallet.controller.doc.WalletControllerDocs;
-import br.com.financepro.financePro.wallet.dto.WalletSummaryDTO;
 import br.com.financepro.financePro.wallet.dto.WalletRequestDTO;
 import br.com.financepro.financePro.wallet.dto.WalletResponseDTO;
-import br.com.financepro.financePro.wallet.dto.CreditCardBillPaymentRequestDTO;
-import br.com.financepro.financePro.wallet.dto.CreditCardBillResponseDTO;
-import br.com.financepro.financePro.wallet.service.CreditCardBillService;
+import br.com.financepro.financePro.wallet.dto.WalletSummaryDTO;
 import br.com.financepro.financePro.wallet.service.WalletService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +21,6 @@ public class WalletController implements WalletControllerDocs {
 
     @Autowired
     private WalletService service;
-
-    @Autowired
-    private CreditCardBillService creditCardBillService;
 
     @GetMapping
     @Override
@@ -65,33 +59,6 @@ public class WalletController implements WalletControllerDocs {
         @PathVariable BigDecimal amount
     ) {
         return ResponseEntity.ok().body(service.incrementAmount(id, amount));
-    }
-
-    @PatchMapping("/payCreditCard/{id}")
-    public ResponseEntity<WalletResponseDTO> payCreditCard(@PathVariable UUID id) {
-        return ResponseEntity.ok().body(service.payCreditCard(id));
-    }
-
-    @GetMapping("/{id}/credit-card-bill")
-    public ResponseEntity<CreditCardBillResponseDTO> getCreditCardBill(@PathVariable UUID id) {
-        return ResponseEntity.ok(creditCardBillService.getBill(id));
-    }
-
-    @PatchMapping("/{id}/credit-card-bill/installments/{installmentId}")
-    public ResponseEntity<CreditCardBillResponseDTO> payInstallment(
-        @PathVariable UUID id,
-        @PathVariable UUID installmentId,
-        @RequestBody CreditCardBillPaymentRequestDTO payment
-    ) {
-        return ResponseEntity.ok(creditCardBillService.payInstallment(id, installmentId, payment.paymentWalletId()));
-    }
-
-    @PatchMapping("/{id}/credit-card-bill")
-    public ResponseEntity<CreditCardBillResponseDTO> payCreditCardBill(
-        @PathVariable UUID id,
-        @RequestBody CreditCardBillPaymentRequestDTO payment
-    ) {
-        return ResponseEntity.ok(creditCardBillService.payBill(id, payment.paymentWalletId()));
     }
 
     @DeleteMapping("/{id}")

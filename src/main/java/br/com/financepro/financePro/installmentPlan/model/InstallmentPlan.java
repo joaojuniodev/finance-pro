@@ -2,6 +2,7 @@ package br.com.financepro.financePro.installmentPlan.model;
 
 import br.com.financepro.financePro.common.enums.InstallmentPlanStatus;
 import br.com.financepro.financePro.installment.model.Installment;
+import br.com.financepro.financePro.invoice.model.Invoice;
 import br.com.financepro.financePro.wallet.model.Wallet;
 import jakarta.persistence.*;
 
@@ -45,8 +46,8 @@ public class InstallmentPlan {
     private InstallmentPlanStatus status;
 
     @ManyToOne
-    @JoinColumn(name = "wallet_id")
-    private Wallet wallet;
+    @JoinColumn(name = "invoice_id")
+    private Invoice invoice;
 
     @OneToMany(mappedBy = "installmentPlan")
     private List<Installment> installments = new ArrayList<>();
@@ -125,12 +126,12 @@ public class InstallmentPlan {
         this.status = status;
     }
 
-    public Wallet getWallet() {
-        return wallet;
+    public Invoice getInvoice() {
+        return invoice;
     }
 
-    public void setWallet(Wallet wallet) {
-        this.wallet = wallet;
+    public void setInvoice(Invoice invoice) {
+        this.invoice = invoice;
     }
 
     public List<Installment> getInstallments() {

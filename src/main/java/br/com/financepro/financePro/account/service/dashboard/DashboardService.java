@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -46,6 +47,7 @@ public class DashboardService {
     @Autowired
     private AccountSpendingCategoriesService spendingCategoriesService;
 
+    @Transactional(readOnly = true)
     public DashboardResponseDTO getDashboard(UUID accountId, int limit) {
         log.info("Getting Dashboard Overview this Account");
 
