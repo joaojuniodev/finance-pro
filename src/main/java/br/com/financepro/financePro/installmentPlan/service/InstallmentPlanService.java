@@ -9,6 +9,7 @@ import br.com.financepro.financePro.installmentPlan.dto.InstallmentPlanResponseD
 import br.com.financepro.financePro.installmentPlan.filter.InstallmentPlanFilter;
 import br.com.financepro.financePro.installmentPlan.model.InstallmentPlan;
 import br.com.financepro.financePro.installmentPlan.repository.InstallmentPlanRepository;
+import br.com.financepro.financePro.invoice.repository.InvoiceRepository;
 import br.com.financepro.financePro.mapper.installment.InstallmentMapper;
 import br.com.financepro.financePro.mapper.installmentPlan.InstallmentPlanMapper;
 import org.slf4j.Logger;
@@ -34,6 +35,9 @@ public class InstallmentPlanService implements ICrud<InstallmentPlan, Installmen
 
     @Autowired
     private InstallmentRepository installmentRepository;
+
+    @Autowired
+    private InvoiceRepository invoiceRepository;
 
     @Autowired
     private InstallmentPlanMapper mapper;
@@ -77,12 +81,21 @@ public class InstallmentPlanService implements ICrud<InstallmentPlan, Installmen
         entity.setStartDate(today);
         entity.setEndDate(today.plusMonths(request.times().longValue()));
 
+        // atualizo limite da fatura: subtraio valor do parcelamento no limite da fatura
+        updateInvoiceLimit(entity, totalValue);
+
         var plan = repository.save(entity);
 
         var installments = saveInstallments(today, totalValue, request.times(), plan.getId());
         plan.setInstallments(installments);
 
         return mapper.toResponse(plan);
+    }
+
+    private void updateInvoiceLimit(InstallmentPlan installmentPlan, BigDecimal totalValue) {
+        var invoice = installmentPlan.getInvoice();
+        invoice.setLimit(invoice.getLimit().subtract(totalValue));
+        invoiceRepository.save(invoice);
     }
 
     private List<Installment> saveInstallments(LocalDate start, BigDecimal totalValue, BigDecimal times, UUID planId) {

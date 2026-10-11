@@ -56,7 +56,7 @@ public class Wallet {
     private Account account;
 
     @OneToMany(mappedBy = "wallet", fetch = FetchType.LAZY)
-    private List<Invoice> invoices;
+    private List<Invoice> invoices = new ArrayList<>();
 
     public Wallet() {}
 

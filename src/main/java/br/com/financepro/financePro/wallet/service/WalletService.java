@@ -4,7 +4,11 @@ import br.com.financepro.financePro.account.service.AccountBalanceService;
 import br.com.financepro.financePro.bank.model.Bank;
 import br.com.financepro.financePro.bank.repository.BankRepository;
 import br.com.financepro.financePro.common.enums.TransactionType;
+import br.com.financepro.financePro.common.enums.InvoiceStatus;
+import br.com.financepro.financePro.common.enums.WalletType;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
+import br.com.financepro.financePro.invoice.model.Invoice;
+import br.com.financepro.financePro.invoice.repository.InvoiceRepository;
 import br.com.financepro.financePro.mapper.transaction.TransactionMapper;
 import br.com.financepro.financePro.mapper.wallet.WalletMapper;
 import br.com.financepro.financePro.transaction.dto.response.TransactionSummaryDTO;
@@ -13,6 +17,7 @@ import br.com.financepro.financePro.transaction.repository.spec.TransactionSpeci
 import br.com.financepro.financePro.wallet.dto.WalletRequestDTO;
 import br.com.financepro.financePro.wallet.dto.WalletResponseDTO;
 import br.com.financepro.financePro.wallet.dto.WalletSummaryDTO;
+import br.com.financepro.financePro.wallet.model.Wallet;
 import br.com.financepro.financePro.wallet.repository.WalletRepository;
 import br.com.financepro.financePro.wallet.repository.spec.WalletSpecification;
 import org.slf4j.Logger;
@@ -24,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,6 +55,9 @@ public class WalletService {
 
     @Autowired
     private TransactionMapper transactionMapper;
+
+    @Autowired
+    private InvoiceRepository invoiceRepository;
 
     @Transactional(readOnly = true)
     public List<WalletResponseDTO> getAll(UUID accountId) {
@@ -113,6 +122,7 @@ public class WalletService {
         var entity = mapper.toEntity(wallet);
 
         var walletCreated = repository.save(entity);
+        syncCreditCardInvoice(walletCreated, wallet);
         accountBalanceService.updateBalance(
             walletCreated.getAccount(),
             walletCreated.getBalance(),
@@ -123,6 +133,7 @@ public class WalletService {
         return mapper.toResponse(walletCreated);
     }
 
+    @Transactional
     public WalletResponseDTO update(WalletRequestDTO wallet) {
         log.info("Updating Wallet");
 
@@ -143,6 +154,7 @@ public class WalletService {
         entity.setBank(bank);
 
         var walletUpdated = repository.save(entity);
+        syncCreditCardInvoice(walletUpdated, wallet);
         return mapper.toResponse(walletUpdated);
     }
 
@@ -164,5 +176,63 @@ public class WalletService {
         var entity = repository.findById(id)
             .orElseThrow(() -> new NotFoundException("Not found this Id: " + id));
         repository.delete(entity);
+    }
+
+    private void syncCreditCardInvoice(Wallet wallet, WalletRequestDTO request) {
+        if (wallet.getType() != WalletType.CREDIT_CARD) {
+            return;
+        }
+
+        boolean hasAnyInvoiceData = request.getCreditLimit() != null
+            || request.getClosingDate() != null
+            || request.getExpirationDate() != null;
+
+        if (!hasAnyInvoiceData) {
+            return;
+        }
+
+        if (request.getCreditLimit() == null
+            || request.getClosingDate() == null
+            || request.getExpirationDate() == null) {
+            throw new IllegalArgumentException(
+                "Credit cards require a limit, closing date and expiration date"
+            );
+        }
+
+        if (request.getCreditLimit().signum() <= 0) {
+            throw new IllegalArgumentException("The credit card limit must be greater than zero");
+        }
+
+        if (!request.getExpirationDate().isAfter(request.getClosingDate())) {
+            throw new IllegalArgumentException("The expiration date must be after the closing date");
+        }
+
+        Invoice invoice = request.getInvoiceId() == null
+            ? new Invoice()
+            : invoiceRepository.findById(request.getInvoiceId())
+                .orElseThrow(() -> new NotFoundException("Not found Invoice Id: " + request.getInvoiceId()));
+
+        if (invoice.getWallet() != null && !invoice.getWallet().getId().equals(wallet.getId())) {
+            throw new IllegalArgumentException("The invoice does not belong to this credit card");
+        }
+
+        invoice.setWallet(wallet);
+        invoice.setLimit(request.getCreditLimit());
+        invoice.setClosingDate(request.getClosingDate());
+        invoice.setExpirationDate(request.getExpirationDate());
+        invoice.setDaysUntilExpiration((int) ChronoUnit.DAYS.between(
+            request.getClosingDate(),
+            request.getExpirationDate()
+        ));
+
+        if (invoice.getStatus() == null) {
+            invoice.setStatus(InvoiceStatus.PAYING);
+        }
+
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+
+        if (!wallet.getInvoices().contains(savedInvoice)) {
+            wallet.getInvoices().add(savedInvoice);
+        }
     }
 }

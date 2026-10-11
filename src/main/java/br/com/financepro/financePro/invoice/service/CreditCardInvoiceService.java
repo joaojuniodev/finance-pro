@@ -52,6 +52,8 @@ public class CreditCardInvoiceService {
         return mapper.toDetails(entity, getInstallmentsForBillingCycle(entity));
     }
 
+    // AO PAGAR UMA PARCELA OU FATURA DO CARTÂO, O LIMITE PRECISA SER ATUALIZADO
+
     // paguei uma fatura, então crio outra fatura calculando a data de fechamento e validade
     // assim o usuário tem o histórico de faturas
     @Transactional
@@ -81,8 +83,13 @@ public class CreditCardInvoiceService {
             installmentRepository.saveAll(unpaidInstallments);
         }
 
+        // parcela paga
         invoice.setStatus(InvoiceStatus.PAID);
+        // limite atualizado
+        invoice.setLimit(invoice.getLimit().add(pendingAmount));
+        // fatura salva
         repository.save(invoice);
+        // cria nova fatura do mês seguinte
         createNextInvoiceIfNecessary(invoice);
 
         return mapper.toDetails(invoice, getInstallmentsForBillingCycle(invoice));
@@ -110,6 +117,10 @@ public class CreditCardInvoiceService {
         debitPaymentWallet(invoice.getWallet(), paymentWalletId, installment.getValue());
         installment.setPaid(true);
         installmentRepository.save(installment);
+
+        // atualizo limite da fatura
+        invoice.setLimit(invoice.getLimit().add(installment.getValue()));
+        repository.save(invoice);
 
         return mapper.toDetails(invoice, getInstallmentsForBillingCycle(invoice));
     }

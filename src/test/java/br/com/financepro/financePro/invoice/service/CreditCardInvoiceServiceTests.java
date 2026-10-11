@@ -71,6 +71,7 @@ class CreditCardInvoiceServiceTests {
 
         Invoice invoice = new Invoice();
         invoice.setId(invoiceId);
+        invoice.setLimit(new BigDecimal("1000.00"));
         invoice.setStatus(InvoiceStatus.EXPIRED);
         invoice.setClosingDate(LocalDate.of(2026, 9, 20));
         invoice.setExpirationDate(LocalDate.of(2026, 9, 27));

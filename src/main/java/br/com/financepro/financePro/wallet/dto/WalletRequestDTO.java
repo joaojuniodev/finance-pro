@@ -20,10 +20,28 @@ public class WalletRequestDTO {
     private UUID accountId;
     private UUID invoiceId;
     private UUID bankId;
+    private BigDecimal creditLimit;
+    private LocalDate closingDate;
+    private LocalDate expirationDate;
 
     public WalletRequestDTO() {}
 
-    public WalletRequestDTO(UUID id, String name, String description, BigDecimal balance, String cardDigits, WalletType type, String color, UUID goalId, UUID accountId, UUID invoiceId, UUID bankId) {
+    public WalletRequestDTO(
+        UUID id,
+        String name,
+        String description,
+        BigDecimal balance,
+        String cardDigits,
+        WalletType type,
+        String color,
+        UUID goalId,
+        UUID accountId,
+        UUID invoiceId,
+        UUID bankId,
+        BigDecimal creditLimit,
+        LocalDate closingDate,
+        LocalDate expirationDate
+    ) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -35,6 +53,9 @@ public class WalletRequestDTO {
         this.accountId = accountId;
         this.invoiceId = invoiceId;
         this.bankId = bankId;
+        this.creditLimit = creditLimit;
+        this.closingDate = closingDate;
+        this.expirationDate = expirationDate;
     }
 
     public UUID getId() {
@@ -125,12 +146,49 @@ public class WalletRequestDTO {
         this.bankId = bankId;
     }
 
+    public BigDecimal getCreditLimit() {
+        return creditLimit;
+    }
+
+    public void setCreditLimit(BigDecimal creditLimit) {
+        this.creditLimit = creditLimit;
+    }
+
+    public LocalDate getClosingDate() {
+        return closingDate;
+    }
+
+    public void setClosingDate(LocalDate closingDate) {
+        this.closingDate = closingDate;
+    }
+
+    public LocalDate getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(LocalDate expirationDate) {
+        this.expirationDate = expirationDate;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
 
         WalletRequestDTO that = (WalletRequestDTO) o;
-        return Objects.equals(getId(), that.getId()) && Objects.equals(getName(), that.getName()) && Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getBalance(), that.getBalance()) && Objects.equals(getCardDigits(), that.getCardDigits()) && getType() == that.getType() && Objects.equals(getColor(), that.getColor()) && Objects.equals(getGoalId(), that.getGoalId()) && Objects.equals(getAccountId(), that.getAccountId()) && Objects.equals(getInvoiceId(), that.getInvoiceId()) && Objects.equals(getBankId(), that.getBankId());
+        return Objects.equals(getId(), that.getId())
+            && Objects.equals(getName(), that.getName())
+            && Objects.equals(getDescription(), that.getDescription())
+            && Objects.equals(getBalance(), that.getBalance())
+            && Objects.equals(getCardDigits(), that.getCardDigits())
+            && getType() == that.getType()
+            && Objects.equals(getColor(), that.getColor())
+            && Objects.equals(getGoalId(), that.getGoalId())
+            && Objects.equals(getAccountId(), that.getAccountId())
+            && Objects.equals(getInvoiceId(), that.getInvoiceId())
+            && Objects.equals(getBankId(), that.getBankId())
+            && Objects.equals(getCreditLimit(), that.getCreditLimit())
+            && Objects.equals(getClosingDate(), that.getClosingDate())
+            && Objects.equals(getExpirationDate(), that.getExpirationDate());
     }
 
     @Override
@@ -146,6 +204,9 @@ public class WalletRequestDTO {
         result = 31 * result + Objects.hashCode(getAccountId());
         result = 31 * result + Objects.hashCode(getInvoiceId());
         result = 31 * result + Objects.hashCode(getBankId());
+        result = 31 * result + Objects.hashCode(getCreditLimit());
+        result = 31 * result + Objects.hashCode(getClosingDate());
+        result = 31 * result + Objects.hashCode(getExpirationDate());
         return result;
     }
 }
