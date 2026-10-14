@@ -1,5 +1,5 @@
 cors:
-  originPatterns: http://localhost:5173,http://localhost:5174,https://finance-pro-client-alpha.vercel.app
+  originPatterns: http://localhost:5173,http://localhost:5174,https://capto-app.vercel.app
 spring:
   application:
     name: financePro
