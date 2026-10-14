@@ -4,7 +4,8 @@ import br.com.financepro.financePro.account.controller.AccountController;
 import br.com.financepro.financePro.account.dto.request.AccountRequestDTO;
 import br.com.financepro.financePro.account.dto.response.AccountResponseDTO;
 import br.com.financepro.financePro.account.dto.response.ActivitiesResponseDTO;
-import br.com.financepro.financePro.account.dto.response.DashboardResponseDTO;
+import br.com.financepro.financePro.account.dto.response.DashboardActivityResponseDTO;
+import br.com.financepro.financePro.account.dto.response.FinancialSummaryResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -44,17 +45,35 @@ public interface AccountControllerDocs {
 
     @Operation(
         tags = {"Account"},
-        description = "API route to return Dashboard Overview by Account",
-        summary = "Getting Dashboard Overview",
+        description = "API route to return Summary",
+        summary = "Getting Summary",
         responses = {
             @ApiResponse(description = "Success", responseCode = "200", content = @Content),
             @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
             @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
             @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+            @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+            @ApiResponse(description = "No Content", responseCode = "204", content = @Content),
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<DashboardResponseDTO> getDashboard(UUID accountId, int limit);
+    ResponseEntity<FinancialSummaryResponseDTO> getSummary(@PathVariable UUID accountId);
+
+    @Operation(
+        tags = {"Account"},
+        description = "API route to return Dashboard",
+        summary = "Getting Dashboard",
+        responses = {
+            @ApiResponse(description = "Success", responseCode = "200", content = @Content),
+            @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+            @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+            @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+            @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+            @ApiResponse(description = "No Content", responseCode = "204", content = @Content),
+            @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+        }
+    )
+    ResponseEntity<DashboardActivityResponseDTO> getDashboard(@PathVariable UUID accountId);
 
     @Operation(
         tags = {"Account"},

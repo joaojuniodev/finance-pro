@@ -34,6 +34,12 @@ public class GoalService {
             .toList();
     }
 
+    public List<GoalResponseDTO> getByAccount(UUID accountId) {
+        return repository.findByWalletAccountIdOrderByNameAsc(accountId).stream()
+            .map(mapper::toResponse)
+            .toList();
+    }
+
     public GoalResponseDTO getById(UUID id) {
         log.info("Getting Goal by Id");
 

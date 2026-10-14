@@ -75,6 +75,22 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID>,
     );
 
     @Query("""
+        SELECT CAST(t.registeredAt AS date) AS date, t.type AS type, SUM(t.amount) AS total
+        FROM Transaction t
+        WHERE t.account.id = :accountId
+          AND t.status = COMPLETED
+          AND t.registeredAt >= :startDate
+          AND t.registeredAt < :endDate
+        GROUP BY CAST(t.registeredAt AS date), t.type
+        ORDER BY date ASC
+    """)
+    List<DailyFlowProjection> findCompletedDailyFlowInPeriod(
+        @Param("accountId") UUID accountId,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate
+    );
+
+    @Query("""
         SELECT CAST(t.registeredAt AS date) AS date,
                SUM(CASE WHEN t.type = CREDIT
                         THEN t.amount ELSE -t.amount END) AS netAmount

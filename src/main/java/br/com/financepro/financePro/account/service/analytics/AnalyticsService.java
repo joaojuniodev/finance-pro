@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -54,6 +55,7 @@ public class AnalyticsService {
     @Autowired
     private AccountBalanceTrajectoryService trajectoryService;
 
+    @Transactional(readOnly = true)
     public AnalyticsResponseDTO getAnalytics(UUID accountId, int limit) {
 
         log.info("Getting Analytics by Account ID");

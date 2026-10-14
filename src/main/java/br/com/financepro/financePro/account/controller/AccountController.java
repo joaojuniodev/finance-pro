@@ -2,10 +2,7 @@ package br.com.financepro.financePro.account.controller;
 
 import br.com.financepro.financePro.account.controller.doc.AccountControllerDocs;
 import br.com.financepro.financePro.account.dto.request.AccountRequestDTO;
-import br.com.financepro.financePro.account.dto.response.AccountResponseDTO;
-import br.com.financepro.financePro.account.dto.response.ActivitiesResponseDTO;
-import br.com.financepro.financePro.account.dto.response.AnalyticsResponseDTO;
-import br.com.financepro.financePro.account.dto.response.DashboardResponseDTO;
+import br.com.financepro.financePro.account.dto.response.*;
 import br.com.financepro.financePro.account.service.AccountService;
 import br.com.financepro.financePro.account.service.activities.ActivitiesService;
 import br.com.financepro.financePro.account.service.analytics.AnalyticsService;
@@ -38,16 +35,19 @@ public class AccountController implements AccountControllerDocs {
     @GetMapping
     @Override
     public ResponseEntity<List<AccountResponseDTO>> getAll() {
-        return ResponseEntity.ok().body(service.getAll()); 
+        return ResponseEntity.ok().body(service.getAll());
+    }
+
+    @GetMapping("/summary/{accountId}")
+    @Override
+    public ResponseEntity<FinancialSummaryResponseDTO> getSummary(@PathVariable UUID accountId) {
+        return ResponseEntity.ok(dashboardService.getSummary(accountId));
     }
 
     @GetMapping("/dashboard/{accountId}")
     @Override
-    public ResponseEntity<DashboardResponseDTO> getDashboard(
-        @PathVariable UUID accountId,
-        @RequestParam(defaultValue = "5") int limit
-    ) {
-        return ResponseEntity.ok().body(dashboardService.getDashboard(accountId, limit));
+    public ResponseEntity<DashboardActivityResponseDTO> getDashboard(@PathVariable UUID accountId) {
+        return ResponseEntity.ok(dashboardService.getDashboard(accountId));
     }
 
     @GetMapping("/activities/{accountId}")

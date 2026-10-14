@@ -1,6 +1,5 @@
 package br.com.financepro.financePro.goal.controller;
 
-
 import br.com.financepro.financePro.goal.controller.doc.GoalControllerDocs;
 import br.com.financepro.financePro.goal.dto.GoalRequestDTO;
 import br.com.financepro.financePro.goal.dto.GoalResponseDTO;
@@ -26,6 +25,11 @@ public class GoalController implements GoalControllerDocs {
     @Override
     public ResponseEntity<List<GoalResponseDTO>> getAll() {
         return ResponseEntity.ok().body(service.getAll());
+    }
+
+    @GetMapping("/by-account/{accountId}")
+    public ResponseEntity<List<GoalResponseDTO>> getByAccount(@PathVariable UUID accountId) {
+        return ResponseEntity.ok(service.getByAccount(accountId));
     }
 
     @GetMapping("/{id}")

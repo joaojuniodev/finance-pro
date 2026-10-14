@@ -23,4 +23,7 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
         "recurrences"
     })
     Optional<Account> findWithDashboardById(UUID id);
+
+    @EntityGraph(attributePaths = { "recurrences" })
+    Optional<Account> findWithSummaryById(UUID id);
 }
