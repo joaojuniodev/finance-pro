@@ -41,7 +41,6 @@ public class DashboardService {
     @Autowired
     private TransactionMapper transactionMapper;
 
-    @Autowired
     private Clock clock;
 
     @Transactional(readOnly = true)
