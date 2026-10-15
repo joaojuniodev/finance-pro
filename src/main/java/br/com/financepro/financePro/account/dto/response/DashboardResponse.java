@@ -6,10 +6,9 @@ import br.com.financepro.financePro.transaction.dto.response.TransactionResponse
 import java.time.LocalDate;
 import java.util.List;
 
-public record DashboardActivityResponseDTO(
+public record DashboardResponse(
     LocalDate weekStart,
     LocalDate weekEnd,
     List<EvolutionDataPointDTO> weeklyFlow,
     List<TransactionResponseDTO> recentTransactions
-) {
-}
+) {}

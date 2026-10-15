@@ -46,7 +46,7 @@ class DashboardActivityServiceTests {
     @BeforeEach
     void setUp() {
         Clock clock = Clock.fixed(Instant.parse("2026-10-14T15:00:00Z"), ZoneId.of("America/Sao_Paulo"));
-        service = new DashboardService();
+        service = new DashboardService(accounts, transactions, mapper, clock);
     }
 
     @Test

@@ -46,7 +46,7 @@ public class AccountController implements AccountControllerDocs {
 
     @GetMapping("/dashboard/{accountId}")
     @Override
-    public ResponseEntity<DashboardActivityResponseDTO> getDashboard(@PathVariable UUID accountId) {
+    public ResponseEntity<DashboardResponse> getDashboard(@PathVariable UUID accountId) {
         return ResponseEntity.ok(dashboardService.getDashboard(accountId));
     }
 

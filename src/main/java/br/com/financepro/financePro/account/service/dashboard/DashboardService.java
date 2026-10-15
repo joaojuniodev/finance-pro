@@ -1,6 +1,6 @@
 package br.com.financepro.financePro.account.service.dashboard;
 
-import br.com.financepro.financePro.account.dto.response.DashboardActivityResponseDTO;
+import br.com.financepro.financePro.account.dto.response.DashboardResponse;
 import br.com.financepro.financePro.account.dto.response.FinancialSummaryResponseDTO;
 import br.com.financepro.financePro.account.repository.AccountRepository;
 import br.com.financepro.financePro.common.enums.TransactionType;
@@ -11,7 +11,6 @@ import br.com.financepro.financePro.transaction.dto.response.EvolutionDataPointD
 import br.com.financepro.financePro.transaction.repository.TransactionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,16 +31,22 @@ public class DashboardService {
 
     private static final int RECENT_TRANSACTION_LIMIT = 6;
 
-    @Autowired
-    private AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
+    private final TransactionMapper transactionMapper;
+    private final Clock clock;
 
-    @Autowired
-    private TransactionRepository transactionRepository;
-
-    @Autowired
-    private TransactionMapper transactionMapper;
-
-    private Clock clock;
+    public DashboardService(
+            AccountRepository accountRepository,
+            TransactionRepository transactionRepository,
+            TransactionMapper transactionMapper,
+            Clock clock
+    ) {
+        this.accountRepository = accountRepository;
+        this.transactionRepository = transactionRepository;
+        this.transactionMapper = transactionMapper;
+        this.clock = clock;
+    }
 
     @Transactional(readOnly = true)
     public FinancialSummaryResponseDTO getSummary(UUID accountId) {
@@ -60,7 +65,7 @@ public class DashboardService {
     }
 
     @Transactional(readOnly = true)
-    public DashboardActivityResponseDTO getDashboard(UUID accountId) {
+    public DashboardResponse getDashboard(UUID accountId) {
         if (!accountRepository.existsById(accountId)) {
             throw new NotFoundException("Not found Account by id: " + accountId);
         }
@@ -97,6 +102,6 @@ public class DashboardService {
             accountId, PageRequest.of(0, RECENT_TRANSACTION_LIMIT)
         ).stream().map(transactionMapper::toResponse).toList();
 
-        return new DashboardActivityResponseDTO(weekStart, weekEnd, weeklyFlow, recentTransactions);
+        return new DashboardResponse(weekStart, weekEnd, weeklyFlow, recentTransactions);
     }
 }

@@ -4,7 +4,7 @@ import br.com.financepro.financePro.account.controller.AccountController;
 import br.com.financepro.financePro.account.dto.request.AccountRequestDTO;
 import br.com.financepro.financePro.account.dto.response.AccountResponseDTO;
 import br.com.financepro.financePro.account.dto.response.ActivitiesResponseDTO;
-import br.com.financepro.financePro.account.dto.response.DashboardActivityResponseDTO;
+import br.com.financepro.financePro.account.dto.response.DashboardResponse;
 import br.com.financepro.financePro.account.dto.response.FinancialSummaryResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -73,7 +73,7 @@ public interface AccountControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<DashboardActivityResponseDTO> getDashboard(@PathVariable UUID accountId);
+    ResponseEntity<DashboardResponse> getDashboard(@PathVariable UUID accountId);
 
     @Operation(
         tags = {"Account"},
