@@ -1,5 +1,6 @@
 package br.com.financepro.financePro.installment.model;
 
+import br.com.financepro.financePro.account.model.Account;
 import br.com.financepro.financePro.installmentPlan.model.InstallmentPlan;
 import jakarta.persistence.*;
 
@@ -26,6 +27,10 @@ public class Installment {
 
     @Column
     private Integer year;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
 
     @ManyToOne
     @JoinColumn(name = "installment_plan_id")
@@ -71,6 +76,14 @@ public class Installment {
 
     public void setYear(Integer year) {
         this.year = year;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     public InstallmentPlan getInstallmentPlan() {

@@ -1,6 +1,7 @@
 package br.com.financepro.financePro.account.model;
 
 import br.com.financepro.financePro.category.model.Category;
+import br.com.financepro.financePro.invoice.model.Invoice;
 import br.com.financepro.financePro.recurrence.model.Recurrence;
 import br.com.financepro.financePro.security.model.User;
 import br.com.financepro.financePro.subscription.model.Subscription;
@@ -49,6 +50,9 @@ public class Account {
 
     @OneToMany(mappedBy = "account")
     private Set<Wallet> wallets = new HashSet<>();
+
+    @OneToMany(mappedBy = "account")
+    private Set<Invoice> invoices = new HashSet<>();
 
     @OneToOne
     @JoinColumn(name = "user_id")
@@ -152,6 +156,14 @@ public class Account {
 
     public void setWallets(Set<Wallet> wallets) {
         this.wallets = wallets;
+    }
+
+    public Set<Invoice> getInvoices() {
+        return invoices;
+    }
+
+    public void setInvoices(Set<Invoice> invoices) {
+        this.invoices = invoices;
     }
 
     public User getUser() {

@@ -52,6 +52,18 @@ public interface RecurrenceRepository extends JpaRepository<Recurrence, UUID>, J
     @Query("""
         SELECT r
         FROM Recurrence r
+        WHERE r.account.id = :accountId
+          AND r.status = ACTIVE
+          AND r.nextExecutionDate < :date
+    """)
+    List<Recurrence> findOccurrencesWithPeriod(
+        @Param("accountId") UUID accountId,
+        @Param("date") LocalDate date
+    );
+
+    @Query("""
+        SELECT r
+        FROM Recurrence r
         WHERE r.status = ACTIVE
           OR r.status = PAUSED
           AND r.nextExecutionDate BETWEEN :startDate AND :endDate

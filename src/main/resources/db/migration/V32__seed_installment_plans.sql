@@ -9,7 +9,8 @@ INSERT INTO installment_plans (
     start_date,
     end_date,
     status,
-    invoice_id
+    invoice_id,
+    account_id
 )
 SELECT
     seed.description,
@@ -20,7 +21,8 @@ SELECT
     dates.start_date,
     (dates.start_date + MAKE_INTERVAL(months => seed.times - 1))::DATE,
     seed.status,
-    invoice.id
+    invoice.id,
+    invoice.account_id
 FROM (
     VALUES
         (

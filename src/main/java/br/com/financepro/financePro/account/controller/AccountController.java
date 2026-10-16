@@ -3,9 +3,11 @@ package br.com.financepro.financePro.account.controller;
 import br.com.financepro.financePro.account.controller.doc.AccountControllerDocs;
 import br.com.financepro.financePro.account.dto.request.AccountRequestDTO;
 import br.com.financepro.financePro.account.dto.response.*;
+import br.com.financepro.financePro.account.dto.response.financialHealth.FinancialHealthResponse;
 import br.com.financepro.financePro.account.service.AccountService;
 import br.com.financepro.financePro.account.service.activities.ActivitiesService;
 import br.com.financepro.financePro.account.service.analytics.AnalyticsService;
+import br.com.financepro.financePro.account.service.analytics.FinancialHealthService;
 import br.com.financepro.financePro.account.service.dashboard.DashboardService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,9 @@ public class AccountController implements AccountControllerDocs {
 
     @Autowired
     private AnalyticsService analyticsService;
+
+    @Autowired
+    private FinancialHealthService financialHealthService;
 
     @GetMapping
     @Override
@@ -66,6 +71,11 @@ public class AccountController implements AccountControllerDocs {
         @RequestParam(defaultValue = "6") int limit
     ) {
         return ResponseEntity.ok().body(analyticsService.getAnalytics(accountId, limit));
+    }
+
+    @GetMapping("/financial-health/{accountId}")
+    public ResponseEntity<FinancialHealthResponse> getFinancialHealth(@PathVariable UUID accountId) {
+        return ResponseEntity.ok().body(financialHealthService.buildFinancialHealth(accountId));
     }
 
     @GetMapping("/by-username/{username}")

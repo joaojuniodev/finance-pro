@@ -10,5 +10,7 @@ JOIN roles AS role
     ON role.name = CASE app_user.username
         WHEN 'demo' THEN 'PRO'
         WHEN 'joaojunio' THEN 'FRE'
+        WHEN 'mediano' THEN 'FRE'
+        WHEN 'ruim' THEN 'FRE'
     END
-WHERE app_user.username IN ('demo', 'joaojunio');
+WHERE app_user.username IN ('demo', 'joaojunio', 'mediano', 'ruim');

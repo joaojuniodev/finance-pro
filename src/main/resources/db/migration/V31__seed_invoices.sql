@@ -57,12 +57,13 @@ seed AS (
     FROM billing_dates
 )
 INSERT INTO invoices (
-    "limit",
+    credit_limit,
     status,
     closing_date,
     expiration_date,
     days_until_expiration,
-    wallet_id
+    wallet_id,
+    account_id
 )
 SELECT
     seed.credit_limit,
@@ -70,7 +71,8 @@ SELECT
     seed.closing_date,
     seed.closing_date + seed.days_until_expiration,
     seed.days_until_expiration,
-    wallet.id
+    wallet.id,
+    account.id
 FROM seed
 JOIN users AS app_user
     ON app_user.username = 'demo'

@@ -1,5 +1,6 @@
 package br.com.financepro.financePro.installmentPlan.model;
 
+import br.com.financepro.financePro.account.model.Account;
 import br.com.financepro.financePro.common.enums.InstallmentPlanStatus;
 import br.com.financepro.financePro.installment.model.Installment;
 import br.com.financepro.financePro.invoice.model.Invoice;
@@ -44,6 +45,10 @@ public class InstallmentPlan {
 
     @Enumerated(EnumType.STRING)
     private InstallmentPlanStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
 
     @ManyToOne
     @JoinColumn(name = "invoice_id")
@@ -124,6 +129,14 @@ public class InstallmentPlan {
 
     public void setStatus(InstallmentPlanStatus status) {
         this.status = status;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     public Invoice getInvoice() {

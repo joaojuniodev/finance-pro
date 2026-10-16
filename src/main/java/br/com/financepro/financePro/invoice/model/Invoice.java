@@ -1,5 +1,6 @@
 package br.com.financepro.financePro.invoice.model;
 
+import br.com.financepro.financePro.account.model.Account;
 import br.com.financepro.financePro.common.enums.InvoiceStatus;
 import br.com.financepro.financePro.installmentPlan.model.InstallmentPlan;
 import br.com.financepro.financePro.wallet.model.Wallet;
@@ -38,6 +39,10 @@ public class Invoice {
     @ManyToOne
     @JoinColumn(name = "wallet_id")
     private Wallet wallet;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
 
     @OneToMany(mappedBy = "invoice")
     private List<InstallmentPlan> installmentsPlans = new ArrayList<>();
@@ -98,6 +103,14 @@ public class Invoice {
 
     public void setWallet(Wallet wallet) {
         this.wallet = wallet;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     public List<InstallmentPlan> getInstallmentsPlans() {

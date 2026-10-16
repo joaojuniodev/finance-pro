@@ -131,3 +131,75 @@ LEFT JOIN goals AS goal
     ON goal.name = seed.goal_name
 LEFT JOIN banks AS bank
     ON bank.name = seed.bank_name;
+
+-- Health profiles have no emergency reserve. Only mediano has a savings goal.
+-- Balances match completed transactions; the pending debit of ruim is excluded.
+INSERT INTO wallets (
+    name,
+    description,
+    balance,
+    type,
+    color,
+    goal_id,
+    bank_id,
+    account_id
+)
+SELECT
+    seed.name,
+    seed.description,
+    seed.balance,
+    seed.type,
+    seed.color,
+    goal.id,
+    bank.id,
+    account.id
+FROM (
+    VALUES
+        (
+            'mediano',
+            'Conta principal',
+            'Conta do perfil com saúde financeira mediana',
+            400.00,
+            'CHECKING',
+            '#FF7A00',
+            NULL,
+            'Inter'
+        ),
+        (
+            'mediano',
+            'Cofrinho do notebook',
+            'Meta criada para começar a economizar',
+            0.00,
+            'SAVING',
+            '#820AD1',
+            'Notebook do perfil mediano',
+            'Nubank'
+        ),
+        (
+            'ruim',
+            'Conta principal',
+            'Conta com saldo negativo e despesas pendentes',
+            -400.00,
+            'CHECKING',
+            '#FF7A00',
+            NULL,
+            'Inter'
+        )
+) AS seed (
+    username,
+    name,
+    description,
+    balance,
+    type,
+    color,
+    goal_name,
+    bank_name
+)
+JOIN users AS app_user
+    ON app_user.username = seed.username
+JOIN accounts AS account
+    ON account.user_id = app_user.id
+LEFT JOIN goals AS goal
+    ON goal.name = seed.goal_name
+LEFT JOIN banks AS bank
+    ON bank.name = seed.bank_name;

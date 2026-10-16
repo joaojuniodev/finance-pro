@@ -9,6 +9,7 @@ CREATE TABLE installment_plans (
     end_date DATE,
     status VARCHAR(255),
     invoice_id UUID REFERENCES invoices (id),
+    account_id UUID REFERENCES accounts (id),
     CONSTRAINT ck_installment_plans_status CHECK (
         status IN ('PAYING', 'INVOICED', 'PAID', 'EXPIRED')
     )
@@ -16,3 +17,4 @@ CREATE TABLE installment_plans (
 
 -- The card is reached through invoice_id; no wallet_id or join table.
 CREATE INDEX idx_installment_plans_invoice ON installment_plans (invoice_id);
+CREATE INDEX idx_installment_plans_account ON installment_plans (account_id);

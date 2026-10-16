@@ -26,6 +26,13 @@ FROM (
             6000.00,
             500.00,
             'Viagens'
+        ),
+        (
+            'Notebook do perfil mediano',
+            'Cofrinho criado, ainda sem aportes',
+            3000.00,
+            0.00,
+            'Compras'
         )
 ) AS seed (
     name,

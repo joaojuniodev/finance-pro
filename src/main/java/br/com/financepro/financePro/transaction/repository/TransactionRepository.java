@@ -107,4 +107,18 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID>,
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate
     );
+
+    @Query("""
+        SElECT t
+        FROM Transaction t
+        WHERE t.account.id = :accountId
+          AND t.registeredAt >= :startDate
+          AND t.registeredAt < :endDate
+        ORDER BY t.registeredAt ASC
+    """)
+    List<Transaction> findBetweenStartAndEndOfPeriod(
+        @Param("accountId") UUID accountId,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate
+    );
 }

@@ -7,7 +7,8 @@ INSERT INTO installments (
     is_paid,
     month,
     year,
-    installment_plan_id
+    installment_plan_id,
+    account_id
 )
 SELECT
     CASE
@@ -24,7 +25,8 @@ SELECT
     END,
     EXTRACT(MONTH FROM dates.installment_month)::INTEGER,
     EXTRACT(YEAR FROM dates.installment_month)::INTEGER,
-    plan.id
+    plan.id,
+    plan.account_id
 FROM installment_plans AS plan
 JOIN invoices AS invoice
     ON invoice.id = plan.invoice_id
