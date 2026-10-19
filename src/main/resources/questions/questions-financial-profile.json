@@ -1,0 +1,45 @@
+{
+  "financial-data": [
+    {
+      "financial-security": [
+        {
+          "id": "fp-fc-01",
+          "title": "Nos últimos três meses, como ficaram seus gastos em relação ao dinheiro que entrou?",
+          "options": {
+            "Gastaram bem menos do que entrou": 4,
+            "Gastaram um pouco menos": 3,
+            "Ficaram praticamente iguais": 2,
+            "Gastaram um pouco mais": 1,
+            "Gastaram bem mais": 0,
+            "Não sei dizer": null
+          }
+        },
+        {
+          "id": "fp-fc-02",
+          "title": "Nesse mesmo período, como foi o pagamento das suas contas?",
+          "options": {
+            "Todas foram pagas antes ou no prazo":  4,
+            "Quase todas foram pagas no prazo":  3,
+            "Algumas atrasaram": 2,
+            "Várias atrasaram": 1,
+            "Precisei deixar alguma conta sem pagar": 0
+          }
+        },
+        {
+          "id": "fp-fc-03",
+          "title": "Depois dos gastos essenciais e compromissos do mês, normalmente…",
+          "options": {
+            "Sobra uma quantia confortável": 4,
+            "Sobra um pouco": 3,
+            "Fico praticamente no zero": 2,
+            "Falta um pouco": 1,
+            "Preciso recorrer a crédito, empréstimo ou atraso de contas": 0
+          }
+        }
+      ],
+      "financial-resilience": {
+
+      }
+    }
+  ]
+}

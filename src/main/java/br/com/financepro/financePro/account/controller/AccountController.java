@@ -5,6 +5,7 @@ import br.com.financepro.financePro.account.dto.request.AccountRequestDTO;
 import br.com.financepro.financePro.account.dto.request.firstSteps.FirstStepsRequestDTO;
 import br.com.financepro.financePro.account.dto.response.*;
 import br.com.financepro.financePro.account.dto.response.financialHealth.FinancialHealthResponse;
+import br.com.financepro.financePro.account.dto.response.firstSteps.ResponseTest;
 import br.com.financepro.financePro.account.service.AccountService;
 import br.com.financepro.financePro.account.service.activities.ActivitiesService;
 import br.com.financepro.financePro.account.service.analytics.AnalyticsService;
@@ -102,12 +103,11 @@ public class AccountController implements AccountControllerDocs {
     }
 
     @PostMapping("/first-steps/{username}")
-    @Override
-    public void firstSteps(
+    public ResponseTest firstSteps(
         @PathVariable String username,
         @RequestBody FirstStepsRequestDTO firstSteps
     ) {
-
+        return firstStepsService.firstSteps(firstSteps);
     }
 
     @PostMapping

@@ -7,6 +7,7 @@ import br.com.financepro.financePro.account.dto.response.AccountResponseDTO;
 import br.com.financepro.financePro.account.dto.response.ActivitiesResponseDTO;
 import br.com.financepro.financePro.account.dto.response.DashboardResponse;
 import br.com.financepro.financePro.account.dto.response.FinancialSummaryResponseDTO;
+import br.com.financepro.financePro.account.dto.response.firstSteps.ResponseTest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -154,7 +155,7 @@ public interface AccountControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    void firstSteps(@PathVariable String username, @RequestBody FirstStepsRequestDTO firstSteps);
+    ResponseTest firstSteps(@PathVariable String username, @RequestBody FirstStepsRequestDTO firstSteps);
 
     @Operation(
         tags = {"Account"},
