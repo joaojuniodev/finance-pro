@@ -7,10 +7,12 @@
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(255) NOT NULL,
+    surname VARCHAR(255),
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(150),
     email VARCHAR(255),
     recovery_email VARCHAR(255),
+    completed_questionnaire_financial_life BOOLEAN NOT NULL DEFAULT FALSE,
     account_non_expired BOOLEAN,
     account_non_locked BOOLEAN,
     credentials_non_expired BOOLEAN,

@@ -17,6 +17,9 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String username;
 
+    @Column
+    private String surname;
+
     @Column(length = 12, nullable = false)
     private String password;
 
@@ -28,6 +31,9 @@ public class User implements UserDetails {
 
     @Column(name = "recovery_email")
     private String recoveryEmail;
+
+    @Column(name = "completed_questionnaire_financial_life", nullable = false)
+    private Boolean completedQuestionnaireFinancialLife = false;
 
     @Column(name = "account_non_expired")
     private Boolean accountNonExpired;
@@ -95,6 +101,14 @@ public class User implements UserDetails {
         this.username = username;
     }
 
+    public String getSurname() {
+        return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -125,6 +139,14 @@ public class User implements UserDetails {
 
     public void setRecoveryEmail(String recoveryEmail) {
         this.recoveryEmail = recoveryEmail;
+    }
+
+    public Boolean getCompletedQuestionnaireFinancialLife() {
+        return completedQuestionnaireFinancialLife;
+    }
+
+    public void setCompletedQuestionnaireFinancialLife(Boolean completedQuestionnaireFinancialLife) {
+        this.completedQuestionnaireFinancialLife = completedQuestionnaireFinancialLife;
     }
 
     public Boolean getAccountNonExpired() {

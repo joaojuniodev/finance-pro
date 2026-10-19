@@ -2,6 +2,7 @@ package br.com.financepro.financePro.account.controller;
 
 import br.com.financepro.financePro.account.controller.doc.AccountControllerDocs;
 import br.com.financepro.financePro.account.dto.request.AccountRequestDTO;
+import br.com.financepro.financePro.account.dto.request.firstSteps.FirstStepsRequestDTO;
 import br.com.financepro.financePro.account.dto.response.*;
 import br.com.financepro.financePro.account.dto.response.financialHealth.FinancialHealthResponse;
 import br.com.financepro.financePro.account.service.AccountService;
@@ -9,6 +10,7 @@ import br.com.financepro.financePro.account.service.activities.ActivitiesService
 import br.com.financepro.financePro.account.service.analytics.AnalyticsService;
 import br.com.financepro.financePro.account.service.analytics.FinancialHealthService;
 import br.com.financepro.financePro.account.service.dashboard.DashboardService;
+import br.com.financepro.financePro.account.service.firstSteps.FirstStepsService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +38,9 @@ public class AccountController implements AccountControllerDocs {
 
     @Autowired
     private FinancialHealthService financialHealthService;
+
+    @Autowired
+    private FirstStepsService firstStepsService;
 
     @GetMapping
     @Override
@@ -94,6 +99,15 @@ public class AccountController implements AccountControllerDocs {
     @Override
     public ResponseEntity<AccountResponseDTO> start(@PathVariable String username) {
         return ResponseEntity.ok().body(service.startAccount(username));
+    }
+
+    @PostMapping("/first-steps/{username}")
+    @Override
+    public void firstSteps(
+        @PathVariable String username,
+        @RequestBody FirstStepsRequestDTO firstSteps
+    ) {
+
     }
 
     @PostMapping

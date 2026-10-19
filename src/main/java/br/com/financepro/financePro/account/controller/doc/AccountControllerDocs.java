@@ -2,6 +2,7 @@ package br.com.financepro.financePro.account.controller.doc;
 
 import br.com.financepro.financePro.account.controller.AccountController;
 import br.com.financepro.financePro.account.dto.request.AccountRequestDTO;
+import br.com.financepro.financePro.account.dto.request.firstSteps.FirstStepsRequestDTO;
 import br.com.financepro.financePro.account.dto.response.AccountResponseDTO;
 import br.com.financepro.financePro.account.dto.response.ActivitiesResponseDTO;
 import br.com.financepro.financePro.account.dto.response.DashboardResponse;
@@ -139,6 +140,21 @@ public interface AccountControllerDocs {
         }
     )
     ResponseEntity<AccountResponseDTO> start(@PathVariable String username);
+
+    @Operation(
+        tags = {"Account"},
+        description = "API route to First Steps for User",
+        summary = "First Steps for User",
+        responses = {
+            @ApiResponse(description = "Success", responseCode = "200", content = @Content),
+            @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+            @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+            @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+            @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+            @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
+        }
+    )
+    void firstSteps(@PathVariable String username, @RequestBody FirstStepsRequestDTO firstSteps);
 
     @Operation(
         tags = {"Account"},
