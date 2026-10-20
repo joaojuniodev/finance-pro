@@ -1,45 +1,205 @@
 {
-  "financial-data": [
-    {
-      "financial-security": [
-        {
-          "id": "fp-fc-01",
-          "title": "Nos últimos três meses, como ficaram seus gastos em relação ao dinheiro que entrou?",
-          "options": {
-            "Gastaram bem menos do que entrou": 4,
-            "Gastaram um pouco menos": 3,
-            "Ficaram praticamente iguais": 2,
-            "Gastaram um pouco mais": 1,
-            "Gastaram bem mais": 0,
-            "Não sei dizer": null
-          }
-        },
-        {
-          "id": "fp-fc-02",
-          "title": "Nesse mesmo período, como foi o pagamento das suas contas?",
-          "options": {
-            "Todas foram pagas antes ou no prazo":  4,
-            "Quase todas foram pagas no prazo":  3,
-            "Algumas atrasaram": 2,
-            "Várias atrasaram": 1,
-            "Precisei deixar alguma conta sem pagar": 0
-          }
-        },
-        {
-          "id": "fp-fc-03",
-          "title": "Depois dos gastos essenciais e compromissos do mês, normalmente…",
-          "options": {
-            "Sobra uma quantia confortável": 4,
-            "Sobra um pouco": 3,
-            "Fico praticamente no zero": 2,
-            "Falta um pouco": 1,
-            "Preciso recorrer a crédito, empréstimo ou atraso de contas": 0
-          }
+  "financial-data": {
+    "financial-security": [
+      {
+        "id": "fp-fc-01",
+        "title": "Nos últimos três meses, como ficaram seus gastos em relação ao dinheiro que entrou?",
+        "options": {
+          "Gastaram bem menos do que entrou": 4,
+          "Gastaram um pouco menos": 3,
+          "Ficaram praticamente iguais": 2,
+          "Gastaram um pouco mais": 1,
+          "Gastaram bem mais": 0,
+          "Não sei dizer": null
         }
-      ],
-      "financial-resilience": {
-
+      },
+      {
+        "id": "fp-fc-02",
+        "title": "Nesse mesmo período, como foi o pagamento das suas contas?",
+        "options": {
+          "Todas foram pagas antes ou no prazo": 4,
+          "Quase todas foram pagas no prazo": 3,
+          "Algumas atrasaram": 2,
+          "Várias atrasaram": 1,
+          "Precisei deixar alguma conta sem pagar": 0
+        }
+      },
+      {
+        "id": "fp-fc-03",
+        "title": "Depois dos gastos essenciais e compromissos do mês, normalmente…",
+        "options": {
+          "Sobra uma quantia confortável": 4,
+          "Sobra um pouco": 3,
+          "Fico praticamente no zero": 2,
+          "Falta um pouco": 1,
+          "Preciso recorrer a crédito, empréstimo ou atraso de contas": 0
+        }
       }
-    }
-  ]
+    ],
+    "financial-resilience": [
+      {
+        "id": "fp-fr-04",
+        "title": "Se aparecesse hoje uma despesa inesperada de cerca de 20% da sua renda mensal, o que aconteceria?",
+        "options": {
+          "Eu pagaria usando uma reserva": 4,
+          "Conseguiria pagar reorganizando o mês":  3,
+          "Parcelaria, mas manteria as outras contas": 2,
+          "Precisaria adiar uma conta ou pedir dinheiro emprestado": 1,
+          "Eu não saberia o que fazer": 0
+        }
+      },
+      {
+        "id": "fp-fr-05",
+        "title": "Se sua principal fonte de renda parasse hoje, por quanto tempo manteria os gastos essenciais?",
+        "options": {
+          "Menos de uma semana": 5,
+          "Algumas semanas": 4,
+          "De um a três meses": 3,
+          "De três a seis meses": 2,
+          "Mais de seis meses": 1,
+          "Não sei dizer": 0
+        }
+      }
+    ],
+    "financial-organization-and-control": [
+      {
+        "id": "fp-foc-06",
+        "title": "Eu acompanho quanto ainda posso gastar antes do fim do mês.",
+        "options": {
+          "Quase sempre": 4,
+          "Frequentemente":  3,
+          "Às vezes": 2,
+          "Raramente": 1,
+          "Nunca": 0
+        }
+      },
+      {
+        "id": "fp-foc-07",
+        "title": "Eu sei quais contas e compromissos ainda estão por vencer.",
+        "options": {
+          "Quase sempre": 4,
+          "Frequentemente":  3,
+          "Às vezes": 2,
+          "Raramente": 1,
+          "Nunca": 0
+        }
+      },
+      {
+        "id": "fp-foc-08",
+        "title": "Quando defino uma meta financeira, separo algum valor para ela.",
+        "options": {
+          "Quase sempre": 4,
+          "Frequentemente":  3,
+          "Às vezes": 2,
+          "Raramente": 1,
+          "Nunca": 0
+        }
+      },
+      {
+        "id": "fp-foc-09",
+        "title": "Evito olhar o saldo, a fatura ou as contas quando acho que não vou gostar do que verei.",
+        "options": {
+          "Nunca": 4,
+          "Raramente":  3,
+          "Às vezes": 2,
+          "Frequentemente": 1,
+          "Quase sempre": 0
+        }
+      }
+    ],
+    "financial-impulse-regulation": [
+      {
+        "id": "fp-fir-10",
+        "title": "Antes de uma compra não essencial de valor relevante, o que mais costuma acontecer?",
+        "options": {
+          "Espero um pouco e penso se ainda quero comprar": 4,
+          "Comparo opções e verifico se cabe no orçamento": 3,
+          "Compro se parecer que consigo pagar": 2,
+          "Compro e reorganizo as contas depois": 1,
+          "Geralmente compro sem verificar o impacto": 0
+        }
+      },
+      {
+        "id": "fp-fir-11",
+        "title": "Com que frequência você faz uma compra não planejada e depois se arrepende?",
+        "options": {
+          "Nunca": 4,
+          "Raramente": 3,
+          "Às vezes": 2,
+          "Frequentemente": 1,
+          "Quase sempre": 0
+        }
+      },
+      {
+        "id": "fp-fir-12",
+        "title": "Estresse, ansiedade, tédio ou pressão de outras pessoas fazem você gastar mais do que pretendia?",
+        "options": {
+          "Nunca": 4,
+          "Raramente": 3,
+          "Às vezes": 2,
+          "Frequentemente": 1,
+          "Quase sempre": 0
+        }
+      }
+    ],
+    "financial-balance-and-freedom": [
+      {
+        "id": "fp-fbf-13",
+        "title": "Com que frequência você mantém um gasto de lazer mesmo sabendo que existe uma conta importante pendente?",
+        "options": {
+          "Nunca": 4,
+          "Raramente": 3,
+          "Às vezes": 2,
+          "Frequentemente": 1,
+          "Quase sempre": 0,
+          "Não se aplica": null
+        }
+      },
+      {
+        "id": "fp-fbf-16",
+        "title": "Com que frequência você deixa de comprar algo essencial para manter gastos com lazer, compras ou experiências?",
+        "options": {
+          "Nunca": 4,
+          "Raramente": 3,
+          "Às vezes": 2,
+          "Frequentemente": 1,
+          "Quase sempre": 0
+        }
+      },
+      {
+        "id": "fp-fbf-17",
+        "title": "Qual destas situações mais representa sua vida neste momento?",
+        "options": {
+          "Cuido tanto do futuro que às vezes não aproveito o presente": 4,
+          "Aproveito o presente sem comprometer meus planos": 3,
+          "Às vezes exagero, mas normalmente consigo me reorganizar": 2,
+          "Frequentemente gasto mais do que pretendia": 1,
+          "Minhas decisões de gasto estão prejudicando compromissos importantes": 0
+        }
+      }
+    ],
+    "financial-orientation-the-future": [
+      {
+        "id": "fp-fof-14",
+        "title": "Quando entra um dinheiro que você não esperava, qual opção mais se parece com você?",
+        "options": {
+          "Guardo ou uso para reduzir dívidas": 4,
+          "Divido entre objetivos futuros e algo para aproveitar agora": 3,
+          "Planejo alguma compra ou experiência": 2,
+          "Costumo gastar livremente enquanto está disponível": 1,
+          "Depende muito da situação": 0
+        }
+      },
+      {
+        "id": "fp-fof-15",
+        "title": "Qual frase mais combina com você atualmente?",
+        "options": {
+          "Abro mão de algumas coisas agora para ter mais segurança no futuro": 4,
+          "Equilibro o que quero hoje com meus planos futuros": 3,
+          "Aproveito o presente, desde que minhas contas estejam cobertas": 2,
+          "Priorizo o presente e resolvo o restante depois": 1
+        }
+      }
+    ]
+  }
 }
