@@ -75,19 +75,21 @@ public class FirstStepsService {
     @Autowired
     private ResourceLoader resourceLoader;
 
-    private final int MAX = 4;
+    private static final int MAX = 4;
 
     private double pointsFinancialSecurity = 0;
     private double pointsFinancialResilience = 0;
     private double pointsFinancialOrganizationAndControl = 0;
     private double pointsFinancialImpulseRegulation = 0;
     private double pointsFinancialBalanceAndFreedom = 0;
+    private double pointsFinancialOrientationTheFuture = 0;
 
     double numberQuestionsFinancialSecurity = 0;
     double numberQuestionsFinancialResilience = 0;
     double numberQuestionsFinancialOrganizationAndControl = 0;
     double numberQuestionsFinancialImpulseRegulation = 0;
     double numberQuestionsFinancialBalanceAndFreedom = 0;
+    double numberQuestionsFinancialOrientationTheFuture = 0;
 
     public ResponseTest firstSteps(FirstStepsRequestDTO firstSteps) {
         RootFinancialData root = getLoadJsonFile();
@@ -99,15 +101,18 @@ public class FirstStepsService {
         double maxPointsFinancialOrganizationAndControl = 0;
         double maxPointsFinancialImpulseRegulation = 0;
         double maxPointsFinancialBalanceAndFreedom = 0;
+        double maxPointsFinancialOrientationTheFuture = 0;
 
         numberQuestionsFinancialSecurity = root.financialData().financialSecurity().size();
         numberQuestionsFinancialResilience = root.financialData().financialResilience().size();
         numberQuestionsFinancialOrganizationAndControl = root.financialData().financialOrganizationAndControl().size();
         numberQuestionsFinancialImpulseRegulation = root.financialData().financialImpulseRegulation().size();
         numberQuestionsFinancialBalanceAndFreedom = root.financialData().financialBalanceAndFreedom().size();
+        numberQuestionsFinancialOrientationTheFuture = root.financialData().financialOrientationTheFuture().size();
 
         if (numberQuestionsFinancialSecurity > 0 && numberQuestionsFinancialResilience > 0 &&
-            numberQuestionsFinancialOrganizationAndControl > 0 && numberQuestionsFinancialImpulseRegulation > 0) {
+            numberQuestionsFinancialOrganizationAndControl > 0 && numberQuestionsFinancialImpulseRegulation > 0 &&
+            numberQuestionsFinancialBalanceAndFreedom > 0 && numberQuestionsFinancialOrientationTheFuture > 0) {
             buildQuestions(
                 firstSteps.questionsFinancialSecurity(),
                 root.financialData().financialSecurity(),
@@ -133,12 +138,18 @@ public class FirstStepsService {
                 root.financialData().financialBalanceAndFreedom(),
                 IdentifyFinancial.FINANCIAL_BALANCE_AND_FREEDOM
             );
+            buildQuestions(
+                firstSteps.questionsOrientationTheFuture(),
+                root.financialData().financialOrientationTheFuture(),
+                IdentifyFinancial.FINANCIAL_ORIENTATION_THE_FUTURE
+            );
 
             maxPointsFinancialSecurity = numberQuestionsFinancialSecurity * MAX;
             maxPointsFinancialResilience = numberQuestionsFinancialResilience * MAX;
             maxPointsFinancialOrganizationAndControl = numberQuestionsFinancialOrganizationAndControl * MAX;
             maxPointsFinancialImpulseRegulation = numberQuestionsFinancialImpulseRegulation * MAX;
             maxPointsFinancialBalanceAndFreedom = numberQuestionsFinancialBalanceAndFreedom * MAX;
+            maxPointsFinancialOrientationTheFuture = numberQuestionsFinancialOrientationTheFuture * 4;
         }
 
         pointsFinancialSecurity = calculatePoints(pointsFinancialSecurity, maxPointsFinancialSecurity);
@@ -146,8 +157,9 @@ public class FirstStepsService {
         pointsFinancialOrganizationAndControl = calculatePoints(pointsFinancialOrganizationAndControl, maxPointsFinancialOrganizationAndControl);
         pointsFinancialImpulseRegulation = calculatePoints(pointsFinancialImpulseRegulation, maxPointsFinancialImpulseRegulation);
         pointsFinancialBalanceAndFreedom = calculatePoints(pointsFinancialBalanceAndFreedom, maxPointsFinancialBalanceAndFreedom);
+        pointsFinancialOrientationTheFuture = calculatePoints(pointsFinancialOrientationTheFuture, maxPointsFinancialOrientationTheFuture);
 
-        return new ResponseTest(pointsFinancialSecurity, pointsFinancialResilience, pointsFinancialOrganizationAndControl, pointsFinancialImpulseRegulation);
+        return new ResponseTest(pointsFinancialSecurity, pointsFinancialResilience, pointsFinancialOrganizationAndControl, pointsFinancialImpulseRegulation, pointsFinancialBalanceAndFreedom, pointsFinancialOrientationTheFuture);
     }
 
     private void buildQuestions(List<Question> questions, List<QuestionJson> financialData, IdentifyFinancial identify) {
