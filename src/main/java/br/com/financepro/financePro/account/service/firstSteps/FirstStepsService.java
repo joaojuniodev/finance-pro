@@ -3,79 +3,40 @@ package br.com.financepro.financePro.account.service.firstSteps;
 import br.com.financepro.financePro.account.dto.request.firstSteps.FirstStepsRequestDTO;
 import br.com.financepro.financePro.account.dto.request.firstSteps.Question;
 import br.com.financepro.financePro.account.dto.response.firstSteps.ResponseTest;
+import br.com.financepro.financePro.common.enums.IdentifyFinancial;
+import br.com.financepro.financePro.common.exceptions.NotFoundException;
+import br.com.financepro.financePro.common.json.FinancialJsonFileReader;
+import br.com.financepro.financePro.common.json.QuestionJson;
+import br.com.financepro.financePro.common.json.RootFinancialData;
+import br.com.financepro.financePro.financialProfile.dto.FinancialDimensionsDTO;
+import br.com.financepro.financePro.financialProfile.service.BuildFinancialProfileService;
 import br.com.financepro.financePro.security.repository.UserRepository;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
-import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
-
-record RootFinancialData(
-    @JsonProperty("financial-data")
-    FinancialCategory financialData
-){}
-
-record FinancialCategory(
-    @JsonProperty("financial-security")
-    List<QuestionJson> financialSecurity,
-
-    @JsonProperty("financial-resilience")
-    List<QuestionJson> financialResilience,
-
-    @JsonProperty("financial-organization-and-control")
-    List<QuestionJson> financialOrganizationAndControl,
-
-    @JsonProperty("financial-impulse-regulation")
-    List<QuestionJson> financialImpulseRegulation,
-
-    @JsonProperty("financial-balance-and-freedom")
-    List<QuestionJson> financialBalanceAndFreedom,
-
-    @JsonProperty("financial-orientation-the-future")
-    List<QuestionJson> financialOrientationTheFuture
-){}
-
-record QuestionJson(
-    String id,
-
-    @JsonProperty("title")
-    String title,
-
-    Map<String, Integer> options
-){}
-
-enum IdentifyFinancial {
-    FINANCIAL_SECURITY,
-    FINANCIAL_RESILIENCE,
-    FINANCIAL_ORGANIZATION_AND_CONTROL,
-    FINANCIAL_IMPULSE_REGULATION,
-    FINANCIAL_BALANCE_AND_FREEDOM,
-    FINANCIAL_ORIENTATION_THE_FUTURE
-}
 
 @Service
 public class FirstStepsService {
-    private static final Logger log = LoggerFactory.getLogger(FirstStepsService.class.getName());
 
-    private static final String path = "classpath:questions/questions-financial-profile.json";
+    private static final Logger log = LoggerFactory.getLogger(FirstStepsService.class.getName());
 
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private BuildFinancialProfileService buildFinancialProfile;
 
     @Autowired
-    private ResourceLoader resourceLoader;
+    private FinancialJsonFileReader jsonFileReader;
 
+    private static final int DIMENSIONS = 6;
     private static final int MAX = 4;
+
+    private double financialIndex = 0;
 
     private double pointsFinancialSecurity = 0;
     private double pointsFinancialResilience = 0;
@@ -92,7 +53,14 @@ public class FirstStepsService {
     double numberQuestionsFinancialOrientationTheFuture = 0;
 
     public ResponseTest firstSteps(FirstStepsRequestDTO firstSteps) {
-        RootFinancialData root = getLoadJsonFile();
+
+        var user = userRepository.findByUserName(firstSteps.username());
+
+        if (user == null) {
+            throw new NotFoundException("Not found this User by username: " + firstSteps.username());
+        }
+
+        RootFinancialData root = jsonFileReader.read();
 
         assert root != null;
 
@@ -110,9 +78,7 @@ public class FirstStepsService {
         numberQuestionsFinancialBalanceAndFreedom = root.financialData().financialBalanceAndFreedom().size();
         numberQuestionsFinancialOrientationTheFuture = root.financialData().financialOrientationTheFuture().size();
 
-        if (numberQuestionsFinancialSecurity > 0 && numberQuestionsFinancialResilience > 0 &&
-            numberQuestionsFinancialOrganizationAndControl > 0 && numberQuestionsFinancialImpulseRegulation > 0 &&
-            numberQuestionsFinancialBalanceAndFreedom > 0 && numberQuestionsFinancialOrientationTheFuture > 0) {
+        if (validateNumberQuestions()) {
             buildQuestions(
                 firstSteps.questionsFinancialSecurity(),
                 root.financialData().financialSecurity(),
@@ -134,12 +100,12 @@ public class FirstStepsService {
                 IdentifyFinancial.FINANCIAL_IMPULSE_REGULATION
             );
             buildQuestions(
-                firstSteps.questionsBalanceAndFreedom(),
+                firstSteps.questionsFinancialBalanceAndFreedom(),
                 root.financialData().financialBalanceAndFreedom(),
                 IdentifyFinancial.FINANCIAL_BALANCE_AND_FREEDOM
             );
             buildQuestions(
-                firstSteps.questionsOrientationTheFuture(),
+                firstSteps.questionsFinancialOrientationTheFuture(),
                 root.financialData().financialOrientationTheFuture(),
                 IdentifyFinancial.FINANCIAL_ORIENTATION_THE_FUTURE
             );
@@ -149,7 +115,7 @@ public class FirstStepsService {
             maxPointsFinancialOrganizationAndControl = numberQuestionsFinancialOrganizationAndControl * MAX;
             maxPointsFinancialImpulseRegulation = numberQuestionsFinancialImpulseRegulation * MAX;
             maxPointsFinancialBalanceAndFreedom = numberQuestionsFinancialBalanceAndFreedom * MAX;
-            maxPointsFinancialOrientationTheFuture = numberQuestionsFinancialOrientationTheFuture * 4;
+            maxPointsFinancialOrientationTheFuture = numberQuestionsFinancialOrientationTheFuture * MAX;
         }
 
         pointsFinancialSecurity = calculatePoints(pointsFinancialSecurity, maxPointsFinancialSecurity);
@@ -159,7 +125,28 @@ public class FirstStepsService {
         pointsFinancialBalanceAndFreedom = calculatePoints(pointsFinancialBalanceAndFreedom, maxPointsFinancialBalanceAndFreedom);
         pointsFinancialOrientationTheFuture = calculatePoints(pointsFinancialOrientationTheFuture, maxPointsFinancialOrientationTheFuture);
 
-        return new ResponseTest(pointsFinancialSecurity, pointsFinancialResilience, pointsFinancialOrganizationAndControl, pointsFinancialImpulseRegulation, pointsFinancialBalanceAndFreedom, pointsFinancialOrientationTheFuture);
+        financialIndex =
+            (pointsFinancialSecurity + pointsFinancialResilience
+            + pointsFinancialOrganizationAndControl + pointsFinancialImpulseRegulation
+            + pointsFinancialBalanceAndFreedom + pointsFinancialOrientationTheFuture)
+            / DIMENSIONS;
+
+        buildFinancialProfile.build(new FinancialDimensionsDTO(
+            pointsFinancialSecurity,
+            pointsFinancialResilience,
+            pointsFinancialOrganizationAndControl,
+            pointsFinancialImpulseRegulation,
+            pointsFinancialBalanceAndFreedom,
+            pointsFinancialOrientationTheFuture
+        ), root, firstSteps, user);
+
+        return new ResponseTest(financialIndex, pointsFinancialSecurity, pointsFinancialResilience, pointsFinancialOrganizationAndControl, pointsFinancialImpulseRegulation, pointsFinancialBalanceAndFreedom, pointsFinancialOrientationTheFuture);
+    }
+
+    private boolean validateNumberQuestions() {
+        return numberQuestionsFinancialSecurity > 0 && numberQuestionsFinancialResilience > 0 &&
+            numberQuestionsFinancialOrganizationAndControl > 0 && numberQuestionsFinancialImpulseRegulation > 0 &&
+            numberQuestionsFinancialBalanceAndFreedom > 0 && numberQuestionsFinancialOrientationTheFuture > 0;
     }
 
     private void buildQuestions(List<Question> questions, List<QuestionJson> financialData, IdentifyFinancial identify) {
@@ -185,6 +172,8 @@ public class FirstStepsService {
             pointsFinancialImpulseRegulation += point;
         } else if (name.equals(IdentifyFinancial.FINANCIAL_BALANCE_AND_FREEDOM)) {
             pointsFinancialBalanceAndFreedom += point;
+        } else {
+            pointsFinancialOrientationTheFuture += point;
         }
     }
 
@@ -199,22 +188,12 @@ public class FirstStepsService {
             numberQuestionsFinancialImpulseRegulation -= 1;
         } else if (name.equals(IdentifyFinancial.FINANCIAL_BALANCE_AND_FREEDOM)) {
             numberQuestionsFinancialBalanceAndFreedom -= 1;
+        } else {
+            numberQuestionsFinancialOrientationTheFuture -= 1;
         }
     }
 
     private double calculatePoints(double points, double maxPoints) {
         return (points / maxPoints) * 100;
-    }
-
-    private RootFinancialData getLoadJsonFile() {
-        Resource resource = resourceLoader.getResource(path);
-
-        try (InputStream inputStream = resource.getInputStream()) {
-            return objectMapper.readValue(inputStream, RootFinancialData.class);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 }

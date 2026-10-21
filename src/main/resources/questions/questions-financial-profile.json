@@ -52,12 +52,12 @@
         "id": "fp-fr-05",
         "title": "Se sua principal fonte de renda parasse hoje, por quanto tempo manteria os gastos essenciais?",
         "options": {
-          "Menos de uma semana": 5,
-          "Algumas semanas": 4,
-          "De um a três meses": 3,
-          "De três a seis meses": 2,
-          "Mais de seis meses": 1,
-          "Não sei dizer": 0
+          "Menos de uma semana": 0,
+          "Algumas semanas": 1,
+          "De um a três meses": 2,
+          "De três a seis meses": 3,
+          "Mais de seis meses": 4,
+          "Não sei dizer": null
         }
       }
     ],
@@ -113,7 +113,7 @@
         "title": "Antes de uma compra não essencial de valor relevante, o que mais costuma acontecer?",
         "options": {
           "Espero um pouco e penso se ainda quero comprar": 4,
-          "Comparo opções e verifico se cabe no orçamento": 3,
+          "Comparo opções e verifico se cabe no orçamento": 4,
           "Compro se parecer que consigo pagar": 2,
           "Compro e reorganizo as contas depois": 1,
           "Geralmente compro sem verificar o impacto": 0
@@ -170,9 +170,9 @@
         "id": "fp-fbf-17",
         "title": "Qual destas situações mais representa sua vida neste momento?",
         "options": {
-          "Cuido tanto do futuro que às vezes não aproveito o presente": 4,
-          "Aproveito o presente sem comprometer meus planos": 3,
-          "Às vezes exagero, mas normalmente consigo me reorganizar": 2,
+          "Cuido tanto do futuro que às vezes não aproveito o presente": 2,
+          "Aproveito o presente sem comprometer meus planos": 4,
+          "Às vezes exagero, mas normalmente consigo me reorganizar": 3,
           "Frequentemente gasto mais do que pretendia": 1,
           "Minhas decisões de gasto estão prejudicando compromissos importantes": 0
         }
@@ -187,17 +187,17 @@
           "Divido entre objetivos futuros e algo para aproveitar agora": 3,
           "Planejo alguma compra ou experiência": 2,
           "Costumo gastar livremente enquanto está disponível": 1,
-          "Depende muito da situação": 0
+          "Depende muito da situação": null
         }
       },
       {
         "id": "fp-fof-15",
         "title": "Qual frase mais combina com você atualmente?",
         "options": {
-          "Abro mão de algumas coisas agora para ter mais segurança no futuro": 4,
-          "Equilibro o que quero hoje com meus planos futuros": 3,
-          "Aproveito o presente, desde que minhas contas estejam cobertas": 2,
-          "Priorizo o presente e resolvo o restante depois": 1
+          "Abro mão de algumas coisas agora para ter mais segurança no futuro": 3,
+          "Equilibro o que quero hoje com meus planos futuros": 4,
+          "Aproveito o presente, desde que minhas contas estejam cobertas": 3,
+          "Priorizo o presente e resolvo o restante depois": 0
         }
       }
     ]

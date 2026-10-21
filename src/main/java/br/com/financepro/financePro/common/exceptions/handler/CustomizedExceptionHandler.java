@@ -1,5 +1,6 @@
 package br.com.financepro.financePro.common.exceptions.handler;
 
+import br.com.financepro.financePro.common.exceptions.FileException;
 import br.com.financepro.financePro.common.exceptions.dto.ExceptionResponse;
 import br.com.financepro.financePro.common.exceptions.InsufficientBalanceException;
 import br.com.financepro.financePro.common.exceptions.InvalidJwtAuthenticationException;
@@ -56,6 +57,19 @@ public class CustomizedExceptionHandler {
 
     @ExceptionHandler(InsufficientBalanceException.class)
     public final ResponseEntity<ExceptionResponse> handleInsufficientBalanceException(Exception ex, WebRequest request) {
+        ExceptionResponse response = new ExceptionResponse(
+            ex.getMessage(),
+            request.getDescription(true),
+            new Date()
+        );
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(response);
+    }
+
+    @ExceptionHandler(FileException.class)
+    public final ResponseEntity<ExceptionResponse> handleFileException(Exception ex, WebRequest request) {
         ExceptionResponse response = new ExceptionResponse(
             ex.getMessage(),
             request.getDescription(true),

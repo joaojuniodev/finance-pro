@@ -9,6 +9,6 @@ public record FirstStepsRequestDTO(
     List<Question> questionsFinancialResilience,
     List<Question> questionsFinancialOrganizationAndControl,
     List<Question> questionsFinancialImpulseRegulation,
-    List<Question> questionsBalanceAndFreedom,
-    List<Question> questionsOrientationTheFuture
+    List<Question> questionsFinancialBalanceAndFreedom,
+    List<Question> questionsFinancialOrientationTheFuture
 ) {}
