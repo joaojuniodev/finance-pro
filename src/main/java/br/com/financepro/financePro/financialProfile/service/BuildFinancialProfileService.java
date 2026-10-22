@@ -21,6 +21,19 @@ public class BuildFinancialProfileService {
     // Momento financeiro:
     // Segurança financeira - Resiliência financeira - respostas críticas relacinadas a contas, crédito e imprevistos
 
+    // Identificar as atenções críticas
+
+    // Tendência financeira:
+    // Organização e controle - Regulação de impulsos - Orientação para o futuro - Equilíbrio e liberdade - respostas críticas comportamentais
+
+    // Descobrir a força principal
+
+    // Descobrir a principal oportunidade
+
+    // Calcular a confiança (confiança do resultado do perfil financeiro)
+
+    // Construir a síntese interpretativa
+
     @Autowired
     private FinancialProfileRepository repository;
 
@@ -30,15 +43,15 @@ public class BuildFinancialProfileService {
     private final String[] responsesCriticalOfFinancialMoment = new String[]
         {"fp-fc-01", "fp-fc-02", "fp-fc-03", "fp-fr-04", "fp-fr-05", "fp-foc-09", "fp-fbf-13", "fp-fbf-16", "fp-fbf-17"};
 
-    public void build(FinancialDimensionsDTO dimensions, RootFinancialData financialData, FirstStepsRequestDTO firstSteps, User user) {
+    public void execute(FinancialDimensionsDTO dimensions, FirstStepsRequestDTO firstSteps, User user) {
         log.info("Building Financial Profile this User");
 
-        var moment = analyzeFinancialMoment(dimensions.financialSecurity(), dimensions.financialResilience(), financialData, firstSteps);
+        var moment = analyzeFinancialMoment(dimensions.financialSecurity(), dimensions.financialResilience(), firstSteps);
 
         System.out.println(moment);
     }
 
-    private String analyzeFinancialMoment(double security, double resilience, RootFinancialData financialData, FirstStepsRequestDTO firstSteps) {
+    private String analyzeFinancialMoment(double security, double resilience, FirstStepsRequestDTO firstSteps) {
 
         String moment = "";
 
@@ -111,10 +124,29 @@ public class BuildFinancialProfileService {
         // 4. No máximo confortável
         // 5. Resiliente
 
-        if (under_pressure > 0) moment = FinancialMomentsFlag.UNDER_PRESSURE;
-        else if (under_reorganization > 0) moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
-        else if (stable > 0) moment = FinancialMomentsFlag.STABLE;
-        else if (comfortable > 0) moment = FinancialMomentsFlag.COMFORTABLE;
+        if (under_pressure > 0) {
+            if (moment.equals(FinancialMomentsFlag.UNDER_REORGANIZATION) || moment.equals(FinancialMomentsFlag.STABLE) ||
+                moment.equals(FinancialMomentsFlag.COMFORTABLE) || moment.equals(FinancialMomentsFlag.RESILIENT)) {
+                moment = FinancialMomentsFlag.UNDER_PRESSURE;
+            }
+        }
+        else if (under_reorganization > 0) {
+            if (moment.equals(FinancialMomentsFlag.STABLE) || moment.equals(FinancialMomentsFlag.COMFORTABLE) ||
+                moment.equals(FinancialMomentsFlag.RESILIENT)) {
+                moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
+            }
+        }
+        else if (stable > 0) {
+            if (moment.equals(FinancialMomentsFlag.COMFORTABLE) || moment.equals(FinancialMomentsFlag.RESILIENT)) {
+                moment = FinancialMomentsFlag.STABLE;
+            }
+
+        }
+        else if (comfortable > 0) {
+            if (moment.equals(FinancialMomentsFlag.RESILIENT)) {
+                moment = FinancialMomentsFlag.COMFORTABLE;
+            }
+        }
 
         return moment;
     }

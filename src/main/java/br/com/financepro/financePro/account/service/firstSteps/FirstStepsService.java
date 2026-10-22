@@ -131,14 +131,14 @@ public class FirstStepsService {
             + pointsFinancialBalanceAndFreedom + pointsFinancialOrientationTheFuture)
             / DIMENSIONS;
 
-        buildFinancialProfile.build(new FinancialDimensionsDTO(
+        buildFinancialProfile.execute(new FinancialDimensionsDTO(
             pointsFinancialSecurity,
             pointsFinancialResilience,
             pointsFinancialOrganizationAndControl,
             pointsFinancialImpulseRegulation,
             pointsFinancialBalanceAndFreedom,
             pointsFinancialOrientationTheFuture
-        ), root, firstSteps, user);
+        ), firstSteps, user);
 
         return new ResponseTest(financialIndex, pointsFinancialSecurity, pointsFinancialResilience, pointsFinancialOrganizationAndControl, pointsFinancialImpulseRegulation, pointsFinancialBalanceAndFreedom, pointsFinancialOrientationTheFuture);
     }
