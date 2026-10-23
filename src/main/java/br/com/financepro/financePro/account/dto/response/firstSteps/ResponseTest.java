@@ -10,5 +10,6 @@ public record ResponseTest(
     Map<String, String> mainStrength,
     Map<String, String> keyOpportunity,
     Integer confidenceScore,
-    Map<String, String> confidenceInTheResult
+    Map<String, String> confidenceInTheResult,
+    String interpretiveSynthesis
 ) {}

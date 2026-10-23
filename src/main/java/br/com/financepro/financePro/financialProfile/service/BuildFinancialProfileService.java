@@ -24,6 +24,7 @@ import java.util.Map;
 import static br.com.financepro.financePro.financialProfile.flags.CurrentAreaOfFocusFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.ConfidenceInTheResultFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.FinancialTrendFlag.*;
+import static br.com.financepro.financePro.financialProfile.flags.InterpretiveSynthesisFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.KeyOpportunityFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.MainStrengthFlag.*;
 
@@ -63,6 +64,14 @@ public class BuildFinancialProfileService {
         var mainStrength = analyzeMainStrength(dimensions, firstSteps, root);
         var keyOpportunity = analyzeKeyOpportunity(dimensions, firstSteps, root);
         var confidence = analyzeConfidence(firstSteps, root);
+        var interpretiveSynthesis = buildInterpretiveSynthesis(
+            trend,
+            moment,
+            mainStrength,
+            keyOpportunity,
+            attentionAnalysis.main(),
+            confidence.result()
+        );
 
         System.out.println(moment);
 
@@ -74,8 +83,48 @@ public class BuildFinancialProfileService {
             mainStrength,
             keyOpportunity,
             confidence.score(),
-            confidence.result()
+            confidence.result(),
+            interpretiveSynthesis
         );
+    }
+
+    private String buildInterpretiveSynthesis(
+        Map<String, String> trend,
+        String moment,
+        Map<String, String> mainStrength,
+        Map<String, String> keyOpportunity,
+        Map<String, String> mainAttention,
+        Map<String, String> confidence
+    ) {
+        String confidenceLevel = firstKey(confidence);
+        if (INCONCLUSIVE.equals(confidenceLevel)) return INCONCLUSIVE_SYNTHESIS;
+
+        List<String> parts = new ArrayList<>();
+        addSynthesisPart(parts, CONFIDENCE_INTRODUCTIONS, confidenceLevel);
+        addSynthesisPart(parts, TREND_SYNTHESIS, firstKey(trend));
+        addSynthesisPart(parts, MOMENT_SYNTHESIS, moment);
+        addSynthesisPart(parts, STRENGTH_SYNTHESIS, firstKey(mainStrength));
+
+        String attention = firstKey(mainAttention);
+        if (NO_CURRENT_CRITICAL_ATTENTION.equals(attention)) {
+            parts.add(NO_CRITICAL_ATTENTION_SYNTHESIS);
+        } else {
+            addSynthesisPart(parts, ATTENTION_SYNTHESIS, attention);
+        }
+
+        addSynthesisPart(parts, OPPORTUNITY_SYNTHESIS, firstKey(keyOpportunity));
+        return String.join(" ", parts);
+    }
+
+    private void addSynthesisPart(List<String> parts, Map<String, String> predefinedTexts, String key) {
+        if (key == null) return;
+
+        String text = predefinedTexts.get(key);
+        if (text != null) parts.add(text);
+    }
+
+    private String firstKey(Map<String, String> result) {
+        return result.keySet().stream().findFirst().orElse(null);
     }
 
     private ConfidenceAnalysis analyzeConfidence(FirstStepsRequestDTO firstSteps, RootFinancialData root) {

@@ -444,6 +444,23 @@ Exemplo:
 > **Planejador em construção — em reorganização**  
 > Você pensa no futuro e demonstra bom controle sobre compras impulsivas, mas ainda encontra dificuldade para acompanhar seus compromissos e criar uma reserva para imprevistos.
 
+### 9.4 Síntese interpretativa
+
+A síntese interpretativa não cria uma nova pontuação ou classificação. Ela transforma os resultados já calculados em uma mensagem única e compreensível para o usuário.
+
+O texto combina, nesta ordem:
+
+1. o nível de confiança, que define quão afirmativa pode ser a mensagem;
+2. a tendência financeira;
+3. o momento financeiro atual;
+4. a força principal;
+5. o ponto de atenção principal, quando existir;
+6. a oportunidade principal, quando existir.
+
+Cada resultado seleciona um trecho previamente definido. Isso mantém a linguagem consistente, explicável e não determinista sem exigir uma resposta diferente para cada combinação possível.
+
+Quando a confiança for inconclusiva, a síntese não deve afirmar uma tendência, momento, força ou vulnerabilidade. Deve apenas informar que ainda não existem dados suficientes e convidar o usuário a revisar ou completar as respostas.
+
 ## 10. Confiança e divergência do usuário
 
 Registrar separadamente:

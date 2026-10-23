@@ -17,6 +17,7 @@ import java.util.Map;
 import static br.com.financepro.financePro.financialProfile.flags.ConfidenceInTheResultFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.CurrentAreaOfFocusFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.FinancialTrendFlag.*;
+import static br.com.financepro.financePro.financialProfile.flags.InterpretiveSynthesisFlag.INCONCLUSIVE_SYNTHESIS;
 import static br.com.financepro.financePro.financialProfile.flags.KeyOpportunityFlag.BUILD_FINANCIAL_RESILIENCE;
 import static br.com.financepro.financePro.financialProfile.flags.KeyOpportunityFlag.IMPROVE_FINANCIAL_SECURITY;
 import static br.com.financepro.financePro.financialProfile.flags.MainStrengthFlag.FINANCIAL_SECURITY;
@@ -293,6 +294,62 @@ class BuildFinancialProfileServiceTests {
             assertThat(result.confidenceScore()).isEqualTo(85);
             assertThat(result.confidenceInTheResult()).containsOnlyKeys(MODERATE);
         }
+    }
+
+    @Test
+    void shouldBuildInterpretiveSynthesisFromTheCalculatedProfile() {
+        var result = service.execute(
+            dimensions(75, 75, 75, 75, 75, 75),
+            completeRequest(Map.of()),
+            null,
+            root
+        );
+
+        assertThat(result.interpretiveSynthesis())
+            .contains("retrato consistente")
+            .contains("planejar suas decisões")
+            .contains("boa capacidade para enfrentar imprevistos")
+            .contains("Sua principal força")
+            .contains("Nenhum sinal crítico relevante");
+    }
+
+    @Test
+    void shouldIncludeMainAttentionAndOpportunityInTheSynthesis() {
+        var result = service.execute(
+            dimensions(50, 60, 65, 50, 30, 60),
+            completeRequest(Map.of(
+                "fp-fc-01", "Ficaram praticamente iguais",
+                "fp-fbf-16", "Quase sempre"
+            )),
+            null,
+            root
+        );
+
+        assertThat(result.interpretiveSynthesis())
+            .contains("preservar necessidades essenciais")
+            .contains("equilibrar melhor renda, despesas e compromissos");
+    }
+
+    @Test
+    void shouldNotBuildADefinitiveSynthesisWhenTheResultIsInconclusive() {
+        FirstStepsRequestDTO complete = completeRequest(Map.of());
+        FirstStepsRequestDTO incomplete = request(
+            complete.questionsFinancialSecurity(),
+            List.of(question("fp-fr-05", "Não sei dizer")),
+            complete.questionsFinancialOrganizationAndControl(),
+            complete.questionsFinancialImpulseRegulation(),
+            complete.questionsFinancialBalanceAndFreedom(),
+            complete.questionsFinancialOrientationTheFuture()
+        );
+
+        var result = service.execute(
+            dimensions(75, 0, 75, 75, 75, 75),
+            incomplete,
+            null,
+            root
+        );
+
+        assertThat(result.interpretiveSynthesis()).isEqualTo(INCONCLUSIVE_SYNTHESIS);
     }
 
     private void assertTrend(String expectedTrend, FinancialDimensionsDTO dimensions, FirstStepsRequestDTO request) {
