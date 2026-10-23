@@ -2,6 +2,8 @@ package br.com.financepro.financePro.financialProfile.service;
 
 import br.com.financepro.financePro.account.dto.request.firstSteps.FirstStepsRequestDTO;
 import br.com.financepro.financePro.account.dto.request.firstSteps.Question;
+import br.com.financepro.financePro.account.dto.response.firstSteps.ResponseTest;
+import br.com.financepro.financePro.common.json.QuestionJson;
 import br.com.financepro.financePro.common.json.RootFinancialData;
 import br.com.financepro.financePro.financialProfile.dto.FinancialDimensionsDTO;
 import br.com.financepro.financePro.financialProfile.flags.FinancialMomentsFlag;
@@ -12,6 +14,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import static br.com.financepro.financePro.financialProfile.flags.CurrentAreaOfFocusFlag.*;
+import static br.com.financepro.financePro.financialProfile.flags.KeyOpportunityFlag.*;
 
 @Service
 public class BuildFinancialProfileService {
@@ -43,30 +54,195 @@ public class BuildFinancialProfileService {
     private final String[] responsesCriticalOfFinancialMoment = new String[]
         {"fp-fc-01", "fp-fc-02", "fp-fc-03", "fp-fr-04", "fp-fr-05", "fp-foc-09", "fp-fbf-13", "fp-fbf-16", "fp-fbf-17"};
 
-    public void execute(FinancialDimensionsDTO dimensions, FirstStepsRequestDTO firstSteps, User user) {
+    public ResponseTest execute(FinancialDimensionsDTO dimensions, FirstStepsRequestDTO firstSteps, User user, RootFinancialData root) {
         log.info("Building Financial Profile this User");
 
         var moment = analyzeFinancialMoment(dimensions.financialSecurity(), dimensions.financialResilience(), firstSteps);
+        var attentionAnalysis = analyzeCurrentAreaOfFocus(firstSteps, root);
+        var keyOpportunity = analyzeKeyOpportunity(dimensions, firstSteps, root);
 
         System.out.println(moment);
+
+        return new ResponseTest(moment, attentionAnalysis.all(), attentionAnalysis.main(), keyOpportunity);
     }
+
+    private AttentionAnalysis analyzeCurrentAreaOfFocus(FirstStepsRequestDTO firstSteps, RootFinancialData root) {
+        Map<String, AttentionCandidate> candidates = new LinkedHashMap<>();
+
+        for (Question question : firstSteps.questionsFinancialSecurity()) {
+            Integer score = findScore(question, root.financialData().financialSecurity());
+
+            if ("fp-fc-02".equals(question.questionId())) {
+                if (Integer.valueOf(1).equals(score)) {
+                    addAttention(candidates, OVERDUE_BILLS, OVERDUE_BILLS_DESC, score, 5);
+                } else if (Integer.valueOf(0).equals(score)) {
+                    addAttention(candidates, UNPAID_IMPORTANT_OBLIGATION, UNPAID_IMPORTANT_OBLIGATION_DESC, score, 2);
+                }
+            } else if ("fp-fc-03".equals(question.questionId()) && Integer.valueOf(0).equals(score)) {
+                addAttention(candidates, RECURRING_RELIANCE_ON_CREDIT, RECURRING_RELIANCE_ON_CREDIT_DESC, score, 3);
+            }
+        }
+
+        for (Question question : firstSteps.questionsFinancialResilience()) {
+            Integer score = findScore(question, root.financialData().financialResilience());
+
+            if ("fp-fr-04".equals(question.questionId()) && isCriticalScore(score)) {
+                addAttention(candidates, LOW_CAPACITY_TO_DEAL_WITH_UNFORESEEN_EVENTS, LOW_CAPACITY_TO_DEAL_WITH_UNFORESEEN_EVENTS_DESC, score, 8);
+                if (Integer.valueOf(1).equals(score)) {
+                    addAttention(candidates, POSTPONING_BILL_TO_UNFORESEEN_EVENTS, POSTPONING_BILL_TO_UNFORESEEN_EVENTS_DESC, score, 6);
+                }
+            } else if ("fp-fr-05".equals(question.questionId()) && isCriticalScore(score)) {
+                addAttention(candidates, LOW_CAPACITY_TO_DEAL_WITH_UNFORESEEN_EVENTS, LOW_CAPACITY_TO_DEAL_WITH_UNFORESEEN_EVENTS_DESC, score, 8);
+            }
+        }
+
+        for (Question question : firstSteps.questionsFinancialOrganizationAndControl()) {
+            Integer score = findScore(question, root.financialData().financialOrganizationAndControl());
+            if ("fp-foc-09".equals(question.questionId()) && isCriticalScore(score)) {
+                addAttention(candidates, DIFFICULTY_KEEPING_UP, DIFFICULTY_KEEPING_UP_DESC, score, 9);
+            }
+        }
+
+        for (Question question : firstSteps.questionsFinancialBalanceAndFreedom()) {
+            Integer score = findScore(question, root.financialData().financialBalanceAndFreedom());
+
+            if ("fp-fbf-13".equals(question.questionId()) && isCriticalScore(score)) {
+                addAttention(candidates, LEISURE_MAINTAINED_WITH_PENDING_OBLIGATIONS, LEISURE_MAINTAINED_WITH_PENDING_OBLIGATIONS_DESC, score, 7);
+            } else if ("fp-fbf-16".equals(question.questionId()) && isCriticalScore(score)) {
+                addAttention(candidates, ESSENTIALS_NEEDS_SACRIFICED, ESSENTIALS_NEEDS_SACRIFICED_DESC, score, 1);
+            } else if ("fp-fbf-17".equals(question.questionId()) && Integer.valueOf(0).equals(score)) {
+                addAttention(candidates, IMPULSES_AFFECTING_COMMITMENTS, IMPULSES_AFFECTING_COMMITMENTS_DESC, score, 4);
+            }
+        }
+
+        if (candidates.isEmpty()) {
+            Map<String, String> noAttention = singleResult(NO_CURRENT_CRITICAL_ATTENTION, NO_CURRENT_CRITICAL_ATTENTION_DESC);
+            return new AttentionAnalysis(noAttention, noAttention);
+        }
+
+        Map<String, String> all = new LinkedHashMap<>();
+        candidates.values().forEach(candidate -> all.put(candidate.title(), candidate.description()));
+
+        AttentionCandidate main = candidates.values().stream()
+            .min(Comparator.comparingInt(AttentionCandidate::score)
+                .thenComparingInt(AttentionCandidate::priority))
+            .orElseThrow();
+
+        return new AttentionAnalysis(all, singleResult(main.title(), main.description()));
+    }
+
+    private Map<String, String> analyzeKeyOpportunity(
+        FinancialDimensionsDTO dimensions,
+        FirstStepsRequestDTO firstSteps,
+        RootFinancialData root
+    ) {
+        List<OpportunityCandidate> candidates = new ArrayList<>();
+
+        addOpportunityCandidates(candidates, firstSteps.questionsFinancialSecurity(), root.financialData().financialSecurity(),
+            dimensions.financialSecurity(), IMPROVE_FINANCIAL_SECURITY, IMPROVE_FINANCIAL_SECURITY_DESC);
+        addOpportunityCandidates(candidates, firstSteps.questionsFinancialResilience(), root.financialData().financialResilience(),
+            dimensions.financialResilience(), BUILD_FINANCIAL_RESILIENCE, BUILD_FINANCIAL_RESILIENCE_DESC);
+        addOpportunityCandidates(candidates, firstSteps.questionsFinancialOrganizationAndControl(), root.financialData().financialOrganizationAndControl(),
+            dimensions.financialOrganizationAndControl(), IMPROVE_ORGANIZATION_AND_CONTROL, IMPROVE_ORGANIZATION_AND_CONTROL_DESC);
+        addOpportunityCandidates(candidates, firstSteps.questionsFinancialImpulseRegulation(), root.financialData().financialImpulseRegulation(),
+            dimensions.financialImpulseRegulation(), STRENGTHEN_IMPULSE_REGULATION, STRENGTHEN_IMPULSE_REGULATION_DESC);
+        addOpportunityCandidates(candidates, firstSteps.questionsFinancialOrientationTheFuture(), root.financialData().financialOrientationTheFuture(),
+            dimensions.financialOrientationTheFuture(), STRENGTHEN_ORIENTATION_THE_FUTURE, STRENGTHEN_ORIENTATION_THE_FUTURE_DESC);
+        addOpportunityCandidates(candidates, firstSteps.questionsFinancialBalanceAndFreedom(), root.financialData().financialBalanceAndFreedom(),
+            dimensions.financialBalanceAndFreedom(), IMPROVE_BALANCE_AND_FREEDOM, IMPROVE_BALANCE_AND_FREEDOM_DESC);
+
+        return candidates.stream()
+            .min(Comparator.comparingDouble(OpportunityCandidate::dimensionScore)
+                .thenComparingInt(OpportunityCandidate::questionOrder))
+            .map(candidate -> singleResult(candidate.title(), candidate.description()))
+            .orElseGet(LinkedHashMap::new);
+    }
+
+    private void addOpportunityCandidates(
+        List<OpportunityCandidate> candidates,
+        List<Question> answers,
+        List<QuestionJson> questions,
+        double dimensionScore,
+        String title,
+        String description
+    ) {
+        for (Question answer : answers) {
+            Integer score = findScore(answer, questions);
+            if (Integer.valueOf(2).equals(score)) {
+                candidates.add(new OpportunityCandidate(title, description, dimensionScore, questionOrder(answer.questionId())));
+            }
+        }
+    }
+
+    private Integer findScore(Question answer, List<QuestionJson> questions) {
+        if (answer == null || answer.questionId() == null || answer.response() == null) return null;
+
+        return questions.stream()
+            .filter(question -> answer.questionId().equals(question.id()))
+            .findFirst()
+            .map(question -> question.options().get(answer.response()))
+            .orElse(null);
+    }
+
+    private boolean isCriticalScore(Integer score) {
+        return score != null && score <= 1;
+    }
+
+    private void addAttention(
+        Map<String, AttentionCandidate> candidates,
+        String title,
+        String description,
+        int score,
+        int priority
+    ) {
+        AttentionCandidate candidate = new AttentionCandidate(title, description, score, priority);
+        candidates.merge(title, candidate, (current, incoming) ->
+            incoming.score() < current.score() ? incoming : current);
+    }
+
+    private Map<String, String> singleResult(String title, String description) {
+        Map<String, String> result = new LinkedHashMap<>();
+        result.put(title, description);
+        return result;
+    }
+
+    private int questionOrder(String questionId) {
+        if (questionId == null) return Integer.MAX_VALUE;
+
+        try {
+            return Integer.parseInt(questionId.substring(questionId.lastIndexOf('-') + 1));
+        } catch (NumberFormatException exception) {
+            return Integer.MAX_VALUE;
+        }
+    }
+
+    private record AttentionCandidate(String title, String description, int score, int priority) {}
+
+    private record AttentionAnalysis(Map<String, String> all, Map<String, String> main) {}
+
+    private record OpportunityCandidate(
+        String title,
+        String description,
+        double dimensionScore,
+        int questionOrder
+    ) {}
 
     private String analyzeFinancialMoment(double security, double resilience, FirstStepsRequestDTO firstSteps) {
 
         String moment = "";
 
-        if (security <= 24 && resilience <= 24) moment = FinancialMomentsFlag.UNDER_PRESSURE;
-        if ((security >= 25 && security <= 44) && resilience <= 24) moment = FinancialMomentsFlag.UNDER_PRESSURE;
-        if ((security >= 25 && security <= 44) && resilience >= 25) moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
-        if ((security >= 45 && security <= 59) && resilience <= 44) moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
-        if ((security >= 45 && security <= 59) && resilience >= 45) moment = FinancialMomentsFlag.STABLE;
-        if ((security >= 60 && security <= 74) && resilience <= 44) moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
-        if ((security >= 60 && security <= 74) && (resilience >= 45 && resilience <= 59)) moment = FinancialMomentsFlag.STABLE;
-        if ((security >= 60 && security <= 74) && resilience >= 60) moment = FinancialMomentsFlag.COMFORTABLE;
-        if ((security >= 75 && security <= 100) && resilience <= 44) moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
-        if ((security >= 75 && security <= 100) && (resilience >= 45 && resilience <= 59)) moment = FinancialMomentsFlag.STABLE;
-        if ((security >= 75 && security <= 100) && (resilience >= 60 && resilience <= 74)) moment = FinancialMomentsFlag.COMFORTABLE;
-        if ((security >= 75 && security <= 100) && (resilience >= 75 && resilience <= 100)) moment = FinancialMomentsFlag.RESILIENT;
+        if (security >= 0 && security <= 24) moment = FinancialMomentsFlag.UNDER_PRESSURE;
+        else if ((security >= 25 && security <= 44) && resilience <= 24) moment = FinancialMomentsFlag.UNDER_PRESSURE;
+        else if ((security >= 25 && security <= 44) && resilience >= 25) moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
+        else if ((security >= 45 && security <= 59) && resilience <= 44) moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
+        else if ((security >= 45 && security <= 59) && resilience >= 45) moment = FinancialMomentsFlag.STABLE;
+        else if ((security >= 60 && security <= 74) && resilience <= 44) moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
+        else if ((security >= 60 && security <= 74) && (resilience >= 45 && resilience <= 59)) moment = FinancialMomentsFlag.STABLE;
+        else if ((security >= 60 && security <= 74) && resilience >= 60) moment = FinancialMomentsFlag.COMFORTABLE;
+        else if ((security >= 75 && security <= 100) && resilience <= 44) moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
+        else if ((security >= 75 && security <= 100) && (resilience >= 45 && resilience <= 59)) moment = FinancialMomentsFlag.STABLE;
+        else if ((security >= 75 && security <= 100) && (resilience >= 60 && resilience <= 74)) moment = FinancialMomentsFlag.COMFORTABLE;
+        else if ((security >= 75 && security <= 100) && (resilience >= 75 && resilience <= 100)) moment = FinancialMomentsFlag.RESILIENT;
 
         int under_pressure = 0;
         int under_reorganization = 0;

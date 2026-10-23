@@ -131,16 +131,16 @@ public class FirstStepsService {
             + pointsFinancialBalanceAndFreedom + pointsFinancialOrientationTheFuture)
             / DIMENSIONS;
 
-        buildFinancialProfile.execute(new FinancialDimensionsDTO(
+        return buildFinancialProfile.execute(new FinancialDimensionsDTO(
             pointsFinancialSecurity,
             pointsFinancialResilience,
             pointsFinancialOrganizationAndControl,
             pointsFinancialImpulseRegulation,
             pointsFinancialBalanceAndFreedom,
             pointsFinancialOrientationTheFuture
-        ), firstSteps, user);
+        ), firstSteps, user, root);
 
-        return new ResponseTest(financialIndex, pointsFinancialSecurity, pointsFinancialResilience, pointsFinancialOrganizationAndControl, pointsFinancialImpulseRegulation, pointsFinancialBalanceAndFreedom, pointsFinancialOrientationTheFuture);
+        //return new ResponseTest(financialIndex, pointsFinancialSecurity, pointsFinancialResilience, pointsFinancialOrganizationAndControl, pointsFinancialImpulseRegulation, pointsFinancialBalanceAndFreedom, pointsFinancialOrientationTheFuture);
     }
 
     private boolean validateNumberQuestions() {

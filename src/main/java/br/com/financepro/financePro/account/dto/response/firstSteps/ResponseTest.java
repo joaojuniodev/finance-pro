@@ -1,11 +1,10 @@
 package br.com.financepro.financePro.account.dto.response.firstSteps;
 
+import java.util.Map;
+
 public record ResponseTest(
-    double financialIndex,
-    double pointsFinancialSecurity,
-    double pointsFinancialResilience,
-    double pointsFinancialOrganizationAndControl,
-    double pointsFinancialImpulseRegulation,
-    double pointsFinancialBalanceAndFreedom,
-    double pointsFinancialOrganizationTheFuture
+    String financialMoment,
+    Map<String, String> areaOfFocus,
+    Map<String, String> mainAttention,
+    Map<String, String> keyOpportunity
 ) {}
