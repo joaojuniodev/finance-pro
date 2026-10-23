@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import static br.com.financepro.financePro.financialProfile.flags.CurrentAreaOfFocusFlag.*;
+import static br.com.financepro.financePro.financialProfile.flags.FinancialTrendFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.KeyOpportunityFlag.BUILD_FINANCIAL_RESILIENCE;
 import static br.com.financepro.financePro.financialProfile.flags.KeyOpportunityFlag.IMPROVE_FINANCIAL_SECURITY;
 import static br.com.financepro.financePro.financialProfile.flags.MainStrengthFlag.FINANCIAL_SECURITY;
@@ -166,6 +167,51 @@ class BuildFinancialProfileServiceTests {
         var result = service.execute(dimensions(70, 70, 60, 60, 60, 60), request, null, root);
 
         assertThat(result.mainStrength()).containsOnlyKeys(FINANCIAL_SECURITY);
+    }
+
+    @Test
+    void shouldCalculateEveryFinancialTrendFromBehavioralDimensionsAndCriticalAnswers() {
+        assertTrend(
+            GUARDIAN_CAUTIOUS,
+            dimensions(70, 70, 75, 70, 70, 80),
+            request(List.of(), List.of(), List.of(), List.of(),
+                List.of(question("fp-fbf-17", "Cuido tanto do futuro que às vezes não aproveito o presente")), List.of())
+        );
+        assertTrend(
+            PLANNER_BALANCED,
+            dimensions(70, 70, 75, 75, 75, 60),
+            request(List.of(), List.of(), List.of(), List.of(),
+                List.of(question("fp-fbf-17", "Aproveito o presente sem comprometer meus planos")), List.of())
+        );
+        assertTrend(
+            FLEXIBLE_CONSCIOUSLY,
+            dimensions(70, 70, 50, 55, 75, 50),
+            request(List.of(), List.of(), List.of(), List.of(),
+                List.of(question("fp-fbf-17", "Aproveito o presente sem comprometer meus planos")), List.of())
+        );
+        assertTrend(
+            PLANNER_UNDER_CONSTRUCTION,
+            dimensions(70, 70, 40, 70, 70, 75),
+            request(List.of(), List.of(), List.of(), List.of(),
+                List.of(question("fp-fbf-17", "Aproveito o presente sem comprometer meus planos")), List.of())
+        );
+        assertTrend(
+            IMPULSE_AT_THE_CONTROLS,
+            dimensions(70, 70, 50, 70, 30, 50),
+            request(List.of(), List.of(), List.of(), List.of(),
+                List.of(question("fp-fbf-13", "Frequentemente")), List.of())
+        );
+        assertTrend(
+            SPONTANEOUS,
+            dimensions(70, 70, 45, 40, 50, 40),
+            request(List.of(), List.of(), List.of(), List.of(),
+                List.of(question("fp-fbf-17", "Frequentemente gasto mais do que pretendia")), List.of())
+        );
+    }
+
+    private void assertTrend(String expectedTrend, FinancialDimensionsDTO dimensions, FirstStepsRequestDTO request) {
+        var result = service.execute(dimensions, request, null, root);
+        assertThat(result.financialTrend()).containsOnlyKeys(expectedTrend);
     }
 
     private static FirstStepsRequestDTO request(

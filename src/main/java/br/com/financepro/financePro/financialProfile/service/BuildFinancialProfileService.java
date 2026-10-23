@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import static br.com.financepro.financePro.financialProfile.flags.CurrentAreaOfFocusFlag.*;
+import static br.com.financepro.financePro.financialProfile.flags.FinancialTrendFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.KeyOpportunityFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.MainStrengthFlag.*;
 
@@ -52,12 +53,10 @@ public class BuildFinancialProfileService {
     @Autowired
     private UserRepository userRepository;
 
-    private final String[] responsesCriticalOfFinancialMoment = new String[]
-        {"fp-fc-01", "fp-fc-02", "fp-fc-03", "fp-fr-04", "fp-fr-05", "fp-foc-09", "fp-fbf-13", "fp-fbf-16", "fp-fbf-17"};
-
     public ResponseTest execute(FinancialDimensionsDTO dimensions, FirstStepsRequestDTO firstSteps, User user, RootFinancialData root) {
         log.info("Building Financial Profile this User");
 
+        var trend = analyzeFinancialTrend(dimensions, firstSteps, root);
         var moment = analyzeFinancialMoment(dimensions.financialSecurity(), dimensions.financialResilience(), firstSteps);
         var attentionAnalysis = analyzeCurrentAreaOfFocus(firstSteps, root);
         var mainStrength = analyzeMainStrength(dimensions, firstSteps, root);
@@ -65,7 +64,57 @@ public class BuildFinancialProfileService {
 
         System.out.println(moment);
 
-        return new ResponseTest(moment, attentionAnalysis.all(), attentionAnalysis.main(), mainStrength, keyOpportunity);
+        return new ResponseTest(trend, moment, attentionAnalysis.all(), attentionAnalysis.main(), mainStrength, keyOpportunity);
+    }
+
+    private Map<String, String> analyzeFinancialTrend(
+        FinancialDimensionsDTO dimensions,
+        FirstStepsRequestDTO firstSteps,
+        RootFinancialData root
+    ) {
+        double organization = dimensions.financialOrganizationAndControl();
+        double impulseRegulation = dimensions.financialImpulseRegulation();
+        double futureOrientation = dimensions.financialOrientationTheFuture();
+        double balance = dimensions.financialBalanceAndFreedom();
+
+        Integer leisureWithPendingBills = findScore(
+            "fp-fbf-13",
+            firstSteps.questionsFinancialBalanceAndFreedom(),
+            root.financialData().financialBalanceAndFreedom()
+        );
+        Integer essentialsSacrificed = findScore(
+            "fp-fbf-16",
+            firstSteps.questionsFinancialBalanceAndFreedom(),
+            root.financialData().financialBalanceAndFreedom()
+        );
+        Integer currentLifeSituation = findScore(
+            "fp-fbf-17",
+            firstSteps.questionsFinancialBalanceAndFreedom(),
+            root.financialData().financialBalanceAndFreedom()
+        );
+
+        boolean hasCriticalBehavioralImpact = isCriticalScore(leisureWithPendingBills)
+            || isCriticalScore(essentialsSacrificed)
+            || Integer.valueOf(0).equals(currentLifeSituation);
+        boolean hasExcessiveRestriction = Integer.valueOf(2).equals(currentLifeSituation);
+
+        if (hasCriticalBehavioralImpact) {
+            return singleResult(IMPULSE_AT_THE_CONTROLS, IMPULSE_AT_THE_CONTROLS_DESC);
+        }
+        if (organization >= 60 && futureOrientation >= 60 && hasExcessiveRestriction) {
+            return singleResult(GUARDIAN_CAUTIOUS, GUARDIAN_CAUTIOUS_DESC);
+        }
+        if (organization >= 60 && impulseRegulation >= 60 && balance >= 60) {
+            return singleResult(PLANNER_BALANCED, PLANNER_BALANCED_DESC);
+        }
+        if (futureOrientation >= 60 && organization < 60) {
+            return singleResult(PLANNER_UNDER_CONSTRUCTION, PLANNER_UNDER_CONSTRUCTION_DESC);
+        }
+        if (balance >= 60 && impulseRegulation >= 45) {
+            return singleResult(FLEXIBLE_CONSCIOUSLY, FLEXIBLE_CONSCIOUSLY_DESC);
+        }
+
+        return singleResult(SPONTANEOUS, SPONTANEOUS_DESC);
     }
 
     private Map<String, String> analyzeMainStrength(
@@ -250,6 +299,14 @@ public class BuildFinancialProfileService {
             .filter(question -> answer.questionId().equals(question.id()))
             .findFirst()
             .map(question -> question.options().get(answer.response()))
+            .orElse(null);
+    }
+
+    private Integer findScore(String questionId, List<Question> answers, List<QuestionJson> questions) {
+        return answers.stream()
+            .filter(answer -> questionId.equals(answer.questionId()))
+            .findFirst()
+            .map(answer -> findScore(answer, questions))
             .orElse(null);
     }
 
