@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import static br.com.financepro.financePro.financialProfile.flags.CurrentAreaOfFocusFlag.*;
+import static br.com.financepro.financePro.financialProfile.flags.ConfidenceInTheResultFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.FinancialTrendFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.KeyOpportunityFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.MainStrengthFlag.*;
@@ -61,10 +62,133 @@ public class BuildFinancialProfileService {
         var attentionAnalysis = analyzeCurrentAreaOfFocus(firstSteps, root);
         var mainStrength = analyzeMainStrength(dimensions, firstSteps, root);
         var keyOpportunity = analyzeKeyOpportunity(dimensions, firstSteps, root);
+        var confidence = analyzeConfidence(firstSteps, root);
 
         System.out.println(moment);
 
-        return new ResponseTest(trend, moment, attentionAnalysis.all(), attentionAnalysis.main(), mainStrength, keyOpportunity);
+        return new ResponseTest(
+            trend,
+            moment,
+            attentionAnalysis.all(),
+            attentionAnalysis.main(),
+            mainStrength,
+            keyOpportunity,
+            confidence.score(),
+            confidence.result()
+        );
+    }
+
+    private ConfidenceAnalysis analyzeConfidence(FirstStepsRequestDTO firstSteps, RootFinancialData root) {
+        Map<String, Integer> scores = new LinkedHashMap<>();
+
+        addScores(scores, firstSteps.questionsFinancialSecurity(), root.financialData().financialSecurity());
+        addScores(scores, firstSteps.questionsFinancialResilience(), root.financialData().financialResilience());
+        addScores(scores, firstSteps.questionsFinancialOrganizationAndControl(), root.financialData().financialOrganizationAndControl());
+        addScores(scores, firstSteps.questionsFinancialImpulseRegulation(), root.financialData().financialImpulseRegulation());
+        addScores(scores, firstSteps.questionsFinancialBalanceAndFreedom(), root.financialData().financialBalanceAndFreedom());
+        addScores(scores, firstSteps.questionsFinancialOrientationTheFuture(), root.financialData().financialOrientationTheFuture());
+
+        int unansweredQuestions = (int) scores.values().stream().filter(score -> score == null).count();
+        int contradictions = countContradictions(scores, firstSteps);
+        int confidenceScore = Math.max(0, 100 - (unansweredQuestions * 5) - (contradictions * 15));
+
+        boolean hasDimensionWithoutValidAnswers =
+            hasNoValidAnswers(scores, "fp-fc-01", "fp-fc-02", "fp-fc-03")
+                || hasNoValidAnswers(scores, "fp-fr-04", "fp-fr-05")
+                || hasNoValidAnswers(scores, "fp-foc-06", "fp-foc-07", "fp-foc-08", "fp-foc-09")
+                || hasNoValidAnswers(scores, "fp-fir-10", "fp-fir-11", "fp-fir-12")
+                || hasNoValidAnswers(scores, "fp-fof-14", "fp-fof-15")
+                || hasNoValidAnswers(scores, "fp-fbf-13", "fp-fbf-16", "fp-fbf-17");
+
+        if (unansweredQuestions > 4 || hasDimensionWithoutValidAnswers) {
+            return new ConfidenceAnalysis(
+                Math.min(confidenceScore, 49),
+                singleResult(INCONCLUSIVE, INCONCLUSIVE_DESC)
+            );
+        }
+        if (confidenceScore >= 90) {
+            return new ConfidenceAnalysis(confidenceScore, singleResult(HIGH, HIGH_DESC));
+        }
+        if (confidenceScore >= 70) {
+            return new ConfidenceAnalysis(confidenceScore, singleResult(MODERATE, MODERATE_DESC));
+        }
+        return new ConfidenceAnalysis(confidenceScore, singleResult(LOW, LOW_DESC));
+    }
+
+    private void addScores(Map<String, Integer> scores, List<Question> answers, List<QuestionJson> questions) {
+        for (QuestionJson question : questions) {
+            scores.put(question.id(), findScore(question.id(), answers, questions));
+        }
+    }
+
+    private int countContradictions(Map<String, Integer> scores, FirstStepsRequestDTO firstSteps) {
+        int contradictions = 0;
+
+        if ((isProtectiveScore(scores.get("fp-fc-01")) && isCriticalScore(scores.get("fp-fc-03")))
+            || (isCriticalScore(scores.get("fp-fc-01")) && isProtectiveScore(scores.get("fp-fc-03")))) {
+            contradictions++;
+        }
+        if (isCriticalScore(scores.get("fp-fr-04")) && isProtectiveScore(scores.get("fp-fr-05"))) {
+            contradictions++;
+        }
+        if ((isProtectiveScore(scores.get("fp-foc-06")) || isProtectiveScore(scores.get("fp-foc-07")))
+            && isCriticalScore(scores.get("fp-foc-09"))) {
+            contradictions++;
+        }
+        if (isProtectiveScore(scores.get("fp-foc-08")) && Integer.valueOf(0).equals(scores.get("fp-fof-15"))) {
+            contradictions++;
+        }
+        if (Integer.valueOf(4).equals(scores.get("fp-fir-10")) && isCriticalScore(scores.get("fp-fir-11"))) {
+            contradictions++;
+        }
+        if (Integer.valueOf(4).equals(scores.get("fp-fir-10")) && isCriticalScore(scores.get("fp-fir-12"))) {
+            contradictions++;
+        }
+
+        String futurePriorityResponse = findResponse("fp-fof-15", firstSteps.questionsFinancialOrientationTheFuture());
+        boolean prioritizesFuture = "Abro mão de algumas coisas agora para ter mais segurança no futuro".equals(futurePriorityResponse);
+        boolean enjoysPresentWithCoveredBills = "Aproveito o presente, desde que minhas contas estejam cobertas".equals(futurePriorityResponse);
+
+        if ((Integer.valueOf(4).equals(scores.get("fp-fof-14")) && Integer.valueOf(0).equals(scores.get("fp-fof-15")))
+            || (Integer.valueOf(1).equals(scores.get("fp-fof-14")) && prioritizesFuture)) {
+            contradictions++;
+        }
+
+        boolean declaresBalance = Integer.valueOf(4).equals(scores.get("fp-fof-15"))
+            || enjoysPresentWithCoveredBills
+            || Integer.valueOf(4).equals(scores.get("fp-fbf-17"));
+        boolean hasCriticalBalanceImpact = isCriticalScore(scores.get("fp-fbf-13"))
+            || isCriticalScore(scores.get("fp-fbf-16"));
+        if (declaresBalance && hasCriticalBalanceImpact) {
+            contradictions++;
+        }
+
+        if (Integer.valueOf(2).equals(scores.get("fp-fbf-17"))
+            && (Integer.valueOf(4).equals(scores.get("fp-fof-15"))
+                || Integer.valueOf(0).equals(scores.get("fp-fof-15")))) {
+            contradictions++;
+        }
+
+        return contradictions;
+    }
+
+    private boolean isProtectiveScore(Integer score) {
+        return score != null && score >= 3;
+    }
+
+    private boolean hasNoValidAnswers(Map<String, Integer> scores, String... questionIds) {
+        for (String questionId : questionIds) {
+            if (scores.get(questionId) != null) return false;
+        }
+        return true;
+    }
+
+    private String findResponse(String questionId, List<Question> answers) {
+        return answers.stream()
+            .filter(answer -> questionId.equals(answer.questionId()))
+            .map(Question::response)
+            .findFirst()
+            .orElse(null);
     }
 
     private Map<String, String> analyzeFinancialTrend(
@@ -362,6 +486,8 @@ public class BuildFinancialProfileService {
         boolean hasCriticalAnswer,
         int order
     ) {}
+
+    private record ConfidenceAnalysis(int score, Map<String, String> result) {}
 
     private String analyzeFinancialMoment(double security, double resilience, FirstStepsRequestDTO firstSteps) {
 

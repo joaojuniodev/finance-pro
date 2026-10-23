@@ -460,6 +460,37 @@ Registrar separadamente:
 
 A confiança diminui com respostas ausentes, contradições relevantes ou poucos itens válidos em uma dimensão.
 
+### 10.1 Cálculo provisório da confiança
+
+A confiança começa em 100 pontos e recebe os seguintes descontos:
+
+- 5 pontos por resposta ausente;
+- 15 pontos por grupo de contradição identificado.
+
+Faixas provisórias:
+
+| Pontuação | Confiança |
+|---:|---|
+| 90–100 | Alta |
+| 70–89 | Moderada |
+| 0–69 | Baixa |
+
+O resultado é inconclusivo quando mais de quatro das 17 respostas estão ausentes ou quando uma dimensão não possui nenhuma resposta válida. Nesse caso, a classificação inconclusiva prevalece sobre a faixa numérica e a pontuação fica limitada a 49.
+
+As verificações iniciais de contradição são:
+
+1. relação renda–gastos protetiva junto de falta recorrente de recursos, ou o inverso;
+2. baixa capacidade declarada para uma despesa inesperada junto de reserva declarada para vários meses;
+3. acompanhamento frequente de gastos ou compromissos junto de evitação frequente de saldo, fatura ou contas;
+4. separação frequente de dinheiro para metas junto de priorização do presente e postergação do restante;
+5. reflexão consistente antes de comprar junto de arrependimento frequente após compras não planejadas;
+6. reflexão consistente antes de comprar junto de gasto emocional frequente;
+7. uso protetivo de dinheiro inesperado junto de priorização declarada do presente, ou gasto livre desse dinheiro junto de restrição declarada em favor do futuro;
+8. declaração de equilíbrio ou de presente com contas cobertas junto de lazer frequente com obrigações pendentes ou sacrifício frequente de necessidades essenciais;
+9. autopercepção de restrição excessiva junto de declaração de equilíbrio ou de priorização do presente.
+
+Diferenças que podem ser explicadas por contexto, renda, período analisado ou natureza da despesa não devem ser tratadas automaticamente como contradição. Essas regras também precisam ser calibradas e versionadas com dados reais.
+
 O usuário pode revisar respostas ou escolher outro perfil. O perfil calculado e o escolhido devem ser preservados separadamente.
 
 Texto recomendado:

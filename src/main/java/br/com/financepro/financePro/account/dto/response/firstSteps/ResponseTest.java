@@ -8,5 +8,7 @@ public record ResponseTest(
     Map<String, String> areaOfFocus,
     Map<String, String> mainAttention,
     Map<String, String> mainStrength,
-    Map<String, String> keyOpportunity
+    Map<String, String> keyOpportunity,
+    Integer confidenceScore,
+    Map<String, String> confidenceInTheResult
 ) {}

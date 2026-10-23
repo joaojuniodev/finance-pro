@@ -10,8 +10,11 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static br.com.financepro.financePro.financialProfile.flags.ConfidenceInTheResultFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.CurrentAreaOfFocusFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.FinancialTrendFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.KeyOpportunityFlag.BUILD_FINANCIAL_RESILIENCE;
@@ -209,9 +212,147 @@ class BuildFinancialProfileServiceTests {
         );
     }
 
+    @Test
+    void shouldReduceConfidenceForEachContradictionAndDetectAnInconclusiveResult() {
+        var highConfidence = service.execute(
+            dimensions(75, 75, 75, 75, 75, 75),
+            completeRequest(Map.of()),
+            null,
+            root
+        );
+        assertThat(highConfidence.confidenceScore()).isEqualTo(100);
+        assertThat(highConfidence.confidenceInTheResult()).containsOnlyKeys(HIGH);
+
+        var moderateConfidence = service.execute(
+            dimensions(75, 75, 75, 75, 75, 75),
+            completeRequest(Map.of("fp-foc-09", "Quase sempre")),
+            null,
+            root
+        );
+        assertThat(moderateConfidence.confidenceScore()).isEqualTo(85);
+        assertThat(moderateConfidence.confidenceInTheResult()).containsOnlyKeys(MODERATE);
+
+        var lowConfidence = service.execute(
+            dimensions(75, 75, 50, 35, 75, 75),
+            completeRequest(Map.of(
+                "fp-foc-09", "Quase sempre",
+                "fp-fir-11", "Frequentemente",
+                "fp-fir-12", "Frequentemente"
+            )),
+            null,
+            root
+        );
+        assertThat(lowConfidence.confidenceScore()).isEqualTo(55);
+        assertThat(lowConfidence.confidenceInTheResult()).containsOnlyKeys(LOW);
+
+        FirstStepsRequestDTO complete = completeRequest(Map.of());
+        FirstStepsRequestDTO incomplete = request(
+            complete.questionsFinancialSecurity(),
+            List.of(question("fp-fr-05", "Não sei dizer")),
+            complete.questionsFinancialOrganizationAndControl(),
+            complete.questionsFinancialImpulseRegulation(),
+            complete.questionsFinancialBalanceAndFreedom(),
+            complete.questionsFinancialOrientationTheFuture()
+        );
+        var inconclusive = service.execute(
+            dimensions(75, 0, 75, 75, 75, 75),
+            incomplete,
+            null,
+            root
+        );
+        assertThat(inconclusive.confidenceScore()).isEqualTo(49);
+        assertThat(inconclusive.confidenceInTheResult()).containsOnlyKeys(INCONCLUSIVE);
+    }
+
+    @Test
+    void shouldApplyOneConfidencePenaltyForEachSupportedContradiction() {
+        List<Map<String, String>> contradictions = List.of(
+            Map.of("fp-fc-01", "Gastaram bem mais"),
+            Map.of("fp-fr-04", "Eu não saberia o que fazer"),
+            Map.of("fp-foc-09", "Quase sempre"),
+            Map.of("fp-fof-15", "Priorizo o presente e resolvo o restante depois"),
+            Map.of("fp-fir-11", "Frequentemente"),
+            Map.of("fp-fir-12", "Frequentemente"),
+            Map.of(
+                "fp-foc-08", "Nunca",
+                "fp-fof-14", "Guardo ou uso para reduzir dívidas",
+                "fp-fof-15", "Priorizo o presente e resolvo o restante depois"
+            ),
+            Map.of("fp-fbf-13", "Frequentemente"),
+            Map.of("fp-fbf-17", "Cuido tanto do futuro que às vezes não aproveito o presente")
+        );
+
+        for (Map<String, String> answers : contradictions) {
+            var result = service.execute(
+                dimensions(75, 75, 75, 75, 75, 75),
+                completeRequest(answers),
+                null,
+                root
+            );
+
+            assertThat(result.confidenceScore()).isEqualTo(85);
+            assertThat(result.confidenceInTheResult()).containsOnlyKeys(MODERATE);
+        }
+    }
+
     private void assertTrend(String expectedTrend, FinancialDimensionsDTO dimensions, FirstStepsRequestDTO request) {
         var result = service.execute(dimensions, request, null, root);
         assertThat(result.financialTrend()).containsOnlyKeys(expectedTrend);
+    }
+
+    private static FirstStepsRequestDTO completeRequest(Map<String, String> overrides) {
+        Map<String, String> responses = new HashMap<>(Map.ofEntries(
+            Map.entry("fp-fc-01", "Gastaram um pouco menos"),
+            Map.entry("fp-fc-02", "Todas foram pagas antes ou no prazo"),
+            Map.entry("fp-fc-03", "Sobra um pouco"),
+            Map.entry("fp-fr-04", "Eu pagaria usando uma reserva"),
+            Map.entry("fp-fr-05", "Mais de seis meses"),
+            Map.entry("fp-foc-06", "Quase sempre"),
+            Map.entry("fp-foc-07", "Quase sempre"),
+            Map.entry("fp-foc-08", "Quase sempre"),
+            Map.entry("fp-foc-09", "Nunca"),
+            Map.entry("fp-fir-10", "Espero um pouco e penso se ainda quero comprar"),
+            Map.entry("fp-fir-11", "Nunca"),
+            Map.entry("fp-fir-12", "Nunca"),
+            Map.entry("fp-fbf-13", "Nunca"),
+            Map.entry("fp-fbf-16", "Nunca"),
+            Map.entry("fp-fbf-17", "Aproveito o presente sem comprometer meus planos"),
+            Map.entry("fp-fof-14", "Divido entre objetivos futuros e algo para aproveitar agora"),
+            Map.entry("fp-fof-15", "Equilibro o que quero hoje com meus planos futuros")
+        ));
+        responses.putAll(overrides);
+
+        return request(
+            List.of(
+                question("fp-fc-01", responses.get("fp-fc-01")),
+                question("fp-fc-02", responses.get("fp-fc-02")),
+                question("fp-fc-03", responses.get("fp-fc-03"))
+            ),
+            List.of(
+                question("fp-fr-04", responses.get("fp-fr-04")),
+                question("fp-fr-05", responses.get("fp-fr-05"))
+            ),
+            List.of(
+                question("fp-foc-06", responses.get("fp-foc-06")),
+                question("fp-foc-07", responses.get("fp-foc-07")),
+                question("fp-foc-08", responses.get("fp-foc-08")),
+                question("fp-foc-09", responses.get("fp-foc-09"))
+            ),
+            List.of(
+                question("fp-fir-10", responses.get("fp-fir-10")),
+                question("fp-fir-11", responses.get("fp-fir-11")),
+                question("fp-fir-12", responses.get("fp-fir-12"))
+            ),
+            List.of(
+                question("fp-fbf-13", responses.get("fp-fbf-13")),
+                question("fp-fbf-16", responses.get("fp-fbf-16")),
+                question("fp-fbf-17", responses.get("fp-fbf-17"))
+            ),
+            List.of(
+                question("fp-fof-14", responses.get("fp-fof-14")),
+                question("fp-fof-15", responses.get("fp-fof-15"))
+            )
+        );
     }
 
     private static FirstStepsRequestDTO request(
