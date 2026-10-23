@@ -15,6 +15,8 @@ import java.util.List;
 import static br.com.financepro.financePro.financialProfile.flags.CurrentAreaOfFocusFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.KeyOpportunityFlag.BUILD_FINANCIAL_RESILIENCE;
 import static br.com.financepro.financePro.financialProfile.flags.KeyOpportunityFlag.IMPROVE_FINANCIAL_SECURITY;
+import static br.com.financepro.financePro.financialProfile.flags.MainStrengthFlag.FINANCIAL_SECURITY;
+import static br.com.financepro.financePro.financialProfile.flags.MainStrengthFlag.ORGANIZATION_AND_CONTROL;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BuildFinancialProfileServiceTests {
@@ -110,6 +112,60 @@ class BuildFinancialProfileServiceTests {
 
         assertThat(result.areaOfFocus()).containsOnlyKeys(NO_CURRENT_CRITICAL_ATTENTION);
         assertThat(result.keyOpportunity()).containsOnlyKeys(IMPROVE_FINANCIAL_SECURITY);
+    }
+
+    @Test
+    void shouldSelectTheDimensionWithTheHighestScoreAsMainStrength() {
+        FirstStepsRequestDTO request = request(
+            List.of(), List.of(),
+            List.of(
+                question("fp-foc-06", "Quase sempre"),
+                question("fp-foc-07", "Frequentemente"),
+                question("fp-foc-08", "Às vezes"),
+                question("fp-foc-09", "Raramente")
+            ),
+            List.of(), List.of(), List.of()
+        );
+
+        var result = service.execute(dimensions(60, 55, 80, 70, 65, 75), request, null, root);
+
+        assertThat(result.mainStrength()).containsOnlyKeys(ORGANIZATION_AND_CONTROL);
+    }
+
+    @Test
+    void shouldIgnoreTheHighestDimensionWhenItContainsACriticalAnswer() {
+        FirstStepsRequestDTO request = request(
+            List.of(question("fp-fc-02", "Precisei deixar alguma conta sem pagar")),
+            List.of(),
+            List.of(
+                question("fp-foc-06", "Quase sempre"),
+                question("fp-foc-07", "Frequentemente")
+            ),
+            List.of(), List.of(), List.of()
+        );
+
+        var result = service.execute(dimensions(85, 70, 75, 70, 70, 70), request, null, root);
+
+        assertThat(result.mainStrength()).containsOnlyKeys(ORGANIZATION_AND_CONTROL);
+    }
+
+    @Test
+    void shouldUseFourPointAnswersToBreakATieBetweenDimensions() {
+        FirstStepsRequestDTO request = request(
+            List.of(
+                question("fp-fc-01", "Gastaram bem menos do que entrou"),
+                question("fp-fc-02", "Algumas atrasaram")
+            ),
+            List.of(
+                question("fp-fr-04", "Conseguiria pagar reorganizando o mês"),
+                question("fp-fr-05", "De três a seis meses")
+            ),
+            List.of(), List.of(), List.of(), List.of()
+        );
+
+        var result = service.execute(dimensions(70, 70, 60, 60, 60, 60), request, null, root);
+
+        assertThat(result.mainStrength()).containsOnlyKeys(FINANCIAL_SECURITY);
     }
 
     private static FirstStepsRequestDTO request(

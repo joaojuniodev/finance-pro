@@ -23,6 +23,7 @@ import java.util.Map;
 
 import static br.com.financepro.financePro.financialProfile.flags.CurrentAreaOfFocusFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.KeyOpportunityFlag.*;
+import static br.com.financepro.financePro.financialProfile.flags.MainStrengthFlag.*;
 
 @Service
 public class BuildFinancialProfileService {
@@ -59,11 +60,79 @@ public class BuildFinancialProfileService {
 
         var moment = analyzeFinancialMoment(dimensions.financialSecurity(), dimensions.financialResilience(), firstSteps);
         var attentionAnalysis = analyzeCurrentAreaOfFocus(firstSteps, root);
+        var mainStrength = analyzeMainStrength(dimensions, firstSteps, root);
         var keyOpportunity = analyzeKeyOpportunity(dimensions, firstSteps, root);
 
         System.out.println(moment);
 
-        return new ResponseTest(moment, attentionAnalysis.all(), attentionAnalysis.main(), keyOpportunity);
+        return new ResponseTest(moment, attentionAnalysis.all(), attentionAnalysis.main(), mainStrength, keyOpportunity);
+    }
+
+    private Map<String, String> analyzeMainStrength(
+        FinancialDimensionsDTO dimensions,
+        FirstStepsRequestDTO firstSteps,
+        RootFinancialData root
+    ) {
+        List<StrengthCandidate> candidates = new ArrayList<>();
+
+        addStrengthCandidate(candidates, firstSteps.questionsFinancialSecurity(), root.financialData().financialSecurity(),
+            dimensions.financialSecurity(), FINANCIAL_SECURITY, FINANCIAL_SECURITY_DESC, 1);
+        addStrengthCandidate(candidates, firstSteps.questionsFinancialResilience(), root.financialData().financialResilience(),
+            dimensions.financialResilience(), FINANCIAL_RESILIENCE, FINANCIAL_RESILIENCE_DESC, 2);
+        addStrengthCandidate(candidates, firstSteps.questionsFinancialOrganizationAndControl(), root.financialData().financialOrganizationAndControl(),
+            dimensions.financialOrganizationAndControl(), ORGANIZATION_AND_CONTROL, ORGANIZATION_AND_CONTROL_DESC, 3);
+        addStrengthCandidate(candidates, firstSteps.questionsFinancialImpulseRegulation(), root.financialData().financialImpulseRegulation(),
+            dimensions.financialImpulseRegulation(), IMPULSE_REGULATION, IMPULSE_REGULATION_DESC, 4);
+        addStrengthCandidate(candidates, firstSteps.questionsFinancialOrientationTheFuture(), root.financialData().financialOrientationTheFuture(),
+            dimensions.financialOrientationTheFuture(), ORIENTATION_FOR_THE_FUTURE, ORIENTATION_FOR_THE_FUTURE_DESC, 5);
+        addStrengthCandidate(candidates, firstSteps.questionsFinancialBalanceAndFreedom(), root.financialData().financialBalanceAndFreedom(),
+            dimensions.financialBalanceAndFreedom(), BALANCE_AND_FREEDOM, BALANCE_AND_FREEDOM_DESC, 6);
+
+        List<StrengthCandidate> validCandidates = candidates.stream()
+            .filter(candidate -> !candidate.hasCriticalAnswer())
+            .toList();
+        List<StrengthCandidate> selectionPool = validCandidates.isEmpty() ? candidates : validCandidates;
+
+        StrengthCandidate strength = selectionPool.stream()
+            .min(Comparator.comparingDouble(StrengthCandidate::dimensionScore).reversed()
+                .thenComparing(Comparator.comparingInt(StrengthCandidate::answersWithFourPoints).reversed())
+                .thenComparing(Comparator.comparingInt(StrengthCandidate::answersWithThreePoints).reversed())
+                .thenComparingInt(StrengthCandidate::order))
+            .orElseThrow();
+
+        boolean isRelativeStrength = strength.hasCriticalAnswer() || strength.dimensionScore() < 60;
+        return singleResult(strength.title(), isRelativeStrength ? RELATIVE_STRENGTH_DESC : strength.description());
+    }
+
+    private void addStrengthCandidate(
+        List<StrengthCandidate> candidates,
+        List<Question> answers,
+        List<QuestionJson> questions,
+        double dimensionScore,
+        String title,
+        String description,
+        int order
+    ) {
+        int answersWithFourPoints = 0;
+        int answersWithThreePoints = 0;
+        boolean hasCriticalAnswer = false;
+
+        for (Question answer : answers) {
+            Integer score = findScore(answer, questions);
+            if (Integer.valueOf(4).equals(score)) answersWithFourPoints++;
+            else if (Integer.valueOf(3).equals(score)) answersWithThreePoints++;
+            else if (isCriticalScore(score)) hasCriticalAnswer = true;
+        }
+
+        candidates.add(new StrengthCandidate(
+            title,
+            description,
+            dimensionScore,
+            answersWithFourPoints,
+            answersWithThreePoints,
+            hasCriticalAnswer,
+            order
+        ));
     }
 
     private AttentionAnalysis analyzeCurrentAreaOfFocus(FirstStepsRequestDTO firstSteps, RootFinancialData root) {
@@ -225,6 +294,16 @@ public class BuildFinancialProfileService {
         String description,
         double dimensionScore,
         int questionOrder
+    ) {}
+
+    private record StrengthCandidate(
+        String title,
+        String description,
+        double dimensionScore,
+        int answersWithFourPoints,
+        int answersWithThreePoints,
+        boolean hasCriticalAnswer,
+        int order
     ) {}
 
     private String analyzeFinancialMoment(double security, double resilience, FirstStepsRequestDTO firstSteps) {

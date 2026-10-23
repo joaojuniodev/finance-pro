@@ -6,5 +6,6 @@ public record ResponseTest(
     String financialMoment,
     Map<String, String> areaOfFocus,
     Map<String, String> mainAttention,
+    Map<String, String> mainStrength,
     Map<String, String> keyOpportunity
 ) {}
