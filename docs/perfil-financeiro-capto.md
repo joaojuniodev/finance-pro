@@ -475,6 +475,8 @@ Registrar separadamente:
 - data da avaliação;
 - versão do questionário e do algoritmo.
 
+A implementação atual mantém um perfil financeiro vigente por usuário. Quando o questionário é respondido novamente, o registro existente é atualizado com os novos resultados e com uma nova data de avaliação, evitando perfis duplicados para o mesmo usuário.
+
 A confiança diminui com respostas ausentes, contradições relevantes ou poucos itens válidos em uma dimensão.
 
 ### 10.1 Cálculo provisório da confiança

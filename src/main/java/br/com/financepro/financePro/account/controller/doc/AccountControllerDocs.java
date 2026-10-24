@@ -2,12 +2,12 @@ package br.com.financepro.financePro.account.controller.doc;
 
 import br.com.financepro.financePro.account.controller.AccountController;
 import br.com.financepro.financePro.account.dto.request.AccountRequestDTO;
-import br.com.financepro.financePro.account.dto.request.firstSteps.FirstStepsRequestDTO;
+import br.com.financepro.financePro.account.dto.request.firstSteps.AnswersOfQuizFinancialProfile;
 import br.com.financepro.financePro.account.dto.response.AccountResponseDTO;
 import br.com.financepro.financePro.account.dto.response.ActivitiesResponseDTO;
 import br.com.financepro.financePro.account.dto.response.DashboardResponse;
 import br.com.financepro.financePro.account.dto.response.FinancialSummaryResponseDTO;
-import br.com.financepro.financePro.account.dto.response.firstSteps.ResponseTest;
+import br.com.financepro.financePro.financialProfile.dto.FinancialProfileResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -155,7 +155,7 @@ public interface AccountControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseTest firstSteps(@PathVariable String username, @RequestBody FirstStepsRequestDTO firstSteps);
+    ResponseEntity<FinancialProfileResponse> firstSteps(@PathVariable String username, @RequestBody AnswersOfQuizFinancialProfile firstSteps);
 
     @Operation(
         tags = {"Account"},

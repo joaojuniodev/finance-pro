@@ -1,20 +1,20 @@
 package br.com.financepro.financePro.account.service.firstSteps;
 
-import br.com.financepro.financePro.account.dto.request.firstSteps.FirstStepsRequestDTO;
+import br.com.financepro.financePro.account.dto.request.firstSteps.AnswersOfQuizFinancialProfile;
 import br.com.financepro.financePro.account.dto.request.firstSteps.Question;
-import br.com.financepro.financePro.account.dto.response.firstSteps.ResponseTest;
 import br.com.financepro.financePro.common.enums.IdentifyFinancial;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.common.json.FinancialJsonFileReader;
 import br.com.financepro.financePro.common.json.QuestionJson;
 import br.com.financepro.financePro.common.json.RootFinancialData;
 import br.com.financepro.financePro.financialProfile.dto.FinancialDimensionsDTO;
+import br.com.financepro.financePro.financialProfile.dto.FinancialProfileResponse;
 import br.com.financepro.financePro.financialProfile.service.BuildFinancialProfileService;
+import br.com.financepro.financePro.financialProfile.service.FinancialProfileService;
 import br.com.financepro.financePro.security.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +29,9 @@ public class FirstStepsService {
 
     @Autowired
     private BuildFinancialProfileService buildFinancialProfile;
+
+    @Autowired
+    private FinancialProfileService financialProfileService;
 
     @Autowired
     private FinancialJsonFileReader jsonFileReader;
@@ -52,12 +55,12 @@ public class FirstStepsService {
     double numberQuestionsFinancialBalanceAndFreedom = 0;
     double numberQuestionsFinancialOrientationTheFuture = 0;
 
-    public ResponseTest firstSteps(FirstStepsRequestDTO firstSteps) {
+    public FinancialProfileResponse firstSteps(String username, AnswersOfQuizFinancialProfile firstSteps) {
 
-        var user = userRepository.findByUserName(firstSteps.username());
+        var user = userRepository.findByUserName(username);
 
         if (user == null) {
-            throw new NotFoundException("Not found this User by username: " + firstSteps.username());
+            throw new NotFoundException("Not found this User by username: " + username);
         }
 
         RootFinancialData root = jsonFileReader.read();
@@ -131,16 +134,18 @@ public class FirstStepsService {
             + pointsFinancialBalanceAndFreedom + pointsFinancialOrientationTheFuture)
             / DIMENSIONS;
 
-        return buildFinancialProfile.execute(new FinancialDimensionsDTO(
+        var dimensions = new FinancialDimensionsDTO(
             pointsFinancialSecurity,
             pointsFinancialResilience,
             pointsFinancialOrganizationAndControl,
             pointsFinancialImpulseRegulation,
             pointsFinancialBalanceAndFreedom,
             pointsFinancialOrientationTheFuture
-        ), firstSteps, user, root);
+        );
 
-        //return new ResponseTest(financialIndex, pointsFinancialSecurity, pointsFinancialResilience, pointsFinancialOrganizationAndControl, pointsFinancialImpulseRegulation, pointsFinancialBalanceAndFreedom, pointsFinancialOrientationTheFuture);
+        var financialProfile = buildFinancialProfile.execute(dimensions, firstSteps, root);
+
+        return financialProfileService.create(user, financialIndex, dimensions, financialProfile);
     }
 
     private boolean validateNumberQuestions() {

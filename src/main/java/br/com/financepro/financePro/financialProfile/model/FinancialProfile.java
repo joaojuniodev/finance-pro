@@ -50,6 +50,13 @@ public class FinancialProfile {
     private Map<String, String> currentAreaOfFocus = new HashMap<>();
 
     @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "main_attention", columnDefinition = "jsonb")
+    private Map<String, String> mainAttention = new HashMap<>();
+
+    @Column(name = "confidence_score")
+    private Integer confidenceScore;
+
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "confidence_in_the_result", columnDefinition = "jsonb")
     private Map<String, String> confidenceInTheResult = new HashMap<>();
 
@@ -82,11 +89,11 @@ public class FinancialProfile {
     @Column(name = "balance_and_freedom")
     private Integer balanceAndFreedom;
 
-    @Column(name = "registered_at")
+    @Column(name = "registered_at", nullable = false)
     private LocalDateTime registeredAt;
 
     @OneToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
     public FinancialProfile() {}
@@ -137,6 +144,22 @@ public class FinancialProfile {
 
     public void setCurrentAreaOfFocus(Map<String, String> currentAreaOfFocus) {
         this.currentAreaOfFocus = currentAreaOfFocus;
+    }
+
+    public Map<String, String> getMainAttention() {
+        return mainAttention;
+    }
+
+    public void setMainAttention(Map<String, String> mainAttention) {
+        this.mainAttention = mainAttention;
+    }
+
+    public Integer getConfidenceScore() {
+        return confidenceScore;
+    }
+
+    public void setConfidenceScore(Integer confidenceScore) {
+        this.confidenceScore = confidenceScore;
     }
 
     public Map<String, String> getConfidenceInTheResult() {

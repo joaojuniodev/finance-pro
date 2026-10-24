@@ -2,16 +2,16 @@ package br.com.financepro.financePro.account.controller;
 
 import br.com.financepro.financePro.account.controller.doc.AccountControllerDocs;
 import br.com.financepro.financePro.account.dto.request.AccountRequestDTO;
-import br.com.financepro.financePro.account.dto.request.firstSteps.FirstStepsRequestDTO;
+import br.com.financepro.financePro.account.dto.request.firstSteps.AnswersOfQuizFinancialProfile;
 import br.com.financepro.financePro.account.dto.response.*;
 import br.com.financepro.financePro.account.dto.response.financialHealth.FinancialHealthResponse;
-import br.com.financepro.financePro.account.dto.response.firstSteps.ResponseTest;
 import br.com.financepro.financePro.account.service.AccountService;
 import br.com.financepro.financePro.account.service.activities.ActivitiesService;
 import br.com.financepro.financePro.account.service.analytics.AnalyticsService;
 import br.com.financepro.financePro.account.service.analytics.FinancialHealthService;
 import br.com.financepro.financePro.account.service.dashboard.DashboardService;
 import br.com.financepro.financePro.account.service.firstSteps.FirstStepsService;
+import br.com.financepro.financePro.financialProfile.dto.FinancialProfileResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -103,11 +103,11 @@ public class AccountController implements AccountControllerDocs {
     }
 
     @PostMapping("/first-steps/{username}")
-    public ResponseTest firstSteps(
+    public ResponseEntity<FinancialProfileResponse> firstSteps(
         @PathVariable String username,
-        @RequestBody FirstStepsRequestDTO firstSteps
+        @RequestBody AnswersOfQuizFinancialProfile firstSteps
     ) {
-        return firstStepsService.firstSteps(firstSteps);
+        return ResponseEntity.ok(firstStepsService.firstSteps(username, firstSteps));
     }
 
     @PostMapping

@@ -1,28 +1,20 @@
 package br.com.financepro.financePro.financialProfile.service;
 
-import br.com.financepro.financePro.account.dto.request.firstSteps.FirstStepsRequestDTO;
+import br.com.financepro.financePro.account.dto.request.firstSteps.AnswersOfQuizFinancialProfile;
 import br.com.financepro.financePro.account.dto.request.firstSteps.Question;
-import br.com.financepro.financePro.account.dto.response.firstSteps.ResponseTest;
 import br.com.financepro.financePro.common.json.QuestionJson;
 import br.com.financepro.financePro.common.json.RootFinancialData;
 import br.com.financepro.financePro.financialProfile.dto.FinancialDimensionsDTO;
+import br.com.financepro.financePro.financialProfile.dto.FinancialProfileResponse;
 import br.com.financepro.financePro.financialProfile.flags.FinancialMomentsFlag;
-import br.com.financepro.financePro.financialProfile.repository.FinancialProfileRepository;
-import br.com.financepro.financePro.security.model.User;
-import br.com.financepro.financePro.security.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static br.com.financepro.financePro.financialProfile.flags.CurrentAreaOfFocusFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.ConfidenceInTheResultFlag.*;
+import static br.com.financepro.financePro.financialProfile.flags.CurrentAreaOfFocusFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.FinancialTrendFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.InterpretiveSynthesisFlag.*;
 import static br.com.financepro.financePro.financialProfile.flags.KeyOpportunityFlag.*;
@@ -33,29 +25,7 @@ public class BuildFinancialProfileService {
 
     private static final Logger log = LoggerFactory.getLogger(BuildFinancialProfileService.class.getName());
 
-    // Momento financeiro:
-    // Segurança financeira - Resiliência financeira - respostas críticas relacinadas a contas, crédito e imprevistos
-
-    // Identificar as atenções críticas
-
-    // Tendência financeira:
-    // Organização e controle - Regulação de impulsos - Orientação para o futuro - Equilíbrio e liberdade - respostas críticas comportamentais
-
-    // Descobrir a força principal
-
-    // Descobrir a principal oportunidade
-
-    // Calcular a confiança (confiança do resultado do perfil financeiro)
-
-    // Construir a síntese interpretativa
-
-    @Autowired
-    private FinancialProfileRepository repository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    public ResponseTest execute(FinancialDimensionsDTO dimensions, FirstStepsRequestDTO firstSteps, User user, RootFinancialData root) {
+    public FinancialProfileResponse execute(FinancialDimensionsDTO dimensions, AnswersOfQuizFinancialProfile firstSteps, RootFinancialData root) {
         log.info("Building Financial Profile this User");
 
         var trend = analyzeFinancialTrend(dimensions, firstSteps, root);
@@ -73,9 +43,7 @@ public class BuildFinancialProfileService {
             confidence.result()
         );
 
-        System.out.println(moment);
-
-        return new ResponseTest(
+        return new FinancialProfileResponse(
             trend,
             moment,
             attentionAnalysis.all(),
@@ -90,7 +58,7 @@ public class BuildFinancialProfileService {
 
     private String buildInterpretiveSynthesis(
         Map<String, String> trend,
-        String moment,
+        Map<String, String> moment,
         Map<String, String> mainStrength,
         Map<String, String> keyOpportunity,
         Map<String, String> mainAttention,
@@ -102,7 +70,7 @@ public class BuildFinancialProfileService {
         List<String> parts = new ArrayList<>();
         addSynthesisPart(parts, CONFIDENCE_INTRODUCTIONS, confidenceLevel);
         addSynthesisPart(parts, TREND_SYNTHESIS, firstKey(trend));
-        addSynthesisPart(parts, MOMENT_SYNTHESIS, moment);
+        addSynthesisPart(parts, MOMENT_SYNTHESIS, firstKey(moment));
         addSynthesisPart(parts, STRENGTH_SYNTHESIS, firstKey(mainStrength));
 
         String attention = firstKey(mainAttention);
@@ -127,7 +95,7 @@ public class BuildFinancialProfileService {
         return result.keySet().stream().findFirst().orElse(null);
     }
 
-    private ConfidenceAnalysis analyzeConfidence(FirstStepsRequestDTO firstSteps, RootFinancialData root) {
+    private ConfidenceAnalysis analyzeConfidence(AnswersOfQuizFinancialProfile firstSteps, RootFinancialData root) {
         Map<String, Integer> scores = new LinkedHashMap<>();
 
         addScores(scores, firstSteps.questionsFinancialSecurity(), root.financialData().financialSecurity());
@@ -170,7 +138,7 @@ public class BuildFinancialProfileService {
         }
     }
 
-    private int countContradictions(Map<String, Integer> scores, FirstStepsRequestDTO firstSteps) {
+    private int countContradictions(Map<String, Integer> scores, AnswersOfQuizFinancialProfile firstSteps) {
         int contradictions = 0;
 
         if ((isProtectiveScore(scores.get("fp-fc-01")) && isCriticalScore(scores.get("fp-fc-03")))
@@ -242,7 +210,7 @@ public class BuildFinancialProfileService {
 
     private Map<String, String> analyzeFinancialTrend(
         FinancialDimensionsDTO dimensions,
-        FirstStepsRequestDTO firstSteps,
+        AnswersOfQuizFinancialProfile firstSteps,
         RootFinancialData root
     ) {
         double organization = dimensions.financialOrganizationAndControl();
@@ -292,7 +260,7 @@ public class BuildFinancialProfileService {
 
     private Map<String, String> analyzeMainStrength(
         FinancialDimensionsDTO dimensions,
-        FirstStepsRequestDTO firstSteps,
+        AnswersOfQuizFinancialProfile firstSteps,
         RootFinancialData root
     ) {
         List<StrengthCandidate> candidates = new ArrayList<>();
@@ -357,7 +325,7 @@ public class BuildFinancialProfileService {
         ));
     }
 
-    private AttentionAnalysis analyzeCurrentAreaOfFocus(FirstStepsRequestDTO firstSteps, RootFinancialData root) {
+    private AttentionAnalysis analyzeCurrentAreaOfFocus(AnswersOfQuizFinancialProfile firstSteps, RootFinancialData root) {
         Map<String, AttentionCandidate> candidates = new LinkedHashMap<>();
 
         for (Question question : firstSteps.questionsFinancialSecurity()) {
@@ -424,7 +392,7 @@ public class BuildFinancialProfileService {
 
     private Map<String, String> analyzeKeyOpportunity(
         FinancialDimensionsDTO dimensions,
-        FirstStepsRequestDTO firstSteps,
+        AnswersOfQuizFinancialProfile firstSteps,
         RootFinancialData root
     ) {
         List<OpportunityCandidate> candidates = new ArrayList<>();
@@ -538,25 +506,95 @@ public class BuildFinancialProfileService {
 
     private record ConfidenceAnalysis(int score, Map<String, String> result) {}
 
-    private String analyzeFinancialMoment(double security, double resilience, FirstStepsRequestDTO firstSteps) {
+    private Map<String, String> analyzeFinancialMoment(double security, double resilience, AnswersOfQuizFinancialProfile firstSteps) {
+        Map<String, String> financialMoment = addFinancialMoment(security, resilience);
 
-        String moment = "";
+        defineLimit(financialMoment, firstSteps);
 
-        if (security >= 0 && security <= 24) moment = FinancialMomentsFlag.UNDER_PRESSURE;
-        else if ((security >= 25 && security <= 44) && resilience <= 24) moment = FinancialMomentsFlag.UNDER_PRESSURE;
-        else if ((security >= 25 && security <= 44) && resilience >= 25) moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
-        else if ((security >= 45 && security <= 59) && resilience <= 44) moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
-        else if ((security >= 45 && security <= 59) && resilience >= 45) moment = FinancialMomentsFlag.STABLE;
-        else if ((security >= 60 && security <= 74) && resilience <= 44) moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
-        else if ((security >= 60 && security <= 74) && (resilience >= 45 && resilience <= 59)) moment = FinancialMomentsFlag.STABLE;
-        else if ((security >= 60 && security <= 74) && resilience >= 60) moment = FinancialMomentsFlag.COMFORTABLE;
-        else if ((security >= 75 && security <= 100) && resilience <= 44) moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
-        else if ((security >= 75 && security <= 100) && (resilience >= 45 && resilience <= 59)) moment = FinancialMomentsFlag.STABLE;
-        else if ((security >= 75 && security <= 100) && (resilience >= 60 && resilience <= 74)) moment = FinancialMomentsFlag.COMFORTABLE;
-        else if ((security >= 75 && security <= 100) && (resilience >= 75 && resilience <= 100)) moment = FinancialMomentsFlag.RESILIENT;
+        return financialMoment;
+    }
 
-        int under_pressure = 0;
-        int under_reorganization = 0;
+    private Map<String, String> addFinancialMoment(double security, double resilience) {
+        Map<String, String> financialMoment = new HashMap<>();
+
+        if (security >= 0 && security <= 24) financialMoment.put(
+            FinancialMomentsFlag.UNDER_PRESSURE,
+            FinancialMomentsFlag.UNDER_PRESSURE_DESC
+        );
+        else if ((security >= 25 && security <= 44) && resilience <= 24) financialMoment.put(
+            FinancialMomentsFlag.UNDER_PRESSURE,
+            FinancialMomentsFlag.UNDER_PRESSURE_DESC
+        );
+        else if ((security >= 25 && security <= 44) && resilience >= 25) financialMoment.put(
+            FinancialMomentsFlag.UNDER_REORGANIZATION,
+            FinancialMomentsFlag.UNDER_REORGANIZATION_DESC
+        );
+        else if ((security >= 45 && security <= 59) && resilience <= 44) financialMoment.put(
+            FinancialMomentsFlag.UNDER_REORGANIZATION,
+            FinancialMomentsFlag.UNDER_REORGANIZATION_DESC
+        );
+        else if ((security >= 45 && security <= 59) && resilience >= 45) financialMoment.put(
+            FinancialMomentsFlag.STABLE,
+            FinancialMomentsFlag.STABLE_DESC
+        );
+        else if ((security >= 60 && security <= 74) && resilience <= 44) financialMoment.put(
+            FinancialMomentsFlag.UNDER_REORGANIZATION,
+            FinancialMomentsFlag.UNDER_REORGANIZATION_DESC
+        );
+        else if ((security >= 60 && security <= 74) && (resilience >= 45 && resilience <= 59)) financialMoment.put(
+            FinancialMomentsFlag.STABLE,
+            FinancialMomentsFlag.STABLE_DESC
+        );
+        else if ((security >= 60 && security <= 74) && resilience >= 60) financialMoment.put(
+            FinancialMomentsFlag.COMFORTABLE,
+            FinancialMomentsFlag.COMFORTABLE_DESC
+        );
+        else if ((security >= 75 && security <= 100) && resilience <= 44) financialMoment.put(
+            FinancialMomentsFlag.UNDER_REORGANIZATION,
+            FinancialMomentsFlag.UNDER_REORGANIZATION_DESC
+        );
+        else if ((security >= 75 && security <= 100) && (resilience >= 45 && resilience <= 59)) financialMoment.put(
+            FinancialMomentsFlag.STABLE,
+            FinancialMomentsFlag.STABLE_DESC
+        );
+        else if ((security >= 75 && security <= 100) && (resilience >= 60 && resilience <= 74)) financialMoment.put(
+            FinancialMomentsFlag.COMFORTABLE,
+            FinancialMomentsFlag.COMFORTABLE_DESC
+        );
+        else if ((security >= 75 && security <= 100) && (resilience >= 75 && resilience <= 100)) financialMoment.put(
+            FinancialMomentsFlag.RESILIENT,
+            FinancialMomentsFlag.RESILIENT_DESC
+        );
+
+        return financialMoment;
+    }
+
+    private void defineLimit(Map<String, String> moment, AnswersOfQuizFinancialProfile firstSteps) {
+        String currentMoment = firstKey(moment);
+        String limit = analyzeCriticalAnswers(firstSteps);
+
+        boolean shouldLimit =
+            FinancialMomentsFlag.UNDER_PRESSURE.equals(limit)
+                && !FinancialMomentsFlag.UNDER_PRESSURE.equals(currentMoment)
+            || FinancialMomentsFlag.UNDER_REORGANIZATION.equals(limit)
+                && (FinancialMomentsFlag.STABLE.equals(currentMoment)
+                    || FinancialMomentsFlag.COMFORTABLE.equals(currentMoment)
+                    || FinancialMomentsFlag.RESILIENT.equals(currentMoment))
+            || FinancialMomentsFlag.STABLE.equals(limit)
+                && (FinancialMomentsFlag.COMFORTABLE.equals(currentMoment)
+                    || FinancialMomentsFlag.RESILIENT.equals(currentMoment))
+            || FinancialMomentsFlag.COMFORTABLE.equals(limit)
+                && FinancialMomentsFlag.RESILIENT.equals(currentMoment);
+
+        if (shouldLimit) {
+            moment.clear();
+            moment.put(limit, FinancialMomentsFlag.financialMoments.get(limit));
+        }
+    }
+
+    private String analyzeCriticalAnswers(AnswersOfQuizFinancialProfile firstSteps) {
+        int underPressure = 0;
+        int underReorganization = 0;
         int stable = 0;
         int comfortable = 0;
 
@@ -569,16 +607,16 @@ public class BuildFinancialProfileService {
 
         for (Question question : firstSteps.questionsFinancialSecurity()) {
             if (question.questionId().equals("fp-fc-01")) {
-                if (question.response().equals(spent_more)) under_reorganization++;
+                if (question.response().equals(spent_more)) underReorganization++;
             }
             if (question.questionId().equals("fp-fc-02")) {
-                if (question.response().equals(several_were_delayed)) under_reorganization++;
-                if (question.response().equals(not_paid_bill)) under_pressure++;
+                if (question.response().equals(several_were_delayed)) underReorganization++;
+                if (question.response().equals(not_paid_bill)) underPressure++;
             }
             if (question.questionId().equals("fp-fc-03")) {
                 if (question.response().equals(practically_zero)) stable++;
-                if (question.response().equals(almost_there)) under_reorganization++;
-                if (question.response().equals(i_need_credit)) under_pressure++;
+                if (question.response().equals(almost_there)) underReorganization++;
+                if (question.response().equals(i_need_credit)) underPressure++;
             }
         }
 
@@ -594,47 +632,20 @@ public class BuildFinancialProfileService {
             if (question.questionId().equals("fp-fr-04")) {
                 if (question.response().equals(pay_but_reorganize_the_month)) comfortable++;
                 if (question.response().equals(processes_installments_and_maintains_accounts)) stable++;
-                if (question.response().equals(defer_bill_or_loan_repayment)) under_reorganization++;
-                if (question.response().equals(not_what_do)) under_reorganization++;
+                if (question.response().equals(defer_bill_or_loan_repayment)) underReorganization++;
+                if (question.response().equals(not_what_do)) underReorganization++;
             }
             if (question.questionId().equals("fp-fr-05")) {
                 if (question.response().equals(from_one_to_three_months)) comfortable++;
                 if (question.response().equals(a_few_weeks)) stable++;
-                if (question.response().equals(less_than_a_week)) under_reorganization++;
+                if (question.response().equals(less_than_a_week)) underReorganization++;
             }
         }
 
-        // Do pior para o melhor:
-        // 1. Sob pressão
-        // 2. No máximo em reorganização
-        // 3. No máximo estável
-        // 4. No máximo confortável
-        // 5. Resiliente
-
-        if (under_pressure > 0) {
-            if (moment.equals(FinancialMomentsFlag.UNDER_REORGANIZATION) || moment.equals(FinancialMomentsFlag.STABLE) ||
-                moment.equals(FinancialMomentsFlag.COMFORTABLE) || moment.equals(FinancialMomentsFlag.RESILIENT)) {
-                moment = FinancialMomentsFlag.UNDER_PRESSURE;
-            }
-        }
-        else if (under_reorganization > 0) {
-            if (moment.equals(FinancialMomentsFlag.STABLE) || moment.equals(FinancialMomentsFlag.COMFORTABLE) ||
-                moment.equals(FinancialMomentsFlag.RESILIENT)) {
-                moment = FinancialMomentsFlag.UNDER_REORGANIZATION;
-            }
-        }
-        else if (stable > 0) {
-            if (moment.equals(FinancialMomentsFlag.COMFORTABLE) || moment.equals(FinancialMomentsFlag.RESILIENT)) {
-                moment = FinancialMomentsFlag.STABLE;
-            }
-
-        }
-        else if (comfortable > 0) {
-            if (moment.equals(FinancialMomentsFlag.RESILIENT)) {
-                moment = FinancialMomentsFlag.COMFORTABLE;
-            }
-        }
-
-        return moment;
+        if (underPressure > 0) return FinancialMomentsFlag.UNDER_PRESSURE;
+        if (underReorganization > 0) return FinancialMomentsFlag.UNDER_REORGANIZATION;
+        if (stable > 0) return FinancialMomentsFlag.STABLE;
+        if (comfortable > 0) return FinancialMomentsFlag.COMFORTABLE;
+        return null;
     }
 }

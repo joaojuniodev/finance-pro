@@ -19,7 +19,7 @@ public class FinancialMomentsFlag {
     public static final String RESILIENT = "Resiliente";
     public static final String RESILIENT_DESC = "Além de manter os compromissos atuais, o usuário possui boa capacidade de enfrentar despesas inesperadas ou períodos de redução de renda.";
 
-    public Map<String, String> financialMoments = Map.of(
+    public static final Map<String, String> financialMoments = Map.of(
         UNDER_PRESSURE, UNDER_PRESSURE_DESC,
         UNDER_REORGANIZATION, UNDER_REORGANIZATION_DESC,
         STABLE, STABLE_DESC,

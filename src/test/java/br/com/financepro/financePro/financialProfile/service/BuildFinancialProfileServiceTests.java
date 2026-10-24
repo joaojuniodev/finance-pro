@@ -1,6 +1,6 @@
 package br.com.financepro.financePro.financialProfile.service;
 
-import br.com.financepro.financePro.account.dto.request.firstSteps.FirstStepsRequestDTO;
+import br.com.financepro.financePro.account.dto.request.firstSteps.AnswersOfQuizFinancialProfile;
 import br.com.financepro.financePro.account.dto.request.firstSteps.Question;
 import br.com.financepro.financePro.common.json.RootFinancialData;
 import br.com.financepro.financePro.financialProfile.dto.FinancialDimensionsDTO;
@@ -41,7 +41,7 @@ class BuildFinancialProfileServiceTests {
 
     @Test
     void shouldDetectAllCriticalAnswersAndSelectTheLowestScoreAsMainAttention() {
-        FirstStepsRequestDTO request = request(
+        AnswersOfQuizFinancialProfile request = request(
             List.of(question("fp-fc-02", "Precisei deixar alguma conta sem pagar")),
             List.of(question("fp-fr-05", "Algumas semanas")),
             List.of(question("fp-foc-09", "Quase sempre")),
@@ -54,7 +54,7 @@ class BuildFinancialProfileServiceTests {
             List.of()
         );
 
-        var result = service.execute(dimensions(50, 50, 50, 50, 50, 50), request, null, root);
+        var result = service.execute(dimensions(50, 50, 50, 50, 50, 50), request, root);
 
         assertThat(result.areaOfFocus())
             .containsKeys(
@@ -70,24 +70,24 @@ class BuildFinancialProfileServiceTests {
 
     @Test
     void shouldOnlyFlagQuestionSeventeenWhenCommitmentsAreAffected() {
-        FirstStepsRequestDTO balancedRequest = request(
+        AnswersOfQuizFinancialProfile balancedRequest = request(
             List.of(), List.of(), List.of(), List.of(),
             List.of(question("fp-fbf-17", "Aproveito o presente sem comprometer meus planos")),
             List.of()
         );
 
-        var balancedResult = service.execute(dimensions(70, 70, 70, 70, 70, 70), balancedRequest, null, root);
+        var balancedResult = service.execute(dimensions(70, 70, 70, 70, 70, 70), balancedRequest, root);
 
         assertThat(balancedResult.areaOfFocus()).containsOnlyKeys(NO_CURRENT_CRITICAL_ATTENTION);
         assertThat(balancedResult.mainAttention()).containsOnlyKeys(NO_CURRENT_CRITICAL_ATTENTION);
 
-        FirstStepsRequestDTO criticalRequest = request(
+        AnswersOfQuizFinancialProfile criticalRequest = request(
             List.of(), List.of(), List.of(), List.of(),
             List.of(question("fp-fbf-17", "Minhas decisões de gasto estão prejudicando compromissos importantes")),
             List.of()
         );
 
-        var criticalResult = service.execute(dimensions(70, 70, 70, 70, 20, 70), criticalRequest, null, root);
+        var criticalResult = service.execute(dimensions(70, 70, 70, 70, 20, 70), criticalRequest, root);
 
         assertThat(criticalResult.areaOfFocus()).containsOnlyKeys(IMPULSES_AFFECTING_COMMITMENTS);
         assertThat(criticalResult.mainAttention()).containsOnlyKeys(IMPULSES_AFFECTING_COMMITMENTS);
@@ -95,25 +95,25 @@ class BuildFinancialProfileServiceTests {
 
     @Test
     void shouldSelectOpportunityFromTheLowestDimensionAmongTwoPointAnswers() {
-        FirstStepsRequestDTO request = request(
+        AnswersOfQuizFinancialProfile request = request(
             List.of(question("fp-fc-01", "Ficaram praticamente iguais")),
             List.of(question("fp-fr-05", "De um a três meses")),
             List.of(), List.of(), List.of(), List.of()
         );
 
-        var result = service.execute(dimensions(80, 35, 70, 70, 70, 70), request, null, root);
+        var result = service.execute(dimensions(80, 35, 70, 70, 70, 70), request, root);
 
         assertThat(result.keyOpportunity()).containsOnlyKeys(BUILD_FINANCIAL_RESILIENCE);
     }
 
     @Test
     void shouldTreatTwoPointLateBillsAsOpportunityInsteadOfCriticalAttention() {
-        FirstStepsRequestDTO request = request(
+        AnswersOfQuizFinancialProfile request = request(
             List.of(question("fp-fc-02", "Algumas atrasaram")),
             List.of(), List.of(), List.of(), List.of(), List.of()
         );
 
-        var result = service.execute(dimensions(40, 70, 70, 70, 70, 70), request, null, root);
+        var result = service.execute(dimensions(40, 70, 70, 70, 70, 70), request,  root);
 
         assertThat(result.areaOfFocus()).containsOnlyKeys(NO_CURRENT_CRITICAL_ATTENTION);
         assertThat(result.keyOpportunity()).containsOnlyKeys(IMPROVE_FINANCIAL_SECURITY);
@@ -121,7 +121,7 @@ class BuildFinancialProfileServiceTests {
 
     @Test
     void shouldSelectTheDimensionWithTheHighestScoreAsMainStrength() {
-        FirstStepsRequestDTO request = request(
+        AnswersOfQuizFinancialProfile request = request(
             List.of(), List.of(),
             List.of(
                 question("fp-foc-06", "Quase sempre"),
@@ -132,14 +132,14 @@ class BuildFinancialProfileServiceTests {
             List.of(), List.of(), List.of()
         );
 
-        var result = service.execute(dimensions(60, 55, 80, 70, 65, 75), request, null, root);
+        var result = service.execute(dimensions(60, 55, 80, 70, 65, 75), request, root);
 
         assertThat(result.mainStrength()).containsOnlyKeys(ORGANIZATION_AND_CONTROL);
     }
 
     @Test
     void shouldIgnoreTheHighestDimensionWhenItContainsACriticalAnswer() {
-        FirstStepsRequestDTO request = request(
+        AnswersOfQuizFinancialProfile request = request(
             List.of(question("fp-fc-02", "Precisei deixar alguma conta sem pagar")),
             List.of(),
             List.of(
@@ -149,14 +149,14 @@ class BuildFinancialProfileServiceTests {
             List.of(), List.of(), List.of()
         );
 
-        var result = service.execute(dimensions(85, 70, 75, 70, 70, 70), request, null, root);
+        var result = service.execute(dimensions(85, 70, 75, 70, 70, 70), request, root);
 
         assertThat(result.mainStrength()).containsOnlyKeys(ORGANIZATION_AND_CONTROL);
     }
 
     @Test
     void shouldUseFourPointAnswersToBreakATieBetweenDimensions() {
-        FirstStepsRequestDTO request = request(
+        AnswersOfQuizFinancialProfile request = request(
             List.of(
                 question("fp-fc-01", "Gastaram bem menos do que entrou"),
                 question("fp-fc-02", "Algumas atrasaram")
@@ -168,7 +168,7 @@ class BuildFinancialProfileServiceTests {
             List.of(), List.of(), List.of(), List.of()
         );
 
-        var result = service.execute(dimensions(70, 70, 60, 60, 60, 60), request, null, root);
+        var result = service.execute(dimensions(70, 70, 60, 60, 60, 60), request, root);
 
         assertThat(result.mainStrength()).containsOnlyKeys(FINANCIAL_SECURITY);
     }
@@ -218,7 +218,6 @@ class BuildFinancialProfileServiceTests {
         var highConfidence = service.execute(
             dimensions(75, 75, 75, 75, 75, 75),
             completeRequest(Map.of()),
-            null,
             root
         );
         assertThat(highConfidence.confidenceScore()).isEqualTo(100);
@@ -227,7 +226,6 @@ class BuildFinancialProfileServiceTests {
         var moderateConfidence = service.execute(
             dimensions(75, 75, 75, 75, 75, 75),
             completeRequest(Map.of("fp-foc-09", "Quase sempre")),
-            null,
             root
         );
         assertThat(moderateConfidence.confidenceScore()).isEqualTo(85);
@@ -240,14 +238,13 @@ class BuildFinancialProfileServiceTests {
                 "fp-fir-11", "Frequentemente",
                 "fp-fir-12", "Frequentemente"
             )),
-            null,
             root
         );
         assertThat(lowConfidence.confidenceScore()).isEqualTo(55);
         assertThat(lowConfidence.confidenceInTheResult()).containsOnlyKeys(LOW);
 
-        FirstStepsRequestDTO complete = completeRequest(Map.of());
-        FirstStepsRequestDTO incomplete = request(
+        AnswersOfQuizFinancialProfile complete = completeRequest(Map.of());
+        AnswersOfQuizFinancialProfile incomplete = request(
             complete.questionsFinancialSecurity(),
             List.of(question("fp-fr-05", "Não sei dizer")),
             complete.questionsFinancialOrganizationAndControl(),
@@ -258,7 +255,6 @@ class BuildFinancialProfileServiceTests {
         var inconclusive = service.execute(
             dimensions(75, 0, 75, 75, 75, 75),
             incomplete,
-            null,
             root
         );
         assertThat(inconclusive.confidenceScore()).isEqualTo(49);
@@ -287,7 +283,6 @@ class BuildFinancialProfileServiceTests {
             var result = service.execute(
                 dimensions(75, 75, 75, 75, 75, 75),
                 completeRequest(answers),
-                null,
                 root
             );
 
@@ -301,7 +296,6 @@ class BuildFinancialProfileServiceTests {
         var result = service.execute(
             dimensions(75, 75, 75, 75, 75, 75),
             completeRequest(Map.of()),
-            null,
             root
         );
 
@@ -321,7 +315,6 @@ class BuildFinancialProfileServiceTests {
                 "fp-fc-01", "Ficaram praticamente iguais",
                 "fp-fbf-16", "Quase sempre"
             )),
-            null,
             root
         );
 
@@ -332,8 +325,8 @@ class BuildFinancialProfileServiceTests {
 
     @Test
     void shouldNotBuildADefinitiveSynthesisWhenTheResultIsInconclusive() {
-        FirstStepsRequestDTO complete = completeRequest(Map.of());
-        FirstStepsRequestDTO incomplete = request(
+        AnswersOfQuizFinancialProfile complete = completeRequest(Map.of());
+        AnswersOfQuizFinancialProfile incomplete = request(
             complete.questionsFinancialSecurity(),
             List.of(question("fp-fr-05", "Não sei dizer")),
             complete.questionsFinancialOrganizationAndControl(),
@@ -345,19 +338,18 @@ class BuildFinancialProfileServiceTests {
         var result = service.execute(
             dimensions(75, 0, 75, 75, 75, 75),
             incomplete,
-            null,
             root
         );
 
         assertThat(result.interpretiveSynthesis()).isEqualTo(INCONCLUSIVE_SYNTHESIS);
     }
 
-    private void assertTrend(String expectedTrend, FinancialDimensionsDTO dimensions, FirstStepsRequestDTO request) {
-        var result = service.execute(dimensions, request, null, root);
+    private void assertTrend(String expectedTrend, FinancialDimensionsDTO dimensions, AnswersOfQuizFinancialProfile request) {
+        var result = service.execute(dimensions, request, root);
         assertThat(result.financialTrend()).containsOnlyKeys(expectedTrend);
     }
 
-    private static FirstStepsRequestDTO completeRequest(Map<String, String> overrides) {
+    private static AnswersOfQuizFinancialProfile completeRequest(Map<String, String> overrides) {
         Map<String, String> responses = new HashMap<>(Map.ofEntries(
             Map.entry("fp-fc-01", "Gastaram um pouco menos"),
             Map.entry("fp-fc-02", "Todas foram pagas antes ou no prazo"),
@@ -412,7 +404,7 @@ class BuildFinancialProfileServiceTests {
         );
     }
 
-    private static FirstStepsRequestDTO request(
+    private static AnswersOfQuizFinancialProfile request(
         List<Question> security,
         List<Question> resilience,
         List<Question> organization,
@@ -420,7 +412,7 @@ class BuildFinancialProfileServiceTests {
         List<Question> balance,
         List<Question> future
     ) {
-        return new FirstStepsRequestDTO(
+        return new AnswersOfQuizFinancialProfile(
             "user@test.com",
             security,
             resilience,
