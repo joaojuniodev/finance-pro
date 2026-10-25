@@ -4,7 +4,7 @@ spring:
   application:
     name: financePro
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:DEV}
+    active: ${SPRING_PROFILES_ACTIVE:PROD}
   flyway:
     enabled: true
     locations: classpath:db/migration
