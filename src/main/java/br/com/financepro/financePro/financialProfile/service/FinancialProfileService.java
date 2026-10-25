@@ -1,6 +1,8 @@
 package br.com.financepro.financePro.financialProfile.service;
 
 import br.com.financepro.financePro.financialProfile.dto.FinancialDimensionsDTO;
+import br.com.financepro.financePro.financialProfile.dto.FinancialProfileDetailsResponse;
+import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.financialProfile.dto.FinancialProfileResponse;
 import br.com.financepro.financePro.financialProfile.model.FinancialProfile;
 import br.com.financepro.financePro.financialProfile.repository.FinancialProfileRepository;
@@ -63,6 +65,15 @@ public class FinancialProfileService {
         userRepository.save(user);
 
         return financialProfile;
+    }
+
+    @Transactional(readOnly = true)
+    public FinancialProfileDetailsResponse getByUsername(String username) {
+        var user = userRepository.findByUserName(username);
+        if (user == null) throw new NotFoundException("Usuário não encontrado.");
+        var profile = repository.findByUserId(user.getId())
+            .orElseThrow(() -> new NotFoundException("Você ainda não respondeu ao questionário financeiro."));
+        return FinancialProfileDetailsResponse.from(profile);
     }
 
     private int roundScore(double score) {

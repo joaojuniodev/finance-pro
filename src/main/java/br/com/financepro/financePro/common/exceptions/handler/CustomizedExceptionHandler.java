@@ -19,6 +19,14 @@ import java.util.Date;
 @RestControllerAdvice
 public class CustomizedExceptionHandler {
 
+    @ExceptionHandler(br.com.financepro.financePro.account.service.firstSteps.InvalidFinancialAnswersException.class)
+    public final ResponseEntity<ExceptionResponse> handleInvalidFinancialAnswers(Exception ex, WebRequest request) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(
+            ex.getMessage(), request.getDescription(false), new Date()
+        ));
+    }
+
+
     @ExceptionHandler(Exception.class)
     public final ResponseEntity<ExceptionResponse> handleAllExceptions(Exception ex, WebRequest request) {
         ExceptionResponse response = new ExceptionResponse(

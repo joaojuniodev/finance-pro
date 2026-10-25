@@ -15,6 +15,8 @@ import br.com.financepro.financePro.financialProfile.dto.FinancialProfileRespons
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.CacheControl;
+import java.security.Principal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -105,9 +107,13 @@ public class AccountController implements AccountControllerDocs {
     @PostMapping("/first-steps/{username}")
     public ResponseEntity<FinancialProfileResponse> firstSteps(
         @PathVariable String username,
-        @RequestBody AnswersOfQuizFinancialProfile firstSteps
+        @RequestBody AnswersOfQuizFinancialProfile firstSteps,
+        Principal principal
     ) {
-        return ResponseEntity.ok(firstStepsService.firstSteps(username, firstSteps));
+        if (principal == null) return ResponseEntity.status(401).build();
+        if (!username.equals(principal.getName())) return ResponseEntity.status(403).build();
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+            .body(firstStepsService.firstSteps(principal.getName(), firstSteps));
     }
 
     @PostMapping

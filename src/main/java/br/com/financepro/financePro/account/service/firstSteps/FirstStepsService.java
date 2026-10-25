@@ -2,203 +2,81 @@ package br.com.financepro.financePro.account.service.firstSteps;
 
 import br.com.financepro.financePro.account.dto.request.firstSteps.AnswersOfQuizFinancialProfile;
 import br.com.financepro.financePro.account.dto.request.firstSteps.Question;
-import br.com.financepro.financePro.common.enums.IdentifyFinancial;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.common.json.FinancialJsonFileReader;
 import br.com.financepro.financePro.common.json.QuestionJson;
-import br.com.financepro.financePro.common.json.RootFinancialData;
 import br.com.financepro.financePro.financialProfile.dto.FinancialDimensionsDTO;
 import br.com.financepro.financePro.financialProfile.dto.FinancialProfileResponse;
 import br.com.financepro.financePro.financialProfile.service.BuildFinancialProfileService;
 import br.com.financepro.financePro.financialProfile.service.FinancialProfileService;
 import br.com.financepro.financePro.security.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class FirstStepsService {
+    private final UserRepository userRepository;
+    private final BuildFinancialProfileService buildFinancialProfile;
+    private final FinancialProfileService financialProfileService;
+    private final FinancialJsonFileReader jsonFileReader;
 
-    private static final Logger log = LoggerFactory.getLogger(FirstStepsService.class.getName());
+    public FirstStepsService(UserRepository userRepository, BuildFinancialProfileService buildFinancialProfile,
+                             FinancialProfileService financialProfileService, FinancialJsonFileReader jsonFileReader) {
+        this.userRepository = userRepository;
+        this.buildFinancialProfile = buildFinancialProfile;
+        this.financialProfileService = financialProfileService;
+        this.jsonFileReader = jsonFileReader;
+    }
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private BuildFinancialProfileService buildFinancialProfile;
-
-    @Autowired
-    private FinancialProfileService financialProfileService;
-
-    @Autowired
-    private FinancialJsonFileReader jsonFileReader;
-
-    private static final int DIMENSIONS = 6;
-    private static final int MAX = 4;
-
-    private double financialIndex = 0;
-
-    private double pointsFinancialSecurity = 0;
-    private double pointsFinancialResilience = 0;
-    private double pointsFinancialOrganizationAndControl = 0;
-    private double pointsFinancialImpulseRegulation = 0;
-    private double pointsFinancialBalanceAndFreedom = 0;
-    private double pointsFinancialOrientationTheFuture = 0;
-
-    double numberQuestionsFinancialSecurity = 0;
-    double numberQuestionsFinancialResilience = 0;
-    double numberQuestionsFinancialOrganizationAndControl = 0;
-    double numberQuestionsFinancialImpulseRegulation = 0;
-    double numberQuestionsFinancialBalanceAndFreedom = 0;
-    double numberQuestionsFinancialOrientationTheFuture = 0;
-
-    public FinancialProfileResponse firstSteps(String username, AnswersOfQuizFinancialProfile firstSteps) {
-
+    public FinancialProfileResponse firstSteps(String username, AnswersOfQuizFinancialProfile answers) {
         var user = userRepository.findByUserName(username);
-
-        if (user == null) {
-            throw new NotFoundException("Not found this User by username: " + username);
+        if (user == null) throw new NotFoundException("Usuário não encontrado.");
+        if (answers == null || !username.equals(answers.username())) {
+            throw new InvalidFinancialAnswersException("O questionário deve pertencer ao usuário autenticado.");
         }
-
-        RootFinancialData root = jsonFileReader.read();
-
-        assert root != null;
-
-        double maxPointsFinancialSecurity = 0;
-        double maxPointsFinancialResilience = 0;
-        double maxPointsFinancialOrganizationAndControl = 0;
-        double maxPointsFinancialImpulseRegulation = 0;
-        double maxPointsFinancialBalanceAndFreedom = 0;
-        double maxPointsFinancialOrientationTheFuture = 0;
-
-        numberQuestionsFinancialSecurity = root.financialData().financialSecurity().size();
-        numberQuestionsFinancialResilience = root.financialData().financialResilience().size();
-        numberQuestionsFinancialOrganizationAndControl = root.financialData().financialOrganizationAndControl().size();
-        numberQuestionsFinancialImpulseRegulation = root.financialData().financialImpulseRegulation().size();
-        numberQuestionsFinancialBalanceAndFreedom = root.financialData().financialBalanceAndFreedom().size();
-        numberQuestionsFinancialOrientationTheFuture = root.financialData().financialOrientationTheFuture().size();
-
-        if (validateNumberQuestions()) {
-            buildQuestions(
-                firstSteps.questionsFinancialSecurity(),
-                root.financialData().financialSecurity(),
-                IdentifyFinancial.FINANCIAL_SECURITY
-            );
-            buildQuestions(
-                firstSteps.questionsFinancialResilience(),
-                root.financialData().financialResilience(),
-                IdentifyFinancial.FINANCIAL_RESILIENCE
-            );
-            buildQuestions(
-                firstSteps.questionsFinancialOrganizationAndControl(),
-                root.financialData().financialOrganizationAndControl(),
-                IdentifyFinancial.FINANCIAL_ORGANIZATION_AND_CONTROL
-            );
-            buildQuestions(
-                firstSteps.questionsFinancialImpulseRegulation(),
-                root.financialData().financialImpulseRegulation(),
-                IdentifyFinancial.FINANCIAL_IMPULSE_REGULATION
-            );
-            buildQuestions(
-                firstSteps.questionsFinancialBalanceAndFreedom(),
-                root.financialData().financialBalanceAndFreedom(),
-                IdentifyFinancial.FINANCIAL_BALANCE_AND_FREEDOM
-            );
-            buildQuestions(
-                firstSteps.questionsFinancialOrientationTheFuture(),
-                root.financialData().financialOrientationTheFuture(),
-                IdentifyFinancial.FINANCIAL_ORIENTATION_THE_FUTURE
-            );
-
-            maxPointsFinancialSecurity = numberQuestionsFinancialSecurity * MAX;
-            maxPointsFinancialResilience = numberQuestionsFinancialResilience * MAX;
-            maxPointsFinancialOrganizationAndControl = numberQuestionsFinancialOrganizationAndControl * MAX;
-            maxPointsFinancialImpulseRegulation = numberQuestionsFinancialImpulseRegulation * MAX;
-            maxPointsFinancialBalanceAndFreedom = numberQuestionsFinancialBalanceAndFreedom * MAX;
-            maxPointsFinancialOrientationTheFuture = numberQuestionsFinancialOrientationTheFuture * MAX;
-        }
-
-        pointsFinancialSecurity = calculatePoints(pointsFinancialSecurity, maxPointsFinancialSecurity);
-        pointsFinancialResilience = calculatePoints(pointsFinancialResilience, maxPointsFinancialResilience);
-        pointsFinancialOrganizationAndControl = calculatePoints(pointsFinancialOrganizationAndControl, maxPointsFinancialOrganizationAndControl);
-        pointsFinancialImpulseRegulation = calculatePoints(pointsFinancialImpulseRegulation, maxPointsFinancialImpulseRegulation);
-        pointsFinancialBalanceAndFreedom = calculatePoints(pointsFinancialBalanceAndFreedom, maxPointsFinancialBalanceAndFreedom);
-        pointsFinancialOrientationTheFuture = calculatePoints(pointsFinancialOrientationTheFuture, maxPointsFinancialOrientationTheFuture);
-
-        financialIndex =
-            (pointsFinancialSecurity + pointsFinancialResilience
-            + pointsFinancialOrganizationAndControl + pointsFinancialImpulseRegulation
-            + pointsFinancialBalanceAndFreedom + pointsFinancialOrientationTheFuture)
-            / DIMENSIONS;
-
+        var root = jsonFileReader.read();
+        if (root == null) throw new IllegalStateException("Questionário indisponível.");
+        var data = root.financialData();
+        // Scores belong to this request. Missing answers are excluded from the denominator.
         var dimensions = new FinancialDimensionsDTO(
-            pointsFinancialSecurity,
-            pointsFinancialResilience,
-            pointsFinancialOrganizationAndControl,
-            pointsFinancialImpulseRegulation,
-            pointsFinancialBalanceAndFreedom,
-            pointsFinancialOrientationTheFuture
+            score(answers.questionsFinancialSecurity(), data.financialSecurity()),
+            score(answers.questionsFinancialResilience(), data.financialResilience()),
+            score(answers.questionsFinancialOrganizationAndControl(), data.financialOrganizationAndControl()),
+            score(answers.questionsFinancialImpulseRegulation(), data.financialImpulseRegulation()),
+            score(answers.questionsFinancialBalanceAndFreedom(), data.financialBalanceAndFreedom()),
+            score(answers.questionsFinancialOrientationTheFuture(), data.financialOrientationTheFuture())
         );
-
-        var financialProfile = buildFinancialProfile.execute(dimensions, firstSteps, root);
-
-        return financialProfileService.create(user, financialIndex, dimensions, financialProfile);
+        double index = (dimensions.financialSecurity() + dimensions.financialResilience()
+            + dimensions.financialOrganizationAndControl() + dimensions.financialImpulseRegulation()
+            + dimensions.financialBalanceAndFreedom() + dimensions.financialOrientationTheFuture()) / 6;
+        var profile = buildFinancialProfile.execute(dimensions, answers, root);
+        return financialProfileService.create(user, index, dimensions, profile);
     }
 
-    private boolean validateNumberQuestions() {
-        return numberQuestionsFinancialSecurity > 0 && numberQuestionsFinancialResilience > 0 &&
-            numberQuestionsFinancialOrganizationAndControl > 0 && numberQuestionsFinancialImpulseRegulation > 0 &&
-            numberQuestionsFinancialBalanceAndFreedom > 0 && numberQuestionsFinancialOrientationTheFuture > 0;
-    }
-
-    private void buildQuestions(List<Question> questions, List<QuestionJson> financialData, IdentifyFinancial identify) {
-        for (Question question : questions) {
-            financialData.forEach(questionData -> {
-                if (question.title().equals(questionData.title())) {
-                    var point = questionData.options().get(question.response());
-                    if (point != null) sumPoints(identify, point);
-                    else updateNumberQuestions(identify);
-                }
-            });
+    private double score(List<Question> answers, List<QuestionJson> questions) {
+        if (answers == null || answers.size() != questions.size()) {
+            throw new InvalidFinancialAnswersException("Revise as respostas de todas as perguntas.");
         }
-    }
-
-    private void sumPoints(IdentifyFinancial name, double point) {
-        if (name.equals(IdentifyFinancial.FINANCIAL_SECURITY)) {
-            pointsFinancialSecurity += point;
-        } else if (name.equals(IdentifyFinancial.FINANCIAL_RESILIENCE)) {
-            pointsFinancialResilience += point;
-        } else if (name.equals(IdentifyFinancial.FINANCIAL_ORGANIZATION_AND_CONTROL)) {
-            pointsFinancialOrganizationAndControl += point;
-        } else if (name.equals(IdentifyFinancial.FINANCIAL_IMPULSE_REGULATION)) {
-            pointsFinancialImpulseRegulation += point;
-        } else if (name.equals(IdentifyFinancial.FINANCIAL_BALANCE_AND_FREEDOM)) {
-            pointsFinancialBalanceAndFreedom += point;
-        } else {
-            pointsFinancialOrientationTheFuture += point;
+        Set<String> answeredIds = new HashSet<>();
+        int points = 0;
+        int validAnswers = 0;
+        for (Question answer : answers) {
+            if (answer == null || !answeredIds.add(answer.questionId())) {
+                throw new InvalidFinancialAnswersException("O questionário contém uma pergunta inválida ou repetida.");
+            }
+            var question = questions.stream().filter(item -> item.id().equals(answer.questionId()))
+                .findFirst().orElseThrow(() -> new InvalidFinancialAnswersException("Pergunta inválida."));
+            if (!question.title().equals(answer.title()) || !question.options().containsKey(answer.response())) {
+                throw new InvalidFinancialAnswersException("Uma resposta não corresponde ao questionário atual. Revise suas respostas.");
+            }
+            Integer value = question.options().get(answer.response());
+            if (value != null) {
+                points += value;
+                validAnswers++;
+            }
         }
-    }
-
-    private void updateNumberQuestions(IdentifyFinancial name) {
-        if (name.equals(IdentifyFinancial.FINANCIAL_SECURITY)) {
-            numberQuestionsFinancialSecurity -= 1;
-        } else if (name.equals(IdentifyFinancial.FINANCIAL_RESILIENCE)) {
-            numberQuestionsFinancialResilience -= 1;
-        } else if (name.equals(IdentifyFinancial.FINANCIAL_ORGANIZATION_AND_CONTROL)) {
-            numberQuestionsFinancialOrganizationAndControl -= 1;
-        } else if (name.equals(IdentifyFinancial.FINANCIAL_IMPULSE_REGULATION)) {
-            numberQuestionsFinancialImpulseRegulation -= 1;
-        } else if (name.equals(IdentifyFinancial.FINANCIAL_BALANCE_AND_FREEDOM)) {
-            numberQuestionsFinancialBalanceAndFreedom -= 1;
-        } else {
-            numberQuestionsFinancialOrientationTheFuture -= 1;
-        }
-    }
-
-    private double calculatePoints(double points, double maxPoints) {
-        return (points / maxPoints) * 100;
+        return validAnswers == 0 ? 0 : points * 100.0 / (validAnswers * 4);
     }
 }

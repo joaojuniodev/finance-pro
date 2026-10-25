@@ -155,7 +155,7 @@ public interface AccountControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<FinancialProfileResponse> firstSteps(@PathVariable String username, @RequestBody AnswersOfQuizFinancialProfile firstSteps);
+    ResponseEntity<FinancialProfileResponse> firstSteps(@PathVariable String username, @RequestBody AnswersOfQuizFinancialProfile firstSteps, java.security.Principal principal);
 
     @Operation(
         tags = {"Account"},
