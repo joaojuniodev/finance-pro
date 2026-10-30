@@ -36,7 +36,7 @@ public interface MovementControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<List<MovementResponseDTO>> getAll();
+    ResponseEntity<List<MovementResponseDTO>> getAll(java.security.Principal principal);
 
     @Operation(
         tags = {"Movement"},
@@ -52,7 +52,7 @@ public interface MovementControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<MovementResponseDTO> getById(@PathVariable UUID id);
+    ResponseEntity<MovementResponseDTO> getById(@PathVariable UUID id, java.security.Principal principal);
 
     @Operation(
         tags = {"Movement"},
@@ -66,7 +66,7 @@ public interface MovementControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<MovementResponseDTO> create(@RequestBody MovementRequestDTO movement);
+    ResponseEntity<MovementResponseDTO> create(@RequestBody MovementRequestDTO movement, java.security.Principal principal);
 
     @Operation(
         tags = {"Movement"},

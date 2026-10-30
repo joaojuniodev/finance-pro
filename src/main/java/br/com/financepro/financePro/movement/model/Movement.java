@@ -16,6 +16,13 @@ public class Movement {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(name = "request_id", unique = true)
+    private UUID requestId;
+
+    public UUID getRequestId() { return requestId; }
+
+    public void setRequestId(UUID requestId) { this.requestId = requestId; }
+
     @Column
     private BigDecimal amount;
 

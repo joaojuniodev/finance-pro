@@ -8,6 +8,7 @@ import java.util.UUID;
 public class MovementRequestDTO {
 
     private UUID id;
+    private UUID requestId;
     private BigDecimal amount;
     private UUID fromWalletId;
     private UUID toWalletId;
@@ -29,6 +30,14 @@ public class MovementRequestDTO {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public UUID getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(UUID requestId) {
+        this.requestId = requestId;
     }
 
     public BigDecimal getAmount() {

@@ -1,7 +1,7 @@
 package br.com.financepro.financePro.goal.model;
 
+import br.com.financepro.financePro.account.model.Account;
 import br.com.financepro.financePro.category.model.Category;
-import br.com.financepro.financePro.common.enums.CategoryType;
 import br.com.financepro.financePro.wallet.model.Wallet;
 import jakarta.persistence.*;
 
@@ -32,6 +32,10 @@ public class Goal {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id")
+    private Account account;
 
     @OneToOne(mappedBy = "goal")
     private Wallet wallet;
@@ -94,6 +98,14 @@ public class Goal {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     public Wallet getWallet() {

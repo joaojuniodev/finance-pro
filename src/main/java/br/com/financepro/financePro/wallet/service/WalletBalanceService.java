@@ -2,13 +2,14 @@ package br.com.financepro.financePro.wallet.service;
 
 import br.com.financepro.financePro.account.service.AccountBalanceService;
 import br.com.financepro.financePro.common.enums.TransactionType;
+import br.com.financepro.financePro.common.enums.WalletType;
+import br.com.financepro.financePro.movement.exception.InvalidTransferException;
 import br.com.financepro.financePro.common.exceptions.InsufficientBalanceException;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.wallet.model.Wallet;
 import br.com.financepro.financePro.wallet.repository.WalletRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,11 +21,13 @@ public class WalletBalanceService implements WalletBalanceOperations {
 
     private final Logger log = LoggerFactory.getLogger(WalletBalanceService.class.getName());
 
-    @Autowired
-    private WalletRepository walletRepository;
+    private final WalletRepository walletRepository;
+    private final AccountBalanceService accountBalanceService;
 
-    @Autowired
-    private AccountBalanceService accountBalanceService;
+    public WalletBalanceService(WalletRepository walletRepository, AccountBalanceService accountBalanceService) {
+        this.walletRepository = walletRepository;
+        this.accountBalanceService = accountBalanceService;
+    }
 
     @Transactional
     @Override
@@ -56,13 +59,26 @@ public class WalletBalanceService implements WalletBalanceOperations {
     @Transactional
     @Override
     public void transfer(Wallet from, Wallet to, BigDecimal amount) {
+        if (amount == null || amount.signum() <= 0 || amount.stripTrailingZeros().scale() > 2) {
+            throw new InvalidTransferException("Informe um valor positivo com até duas casas decimais.");
+        }
+        if (from == null || to == null || from.getId() == null || from.getId().equals(to.getId())
+            || from.getAccount() == null || to.getAccount() == null || from.getAccount().getId() == null
+            || !from.getAccount().getId().equals(to.getAccount().getId())) {
+            throw new InvalidTransferException("Escolha carteiras diferentes da mesma conta.");
+        }
+        if (from.getType() == WalletType.CREDIT_CARD || to.getType() == WalletType.CREDIT_CARD) {
+            throw new InvalidTransferException("Cartões de crédito devem usar o fluxo de pagamento de fatura.");
+        }
+        if (from.getBalance() == null || to.getBalance() == null) {
+            throw new InvalidTransferException("Não foi possível consultar o saldo das carteiras.");
+        }
         validateSufficientBalance(from, amount);
-        validateAmount(amount);
-
-        debit(from, amount, false, false);
-        credit(to, amount, false, false);
-
-        log.info("Transferência de {} entre Wallet {} e Wallet {}", amount, from.getId(), to.getId());
+        from.setBalance(from.getBalance().subtract(amount));
+        to.setBalance(to.getBalance().add(amount));
+        walletRepository.save(from);
+        walletRepository.save(to);
+        // Internal transfers do not change consolidated balance, income or expenses.
     }
 
     public Wallet getWallet(UUID walletId) {

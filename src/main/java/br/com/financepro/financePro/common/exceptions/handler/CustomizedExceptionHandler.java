@@ -19,6 +19,17 @@ import java.util.Date;
 @RestControllerAdvice
 public class CustomizedExceptionHandler {
 
+    @ExceptionHandler(br.com.financepro.financePro.goal.exception.InvalidGoalException.class)
+    public final ResponseEntity<ExceptionResponse> handleInvalidGoal(Exception ex, WebRequest request) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ex.getMessage(), request.getDescription(false), new Date()));
+    }
+
+    @ExceptionHandler(br.com.financepro.financePro.movement.exception.InvalidTransferException.class)
+    public final ResponseEntity<ExceptionResponse> handleInvalidTransfer(Exception ex, WebRequest request) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ex.getMessage(), request.getDescription(false), new Date()));
+    }
+
+
     @ExceptionHandler(br.com.financepro.financePro.account.service.firstSteps.InvalidFinancialAnswersException.class)
     public final ResponseEntity<ExceptionResponse> handleInvalidFinancialAnswers(Exception ex, WebRequest request) {
         return ResponseEntity.badRequest().body(new ExceptionResponse(

@@ -1,6 +1,5 @@
 package br.com.financepro.financePro.goal.controller.doc;
 
-import br.com.financepro.financePro.account.controller.AccountController;
 import br.com.financepro.financePro.goal.dto.GoalRequestDTO;
 import br.com.financepro.financePro.goal.dto.GoalResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,15 +19,15 @@ public interface GoalControllerDocs {
 
     @Operation(
         tags = {"Goal"},
-        description = "API route to return all Gols",
-        summary = "Getting all Gols",
+        description = "Lista as metas da conta autenticada",
+        summary = "Listar metas",
         responses = {
             @ApiResponse(
                 description = "Success",
                 responseCode = "200",
                 content = @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    array = @ArraySchema(schema = @Schema(implementation = AccountController.class))
+                    array = @ArraySchema(schema = @Schema(implementation = GoalResponseDTO.class))
                 )
             ),
             @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
@@ -37,7 +36,7 @@ public interface GoalControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<List<GoalResponseDTO>> getAll();
+    ResponseEntity<List<GoalResponseDTO>> getAll(java.security.Principal principal);
 
     @Operation(
         tags = {"Goal"},
@@ -53,12 +52,12 @@ public interface GoalControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<GoalResponseDTO> getById(@PathVariable UUID id);
+    ResponseEntity<GoalResponseDTO> getById(@PathVariable UUID id, java.security.Principal principal);
 
     @Operation(
         tags = {"Goal"},
-        description = "API route to create a one Goal",
-        summary = "Create Goal",
+        description = "Cria uma meta para a conta autenticada",
+        summary = "Criar meta",
         responses = {
             @ApiResponse(description = "Success", responseCode = "200", content = @Content),
             @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
@@ -67,7 +66,7 @@ public interface GoalControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<GoalResponseDTO> create(@RequestBody GoalRequestDTO goal);
+    ResponseEntity<GoalResponseDTO> create(@RequestBody GoalRequestDTO goal, java.security.Principal principal);
 
     @Operation(
         tags = {"Goal"},
@@ -82,7 +81,7 @@ public interface GoalControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<GoalResponseDTO> update(@RequestBody GoalRequestDTO goal);
+    ResponseEntity<GoalResponseDTO> update(@RequestBody GoalRequestDTO goal, java.security.Principal principal);
 
     @Operation(
         tags = {"Goal"},
@@ -99,7 +98,8 @@ public interface GoalControllerDocs {
     )
     ResponseEntity<GoalResponseDTO> incrementAmount(
         @PathVariable UUID id,
-        @PathVariable BigDecimal amount
+        @PathVariable BigDecimal amount,
+        java.security.Principal principal
     );
 
     @Operation(
@@ -114,5 +114,5 @@ public interface GoalControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<?> delete(@PathVariable UUID id);
+    ResponseEntity<?> delete(@PathVariable UUID id, java.security.Principal principal);
 }
