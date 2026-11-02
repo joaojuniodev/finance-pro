@@ -37,6 +37,9 @@ public class InvoiceService implements ICrud<Invoice, InvoiceResponseDTO, Invoic
     @Autowired
     private InvoiceMapper mapper;
 
+    @Autowired
+    private InvoiceRecurrenceService invoiceRecurrences;
+
     @Override
     public List<InvoiceResponseDTO> getAll() {
         return List.of();
@@ -58,6 +61,7 @@ public class InvoiceService implements ICrud<Invoice, InvoiceResponseDTO, Invoic
     }
 
     @Override
+    @Transactional
     public InvoiceResponseDTO create(InvoiceRequestDTO invoice) {
         log.info("Creating new Invoice");
 
@@ -68,7 +72,9 @@ public class InvoiceService implements ICrud<Invoice, InvoiceResponseDTO, Invoic
             invoice.daysUntilExpiration()
         ));
 
-        return mapper.toResponse(repository.save(entity));
+        var saved = repository.save(entity);
+        if (saved.getWallet().getType() == WalletType.CREDIT_CARD) invoiceRecurrences.addForNewInvoice(saved);
+        return mapper.toResponse(saved);
     }
 
     @Override

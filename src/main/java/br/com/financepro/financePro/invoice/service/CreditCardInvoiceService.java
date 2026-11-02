@@ -1,6 +1,8 @@
 package br.com.financepro.financePro.invoice.service;
 
 import br.com.financepro.financePro.common.enums.InvoiceStatus;
+import br.com.financepro.financePro.common.enums.WalletType;
+import br.com.financepro.financePro.common.exceptions.InsufficientBalanceException;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.installment.model.Installment;
 import br.com.financepro.financePro.installment.repository.InstallmentRepository;
@@ -42,26 +44,25 @@ public class CreditCardInvoiceService {
     @Autowired
     private InvoiceMapper mapper;
 
+    @Autowired
+    private InvoiceRecurrenceService invoiceRecurrences;
+
     @Transactional(readOnly = true)
-    public InvoiceDetailsResponseDTO getInvoiceDetails(UUID id) {
+    public InvoiceDetailsResponseDTO getInvoiceDetails(UUID id, String username) {
         log.info("Getting Invoice Details");
 
-        var entity = repository.findById(id)
+        var entity = repository.findOwned(id, username)
             .orElseThrow(() -> new NotFoundException("Not found this Id: " + id));
 
-        return mapper.toDetails(entity, getInstallmentsForBillingCycle(entity));
+        return mapper.toDetails(entity, getInstallmentsForBillingCycle(entity), invoiceRecurrences.getCharges(entity.getId()));
     }
 
-    // AO PAGAR UMA PARCELA OU FATURA DO CARTÂO, O LIMITE PRECISA SER ATUALIZADO
-
-    // paguei uma fatura, então crio outra fatura calculando a data de fechamento e validade
-    // assim o usuário tem o histórico de faturas
     @Transactional
-    public InvoiceDetailsResponseDTO payBill(UUID invoiceId, UUID paymentWalletId) {
+    public InvoiceDetailsResponseDTO payBill(UUID invoiceId, UUID paymentWalletId, String username) {
 
         log.info("Paying the Credit Card");
 
-        Invoice invoice = getInvoice(invoiceId);
+        Invoice invoice = getInvoice(invoiceId, username);
 
         if (invoice.getStatus() == InvoiceStatus.PAID) {
             throw new IllegalStateException("This invoice has already been paid");
@@ -73,38 +74,48 @@ public class CreditCardInvoiceService {
             .filter(installment -> !Boolean.TRUE.equals(installment.getPaid()))
             .toList();
 
+        var recurringCharges = invoiceRecurrences.getCharges(invoiceId);
+        var unpaidCharges = recurringCharges.stream()
+            .filter(charge -> !charge.isPaid())
+            .toList();
+
         BigDecimal pendingAmount = unpaidInstallments.stream()
             .map(Installment::getValue)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
+        pendingAmount = pendingAmount.add(unpaidCharges.stream()
+            .map(charge -> charge.getAmount())
+            .reduce(BigDecimal.ZERO, BigDecimal::add));
 
         if (pendingAmount.compareTo(BigDecimal.ZERO) > 0) {
             debitPaymentWallet(creditCard, paymentWalletId, pendingAmount);
             unpaidInstallments.forEach(installment -> installment.setPaid(true));
             installmentRepository.saveAll(unpaidInstallments);
+            unpaidCharges.forEach(charge -> charge.setPaid(true));
+            invoiceRecurrences.savePaidCharges(unpaidCharges);
         }
 
-        // parcela paga
         invoice.setStatus(InvoiceStatus.PAID);
-        // limite atualizado
         invoice.setLimit(invoice.getLimit().add(pendingAmount));
-        // fatura salva
         repository.save(invoice);
-        // cria nova fatura do mês seguinte
         createNextInvoiceIfNecessary(invoice);
 
-        return mapper.toDetails(invoice, getInstallmentsForBillingCycle(invoice));
+        return mapper.toDetails(invoice, getInstallmentsForBillingCycle(invoice), recurringCharges);
     }
 
     @Transactional
     public InvoiceDetailsResponseDTO payInstallment(
         UUID invoiceId,
         UUID installmentId,
-        UUID paymentWalletId
+        UUID paymentWalletId,
+        String username
     ) {
 
         log.info("Paying a portion of the Bill");
 
-        Invoice invoice = getInvoice(invoiceId);
+        Invoice invoice = getInvoice(invoiceId, username);
+        if (invoice.getStatus() == InvoiceStatus.PAID) {
+            throw new IllegalStateException("This invoice has already been paid");
+        }
         Installment installment = getInstallmentsForBillingCycle(invoice).stream()
             .filter(item -> item.getId().equals(installmentId))
             .findFirst()
@@ -118,18 +129,17 @@ public class CreditCardInvoiceService {
         installment.setPaid(true);
         installmentRepository.save(installment);
 
-        // atualizo limite da fatura
         invoice.setLimit(invoice.getLimit().add(installment.getValue()));
         repository.save(invoice);
 
-        return mapper.toDetails(invoice, getInstallmentsForBillingCycle(invoice));
+        return mapper.toDetails(invoice, getInstallmentsForBillingCycle(invoice), invoiceRecurrences.getCharges(invoiceId));
     }
 
     private void debitPaymentWallet(Wallet creditCard, UUID paymentWalletId, BigDecimal amount) {
 
         log.info("Debiting Credit Card");
 
-        Wallet paymentWallet = walletRepository.findById(paymentWalletId)
+        Wallet paymentWallet = walletRepository.findByIdForUpdate(paymentWalletId)
             .orElseThrow(() -> new NotFoundException("Not found payment Wallet Id: " + paymentWalletId));
 
         if (paymentWallet.getId().equals(creditCard.getId())) {
@@ -140,11 +150,23 @@ public class CreditCardInvoiceService {
             throw new IllegalArgumentException("The payment wallet must belong to the same account");
         }
 
+        if (paymentWallet.getType() == WalletType.CREDIT_CARD) {
+            throw new IllegalArgumentException("A fatura deve ser paga com uma carteira de saldo.");
+        }
+        if (paymentWallet.getBalance() == null || paymentWallet.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientBalanceException("Saldo insuficiente para pagar a fatura.");
+        }
+
         walletBalanceService.debit(paymentWallet, amount, false, false);
     }
 
-    private Invoice getInvoice(UUID invoiceId) {
-        Invoice invoice = repository.findById(invoiceId)
+    private Invoice getInvoice(UUID invoiceId, String username) {
+        Invoice owned = repository.findOwned(invoiceId, username)
+            .orElseThrow(() -> new NotFoundException("Fatura não encontrada."));
+        // Lock the card before the invoice, matching recurrence creation's lock order.
+        walletRepository.findByIdForUpdate(owned.getWallet().getId())
+            .orElseThrow(() -> new NotFoundException("Cartão não encontrado."));
+        Invoice invoice = repository.findOwnedForUpdate(invoiceId, username)
             .orElseThrow(() -> new NotFoundException("Not found Invoice Id: " + invoiceId));
 
         if (invoice.getClosingDate() == null || invoice.getExpirationDate() == null) {
@@ -166,7 +188,8 @@ public class CreditCardInvoiceService {
         );
 
         if (!nextCycleExists) {
-            repository.save(createNextInvoice(paidInvoice, nextClosingDate));
+            Invoice next = repository.save(createNextInvoice(paidInvoice, nextClosingDate));
+            invoiceRecurrences.addForNewInvoice(next);
         }
     }
 
@@ -186,8 +209,8 @@ public class CreditCardInvoiceService {
     }
 
     private List<Installment> getInstallmentsForBillingCycle(Invoice invoice) {
-        return installmentRepository.findAllByInstallmentPlanInvoiceIdAndMonthAndYear(
-            invoice.getId(),
+        return installmentRepository.findAllByInstallmentPlanInvoiceWalletIdAndMonthAndYear(
+            invoice.getWallet().getId(),
             invoice.getClosingDate().getMonthValue(),
             invoice.getClosingDate().getYear()
         );

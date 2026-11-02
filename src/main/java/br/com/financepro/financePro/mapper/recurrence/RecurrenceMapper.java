@@ -44,6 +44,11 @@ public class RecurrenceMapper implements ObjectMapper<Recurrence, RecurrenceResp
             .orElseThrow(() -> new NotFoundException("Not found this Wallet Id: " + request.getAccountId()));
         var category = categoryRepository.findById(request.getCategoryId())
             .orElseThrow(() -> new NotFoundException("Not found this Category Id: " + request.getCategoryId()));
+        if (wallet.getAccount() == null || !account.getId().equals(wallet.getAccount().getId())
+            || (!Boolean.TRUE.equals(category.getSystem()) && (category.getAccount() == null
+            || !account.getId().equals(category.getAccount().getId())))) {
+            throw new NotFoundException("Carteira ou categoria não encontrada para esta conta.");
+        }
         return new Recurrence(
             request.getId(),
             request.getAmount(),

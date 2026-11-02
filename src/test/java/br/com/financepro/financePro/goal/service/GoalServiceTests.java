@@ -49,7 +49,7 @@ class GoalServiceTests {
             if (method.getName().equals("findByAccountIdOrderByNameAsc")) {
                 return stored.stream().filter(goal -> goal.getAccount().getId().equals(args[0])).toList();
             }
-            if (method.getName().equals("findByIdAndAccountId")) {
+            if (method.getName().equals("findByIdAndAccountId") || method.getName().equals("findForUpdate")) {
                 return stored.stream().filter(goal -> goal.getId().equals(args[0])
                     && goal.getAccount().getId().equals(args[1])).findFirst();
             }
@@ -93,6 +93,18 @@ class GoalServiceTests {
         assertThrows(InvalidGoalException.class,
             () -> service.create(request("Viagem", "100.001", "0.00"), "alice"));
         assertEquals(0, stored.size());
+    }
+
+    @Test
+    void addsProgressWithoutChangingAccountBalanceAndRejectsExcess() {
+        var created = service.create(request("Viagem", "100.00", "20.00"), "alice");
+        var updated = service.incrementAmount(created.getId(), new BigDecimal("30.50"), "alice");
+        assertEquals(new BigDecimal("50.50"), updated.getCurrentAmount());
+        assertEquals(BigDecimal.ZERO, account.getCurrentBalance());
+        assertThrows(InvalidGoalException.class,
+            () -> service.incrementAmount(created.getId(), new BigDecimal("49.51"), "alice"));
+        assertThrows(NotFoundException.class,
+            () -> service.incrementAmount(created.getId(), BigDecimal.ONE, "bob"));
     }
 
     private GoalRequestDTO request(String name, String target, String initial) {

@@ -7,6 +7,7 @@ import br.com.financepro.financePro.transaction.dto.response.AllTransactionRespo
 import br.com.financepro.financePro.transaction.dto.response.TransactionResponseDTO;
 import br.com.financepro.financePro.transaction.service.TransactionExecutionService;
 import br.com.financepro.financePro.transaction.service.TransactionService;
+import java.security.Principal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,9 +31,11 @@ public class TransactionController implements TransactionControllerDocs {
         @RequestParam(required = false, name = "accountId") UUID accountId,
         @RequestParam(required = false, name = "walletId") UUID walletId,
         @RequestParam(required = false, name = "month") Integer month,
-        @RequestParam(required = false, name = "year") Integer year
+        @RequestParam(required = false, name = "year") Integer year,
+        Principal principal
     ) {
-        return ResponseEntity.ok().body(service.getAll(accountId, walletId, month, year));
+        return ResponseEntity.ok().body(service.getAll(accountId, walletId, month, year,
+            principal != null ? principal.getName() : null));
     }
 
     @GetMapping("/{id}")
@@ -47,9 +50,11 @@ public class TransactionController implements TransactionControllerDocs {
         @RequestParam(required = false, name = "accountId") UUID accountId,
         @RequestParam(required = false, name = "walletId") UUID walletId,
         @RequestParam(required = false, name = "month") Integer month,
-        @RequestParam(required = false, name = "year") Integer year
+        @RequestParam(required = false, name = "year") Integer year,
+        Principal principal
     ) {
-        return ResponseEntity.ok().body(service.getOverview(accountId, walletId, month, year));
+        return ResponseEntity.ok().body(service.getOverview(accountId, walletId, month, year,
+            principal != null ? principal.getName() : null));
     }
 
     @PostMapping
@@ -60,8 +65,9 @@ public class TransactionController implements TransactionControllerDocs {
 
     @PutMapping
     @Override
-    public ResponseEntity<TransactionResponseDTO> update(@RequestBody TransactionRequestDTO transaction) {
-        return ResponseEntity.ok().body(service.update(transaction));
+    public ResponseEntity<TransactionResponseDTO> update(@RequestBody TransactionRequestDTO transaction, Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok().body(service.update(transaction, principal.getName()));
     }
 
     @PatchMapping("/conclude/{transactionId}")
@@ -75,4 +81,5 @@ public class TransactionController implements TransactionControllerDocs {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
 }

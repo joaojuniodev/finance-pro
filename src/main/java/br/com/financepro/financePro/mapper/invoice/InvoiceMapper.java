@@ -4,6 +4,8 @@ import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.installment.model.Installment;
 import br.com.financepro.financePro.invoice.dto.InvoiceDetailsResponseDTO;
 import br.com.financepro.financePro.invoice.dto.InvoiceInstallmentResponseDTO;
+import br.com.financepro.financePro.invoice.dto.InvoiceRecurrenceChargeResponseDTO;
+import br.com.financepro.financePro.invoice.model.InvoiceRecurrenceCharge;
 import br.com.financepro.financePro.invoice.dto.InvoiceRequestDTO;
 import br.com.financepro.financePro.invoice.dto.InvoiceResponseDTO;
 import br.com.financepro.financePro.invoice.model.Invoice;
@@ -48,7 +50,9 @@ public class InvoiceMapper implements ObjectMapper<Invoice, InvoiceResponseDTO, 
         );
     }
 
-    public InvoiceDetailsResponseDTO toDetails(Invoice invoice, List<Installment> installments) {
+    public InvoiceDetailsResponseDTO toDetails(
+        Invoice invoice, List<Installment> installments, List<InvoiceRecurrenceCharge> recurrences
+    ) {
         BigDecimal totalAmount = installments.stream()
             .map(Installment::getValue)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -56,6 +60,13 @@ public class InvoiceMapper implements ObjectMapper<Invoice, InvoiceResponseDTO, 
             .filter(installment -> Boolean.TRUE.equals(installment.getPaid()))
             .map(Installment::getValue)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
+        totalAmount = totalAmount.add(recurrences.stream()
+            .map(InvoiceRecurrenceCharge::getAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add));
+        paidAmount = paidAmount.add(recurrences.stream()
+            .filter(InvoiceRecurrenceCharge::isPaid)
+            .map(InvoiceRecurrenceCharge::getAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add));
         BigDecimal pendingAmount = totalAmount.subtract(paidAmount);
 
         return new InvoiceDetailsResponseDTO(
@@ -74,6 +85,14 @@ public class InvoiceMapper implements ObjectMapper<Invoice, InvoiceResponseDTO, 
                 installment.getPaid(),
                 installment.getMonth(),
                 installment.getYear()
+            )).toList(),
+            recurrences.stream().map(charge -> new InvoiceRecurrenceChargeResponseDTO(
+                charge.getId(),
+                charge.getRecurrence() == null ? null : charge.getRecurrence().getId(),
+                charge.getDescription(),
+                charge.getScheduledDate(),
+                charge.getAmount(),
+                charge.isPaid()
             )).toList()
         );
     }

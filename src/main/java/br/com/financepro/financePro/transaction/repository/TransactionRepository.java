@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -20,6 +21,13 @@ import java.util.UUID;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, UUID>, JpaSpecificationExecutor<Transaction> {
+
+    @Query(value = "SELECT t.* FROM transactions t JOIN accounts a ON a.id = t.account_id JOIN users u ON u.id = a.user_id WHERE t.id = :id AND u.username = :username FOR UPDATE OF t", nativeQuery = true)
+    Optional<Transaction> findOwnedForUpdate(@Param("id") UUID id, @Param("username") String username);
+
+    @Modifying
+    @Query("UPDATE Transaction t SET t.recurrence = NULL WHERE t.recurrence.id = :recurrenceId")
+    int detachRecurrence(@Param("recurrenceId") UUID recurrenceId);
 
     List<Transaction> findAll(Specification<Transaction> spec);
 

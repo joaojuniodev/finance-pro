@@ -1,6 +1,7 @@
 package br.com.financepro.financePro.transaction.service;
 
 import br.com.financepro.financePro.account.service.AccountService;
+import br.com.financepro.financePro.account.repository.AccountRepository;
 import br.com.financepro.financePro.category.model.Category;
 import br.com.financepro.financePro.category.repository.CategoryRepository;
 import br.com.financepro.financePro.common.enums.RecurrenceType;
@@ -15,13 +16,17 @@ import br.com.financepro.financePro.transaction.dto.response.AllTransactionRespo
 import br.com.financepro.financePro.transaction.dto.response.TransactionResponseDTO;
 import br.com.financepro.financePro.transaction.repository.TransactionRepository;
 import br.com.financepro.financePro.transaction.repository.spec.TransactionSpecification;
+import br.com.financepro.financePro.transaction.exception.InvalidTransactionUpdateException;
+import br.com.financepro.financePro.transaction.model.Transaction;
 import br.com.financepro.financePro.wallet.model.Wallet;
 import br.com.financepro.financePro.wallet.service.WalletBalanceService;
+import br.com.financepro.financePro.wallet.repository.WalletRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -38,6 +43,9 @@ public class TransactionService {
     private TransactionRepository repository;
 
     @Autowired
+    private WalletRepository walletRepository;
+
+    @Autowired
     private CategoryRepository categoryRepository;
 
     @Autowired
@@ -47,13 +55,19 @@ public class TransactionService {
     private AccountService accountService;
 
     @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
     private RecurrenceReadService recurrenceService;
 
     @Autowired
     private TransactionMapper mapper;
 
-    public List<TransactionResponseDTO> getAll(UUID accountId, UUID walletId, Integer month, Integer year) {
+    @Transactional(readOnly = true)
+    public List<TransactionResponseDTO> getAll(UUID accountId, UUID walletId, Integer month, Integer year, String username) {
         log.info("Getting All Transactions");
+
+        requireAccount(accountId, username);
 
         TransactionSpecification spec = new TransactionSpecification();
         spec.addToSpecifications(accountId, walletId, month, year);
@@ -67,8 +81,11 @@ public class TransactionService {
             .toList();
     }
 
-    public AllTransactionResponseDTO getOverview(UUID accountId, UUID walletId, Integer month, Integer year) {
+    @Transactional(readOnly = true)
+    public AllTransactionResponseDTO getOverview(UUID accountId, UUID walletId, Integer month, Integer year, String username) {
         log.info("Getting Overview by Transactions");
+
+        requireAccount(accountId, username);
 
         TransactionSpecification spec = new TransactionSpecification();
         spec.addToSpecifications(accountId, walletId, month, year);
@@ -99,6 +116,13 @@ public class TransactionService {
         );
     }
 
+    private void requireAccount(UUID accountId, String username) {
+        if (username == null || accountId == null || accountRepository.findByUsername(username)
+            .filter(account -> accountId.equals(account.getId())).isEmpty()) {
+            throw new NotFoundException("Conta não encontrada.");
+        }
+    }
+
     private TransactionResponseDTO getTransactionBiggestIncome(List<TransactionResponseDTO> transactions) {
         return transactions.stream()
             .filter(transaction -> transaction.getType() == TransactionType.CREDIT)
@@ -113,6 +137,7 @@ public class TransactionService {
             .orElse(null);
     }
 
+    @Transactional(readOnly = true)
     public TransactionResponseDTO getById(UUID id) {
         log.info("Getting Transaction by Id");
 
@@ -121,15 +146,50 @@ public class TransactionService {
         return mapper.toResponse(entity);
     }
 
-    public TransactionResponseDTO update(TransactionRequestDTO transaction) {
+    @Transactional
+    public TransactionResponseDTO update(TransactionRequestDTO transaction, String username) {
         log.info("Updating Transaction");
 
-        Wallet wallet = walletBalanceService.getWallet(transaction.getWalletId());
-        Category category = categoryRepository.findById(transaction.getCategoryId())
-            .orElseThrow(() -> new NotFoundException("Not found this Category Id: " + transaction.getCategoryId()));
+        validateUpdate(transaction);
 
-        var entity = repository.findById(transaction.getId())
-            .orElseThrow(() -> new NotFoundException("Not found this Id: " + transaction.getId()));
+        var entity = repository.findOwnedForUpdate(transaction.getId(), username)
+            .orElseThrow(() -> new NotFoundException("Transação não encontrada."));
+
+        UUID accountId = entity.getAccount().getId();
+        if (!accountId.equals(transaction.getAccountId())) {
+            throw new NotFoundException("Conta não encontrada.");
+        }
+        requireNonRecurring(entity);
+
+        Category category = categoryRepository.findById(transaction.getCategoryId())
+            .filter(value -> Boolean.TRUE.equals(value.getSystem()) ||
+                (value.getAccount() != null && accountId.equals(value.getAccount().getId())))
+            .orElseThrow(() -> new NotFoundException("Categoria não encontrada."));
+
+        UUID oldWalletId = entity.getWallet().getId();
+        UUID newWalletId = transaction.getWalletId();
+        UUID firstId = oldWalletId.compareTo(newWalletId) <= 0 ? oldWalletId : newWalletId;
+        UUID secondId = firstId.equals(oldWalletId) ? newWalletId : oldWalletId;
+        Wallet first = walletRepository.findOwnedByIdForUpdate(firstId, username)
+            .orElseThrow(() -> new NotFoundException("Carteira não encontrada."));
+        Wallet second = firstId.equals(secondId) ? first : walletRepository.findOwnedByIdForUpdate(secondId, username)
+            .orElseThrow(() -> new NotFoundException("Carteira não encontrada."));
+        Wallet oldWallet = firstId.equals(oldWalletId) ? first : second;
+        Wallet wallet = firstId.equals(newWalletId) ? first : second;
+
+        if (!accountId.equals(wallet.getAccount().getId()) || !accountId.equals(oldWallet.getAccount().getId())) {
+            throw new NotFoundException("Carteira não encontrada.");
+        }
+
+        boolean balanceChanged = !oldWalletId.equals(newWalletId)
+            || entity.getAmount().compareTo(transaction.getAmount()) != 0 || entity.getType() != transaction.getType();
+
+        if (balanceChanged) {
+            TransactionType reverse = entity.getType() == TransactionType.CREDIT ? TransactionType.DEBIT : TransactionType.CREDIT;
+            perform(oldWallet, entity.getAmount(), reverse, false, true);
+            perform(wallet, transaction.getAmount(), transaction.getType(), true, false);
+        }
+
         entity.setAmount(transaction.getAmount());
         entity.setDescription(transaction.getDescription());
         entity.setRegisteredAt(transaction.getRegisteredAt());
@@ -138,10 +198,20 @@ public class TransactionService {
         entity.setWallet(wallet);
         entity.setCategory(category);
 
-        perform(entity.getWallet(), entity.getAmount(), entity.getType(), true, false);
-
         var transactionUpdated = repository.save(entity);
         return mapper.toResponse(transactionUpdated);
+    }
+
+    private void validateUpdate(TransactionRequestDTO request) {
+        if (request == null || request.getId() == null || request.getAccountId() == null
+            || request.getWalletId() == null || request.getCategoryId() == null
+            || request.getType() == null || request.getStatus() == null || request.getRegisteredAt() == null
+            || request.getAmount() == null || request.getAmount().signum() <= 0
+            || request.getAmount().stripTrailingZeros().scale() > 2
+            || request.getAmount().precision() - request.getAmount().scale() > 36
+            || request.getDescription() == null || request.getDescription().isBlank() || request.getDescription().length() > 200) {
+            throw new InvalidTransactionUpdateException("Confira os dados da transação.");
+        }
     }
 
     public TransactionResponseDTO conclude(UUID transactionId) {
@@ -149,10 +219,17 @@ public class TransactionService {
 
         var entity = repository.findById(transactionId)
             .orElseThrow(() -> new NotFoundException("Not found this Id: " + transactionId));
+        requireNonRecurring(entity);
         entity.setStatus(TransactionStatus.COMPLETED);
 
         var transactionUpdated = repository.save(entity);
         return mapper.toResponse(transactionUpdated);
+    }
+
+    private void requireNonRecurring(Transaction transaction) {
+        if (transaction.getRecurrence() != null) {
+            throw new InvalidTransactionUpdateException("Transações vinculadas a uma recorrência não podem ser editadas. Altere a recorrência.");
+        }
     }
 
     public void delete(UUID id) {

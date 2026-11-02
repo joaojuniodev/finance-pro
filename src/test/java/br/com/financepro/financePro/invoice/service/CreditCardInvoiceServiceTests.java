@@ -45,6 +45,9 @@ class CreditCardInvoiceServiceTests {
     @Mock
     private InvoiceMapper invoiceMapper;
 
+    @Mock
+    private InvoiceRecurrenceService invoiceRecurrenceService;
+
     @InjectMocks
     private CreditCardInvoiceService service;
 
@@ -66,6 +69,7 @@ class CreditCardInvoiceServiceTests {
         when(creditCard.getAccount()).thenReturn(account);
         when(paymentWallet.getId()).thenReturn(paymentWalletId);
         when(paymentWallet.getAccount()).thenReturn(account);
+        when(paymentWallet.getBalance()).thenReturn(new BigDecimal("200.00"));
         when(installment.getPaid()).thenReturn(false);
         when(installment.getValue()).thenReturn(pendingAmount);
 
@@ -77,15 +81,17 @@ class CreditCardInvoiceServiceTests {
         invoice.setExpirationDate(LocalDate.of(2026, 9, 27));
         invoice.setWallet(creditCard);
 
-        when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
-        when(walletRepository.findById(paymentWalletId)).thenReturn(Optional.of(paymentWallet));
-        when(installmentRepository.findAllByInstallmentPlanInvoiceIdAndMonthAndYear(
-            invoiceId,
+        when(invoiceRepository.findOwnedForUpdate(invoiceId, "owner")).thenReturn(Optional.of(invoice));
+        when(invoiceRepository.findOwned(invoiceId, "owner")).thenReturn(Optional.of(invoice));
+        when(walletRepository.findByIdForUpdate(creditCardId)).thenReturn(Optional.of(creditCard));
+        when(walletRepository.findByIdForUpdate(paymentWalletId)).thenReturn(Optional.of(paymentWallet));
+        when(installmentRepository.findAllByInstallmentPlanInvoiceWalletIdAndMonthAndYear(
+            creditCardId,
             9,
             2026
         )).thenReturn(List.of(installment));
 
-        service.payBill(invoiceId, paymentWalletId);
+        service.payBill(invoiceId, paymentWalletId, "owner");
 
         assertEquals(InvoiceStatus.PAID, invoice.getStatus());
         verify(walletBalanceOperations).debit(paymentWallet, pendingAmount, false, false);

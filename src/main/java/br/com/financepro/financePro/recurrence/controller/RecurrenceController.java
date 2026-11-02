@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import br.com.financepro.financePro.account.repository.AccountRepository;
+import br.com.financepro.financePro.common.exceptions.NotFoundException;
+import java.security.Principal;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,65 +30,80 @@ public class RecurrenceController implements RecurrenceControllerDocs {
     @Autowired
     private RecurrenceSaveService saveService;
 
-    @GetMapping("/{accountId}")
+    @Autowired
+    private AccountRepository accounts;
+
+    @GetMapping("/by-account/{accountId}")
     @Override
-    public ResponseEntity<List<RecurrenceResponseDTO>> getAll(@PathVariable UUID accountId) {
+    public ResponseEntity<List<RecurrenceResponseDTO>> getAll(@PathVariable UUID accountId, Principal principal) {
+        requireAccount(accountId, principal);
         return ResponseEntity.ok().body(readService.getAll(accountId));
     }
 
     @GetMapping("/overview/{accountId}")
     @Override
-    public ResponseEntity<AllRecurrenceResponseDTO> getOverview(@PathVariable UUID accountId) {
+    public ResponseEntity<AllRecurrenceResponseDTO> getOverview(@PathVariable UUID accountId, Principal principal) {
+        requireAccount(accountId, principal);
         return ResponseEntity.ok().body(readService.getOverview(accountId));
     }
 
     @GetMapping("/{id}")
     @Override
-    public ResponseEntity<RecurrenceResponseDTO> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok().body(readService.getById(id));
+    public ResponseEntity<RecurrenceResponseDTO> getById(@PathVariable UUID id, Principal principal) {
+        return ResponseEntity.ok().body(readService.getById(id, principal.getName()));
     }
 
     @PostMapping
     @Override
-    public ResponseEntity<RecurrenceResponseDTO> create(@RequestBody RecurrenceRequestDTO recurrence) {
+    public ResponseEntity<RecurrenceResponseDTO> create(@RequestBody RecurrenceRequestDTO recurrence, Principal principal) {
+        requireAccount(recurrence.getAccountId(), principal);
         return ResponseEntity.ok().body(saveService.create(recurrence));
     }
 
     @PutMapping
     @Override
-    public ResponseEntity<RecurrenceResponseDTO> update(@RequestBody RecurrenceRequestDTO recurrence) {
-        return ResponseEntity.ok().body(saveService.update(recurrence));
+    public ResponseEntity<RecurrenceResponseDTO> update(@RequestBody RecurrenceRequestDTO recurrence, Principal principal) {
+        requireAccount(recurrence.getAccountId(), principal);
+        return ResponseEntity.ok().body(saveService.update(recurrence, principal.getName()));
     }
 
     @PatchMapping("/confirm/{recurrenceId}")
     @Override
-    public ResponseEntity<?> confirm(@PathVariable UUID recurrenceId) {
-        saveService.confirm(recurrenceId);
+    public ResponseEntity<?> confirm(@PathVariable UUID recurrenceId, Principal principal) {
+        saveService.confirm(recurrenceId, principal.getName());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/pause/{recurrenceId}")
-    public ResponseEntity<?> pause(@PathVariable UUID recurrenceId) {
-        saveService.pause(recurrenceId);
+    public ResponseEntity<?> pause(@PathVariable UUID recurrenceId, Principal principal) {
+        saveService.pause(recurrenceId, principal.getName());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/activate/{recurrenceId}")
-    public ResponseEntity<?> activate(@PathVariable UUID recurrenceId) {
-        saveService.activate(recurrenceId);
+    public ResponseEntity<?> activate(@PathVariable UUID recurrenceId, Principal principal) {
+        saveService.activate(recurrenceId, principal.getName());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/finish/{recurrenceId}")
-    public ResponseEntity<?> finish(@PathVariable UUID recurrenceId) {
-        saveService.finish(recurrenceId);
+    public ResponseEntity<?> finish(@PathVariable UUID recurrenceId, Principal principal) {
+        saveService.finish(recurrenceId, principal.getName());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
     @Override
-    public ResponseEntity<?> delete(@PathVariable UUID id) {
-        saveService.delete(id);
+    public ResponseEntity<?> delete(@PathVariable UUID id, java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        saveService.delete(id, principal.getName());
         return ResponseEntity.noContent().build();
+    }
+
+    private void requireAccount(UUID accountId, Principal principal) {
+        if (principal == null || accounts.findByUsername(principal.getName())
+            .filter(account -> account.getId().equals(accountId)).isEmpty()) {
+            throw new NotFoundException("Conta não encontrada.");
+        }
     }
 }

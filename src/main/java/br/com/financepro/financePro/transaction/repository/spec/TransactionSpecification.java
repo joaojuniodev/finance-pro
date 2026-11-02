@@ -43,17 +43,17 @@ public class TransactionSpecification {
     private void betweenMonthYear(Integer month, Integer year) {
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
-        LocalDateTime end = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+        LocalDateTime end = yearMonth.plusMonths(1).atDay(1).atStartOfDay();
 
         this.spec = this.spec.and((root, query, cb) ->
-            cb.between(root.get("registeredAt"), start, end));
+            cb.and(cb.greaterThanOrEqualTo(root.get("registeredAt"), start), cb.lessThan(root.get("registeredAt"), end)));
     }
 
     private void betweenYear(Integer year) {
         LocalDateTime start = LocalDateTime.of(year, 1, 1, 0, 0, 0);
-        LocalDateTime end = LocalDateTime.of(year, 12, 31, 23, 59, 59);
+        LocalDateTime end = LocalDateTime.of(year + 1, 1, 1, 0, 0, 0);
 
         this.spec = this.spec.and((root, query, cb) ->
-            cb.between(root.get("registeredAt"), start, end));
+            cb.and(cb.greaterThanOrEqualTo(root.get("registeredAt"), start), cb.lessThan(root.get("registeredAt"), end)));
     }
 }

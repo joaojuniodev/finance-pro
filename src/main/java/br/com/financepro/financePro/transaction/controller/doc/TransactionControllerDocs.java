@@ -38,7 +38,7 @@ public interface TransactionControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<List<TransactionResponseDTO>> getAll(UUID accountId, UUID walletId, Integer month, Integer year);
+    ResponseEntity<List<TransactionResponseDTO>> getAll(UUID accountId, UUID walletId, Integer month, Integer year, java.security.Principal principal);
 
     @Operation(
         tags = {"Transaction"},
@@ -70,7 +70,7 @@ public interface TransactionControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<AllTransactionResponseDTO> overview(UUID accountId, UUID walletId,Integer month,Integer year);
+    ResponseEntity<AllTransactionResponseDTO> overview(UUID accountId, UUID walletId,Integer month,Integer year, java.security.Principal principal);
 
     @Operation(
         tags = {"Transaction"},
@@ -99,7 +99,7 @@ public interface TransactionControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<TransactionResponseDTO> update(@RequestBody TransactionRequestDTO transaction);
+    ResponseEntity<TransactionResponseDTO> update(@RequestBody TransactionRequestDTO transaction, java.security.Principal principal);
 
     @Operation(
         tags = {"Transaction"},

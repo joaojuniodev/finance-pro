@@ -2,6 +2,9 @@ package br.com.financepro.financePro.recurrence.service;
 
 import br.com.financepro.financePro.common.enums.ExecutionType;
 import br.com.financepro.financePro.common.enums.FrequencyType;
+import br.com.financepro.financePro.common.enums.WalletType;
+import br.com.financepro.financePro.common.enums.RecurrenceType;
+import br.com.financepro.financePro.invoice.service.InvoiceRecurrenceService;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.common.exceptions.RecurrenceSaveException;
 import br.com.financepro.financePro.mapper.recurrence.RecurrenceMapper;
@@ -12,6 +15,7 @@ import br.com.financepro.financePro.recurrence.dto.response.RecurrenceResponseDT
 import br.com.financepro.financePro.recurrence.model.Recurrence;
 import br.com.financepro.financePro.recurrence.repository.RecurrenceRepository;
 import br.com.financepro.financePro.transaction.service.TransactionExecutionService;
+import br.com.financepro.financePro.transaction.repository.TransactionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +36,9 @@ public class RecurrenceSaveService {
     private RecurrenceRepository repository;
 
     @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
     private RecurrenceExecutionService executionService;
 
     @Autowired
@@ -40,43 +47,57 @@ public class RecurrenceSaveService {
     @Autowired
     private RecurrenceMapper mapper;
 
+    @Autowired
+    private InvoiceRecurrenceService invoiceRecurrences;
+
+    @Transactional
     public RecurrenceResponseDTO create(RecurrenceRequestDTO recurrence) {
         log.info("Creating Recurrence");
 
         LocalDate today = LocalDate.now();
-        validateSave(recurrence, today);
-
+        validateRequest(recurrence, true);
         var entity = mapper.toEntity(recurrence);
+        configureCardRecurrence(recurrence, entity);
+        validateUpdate(recurrence, today);
         entity.setLastExecutionDate(null);
         entity.setNextExecutionDate(calculateFirstExecutionDate(entity, today, entity.getLastExecutionDate()));
 
         var recurrenceCreated = repository.save(entity);
 
-        if (recurrence.getDayOneAlreadyOccurred()) {
-            LocalDate of = LocalDate.of(today.getYear(), today.getMonth(), recurrence.getDayOne());
+        if (recurrence.getDayOneAlreadyOccurred() || recurrence.getMonthOfTheYearAlreadyOccurred()) {
+            LocalDate of = recurrence.getFrequencyType() == FrequencyType.YEARLY
+                ? dateInYear(today.getYear(), recurrence.getMonthOfTheYear(), recurrence.getDayOne())
+                : dateInMonth(YearMonth.from(today), recurrence.getDayOne());
             transactionExecutionService.createByRecurrence(recurrenceCreated, of);
             recurrenceCreated.setLastExecutionDate(of);
         }
 
         if (recurrence.getDayTwoAlreadyOccurred()) {
-            LocalDate of = LocalDate.of(today.getYear(), today.getMonth(), recurrence.getDayTwo());
+            LocalDate of = dateInMonth(YearMonth.from(today), recurrence.getDayTwo());
             transactionExecutionService.createByRecurrence(recurrenceCreated, of);
             recurrenceCreated.setLastExecutionDate(of);
         }
 
+        recurrenceCreated.setNextExecutionDate(calculateFirstExecutionDate(recurrenceCreated, today, recurrenceCreated.getLastExecutionDate()));
         repository.save(recurrenceCreated);
+        if (isCreditCard(recurrenceCreated)) invoiceRecurrences.addToOpenInvoice(recurrenceCreated);
         return mapper.toResponse(recurrenceCreated);
     }
 
     @Transactional
-    public RecurrenceResponseDTO update(RecurrenceRequestDTO recurrence) {
+    public RecurrenceResponseDTO update(RecurrenceRequestDTO recurrence, String username) {
         log.info("Updating Recurrence");
 
         LocalDate today = LocalDate.now();
-        validateUpdate(recurrence, today);
-
-        var entity = repository.findById(recurrence.getId())
+        validateRequest(recurrence, false);
+        var entity = repository.findByIdAndAccountUserUsername(recurrence.getId(), username)
             .orElseThrow(() -> new NotFoundException("Not found this Id: " + recurrence.getId()));
+        if (!entity.getAccount().getId().equals(recurrence.getAccountId())) throw new NotFoundException("Recorrência não encontrada.");
+        var requested = mapper.toEntity(recurrence);
+        configureCardRecurrence(recurrence, requested);
+        validateUpdate(recurrence, today);
+        entity.setWallet(requested.getWallet());
+        entity.setCategory(requested.getCategory());
         entity.setAmount(recurrence.getAmount());
         entity.setDescription(recurrence.getDescription());
         entity.setType(recurrence.getType());
@@ -88,71 +109,80 @@ public class RecurrenceSaveService {
         updateExecution(recurrence, recurrenceInDatabase, today);
 
         var recurrenceUpdated = repository.save(recurrenceInDatabase);
+        if (isCreditCard(recurrenceUpdated)) invoiceRecurrences.addToOpenInvoice(recurrenceUpdated);
         return mapper.toResponse(recurrenceUpdated);
     }
 
     @Transactional
-    public void confirm(UUID recurrenceId) {
-        var entity = repository.findById(recurrenceId)
+    public void confirm(UUID recurrenceId, String username) {
+        var entity = repository.findByIdAndAccountUserUsername(recurrenceId, username)
             .orElseThrow(() -> new NotFoundException("Not found this Id: " + recurrenceId));
+        if (isCreditCard(entity)) throw new RecurrenceSaveException("Esta recorrência é paga na fatura do cartão.");
         executionService.execute(entity, LocalDate.now(), true);
     }
 
     @Transactional
-    public void pause(UUID recurrenceId) {
-        var entity = repository.findById(recurrenceId)
+    public void pause(UUID recurrenceId, String username) {
+        var entity = repository.findByIdAndAccountUserUsername(recurrenceId, username)
             .orElseThrow(() -> new NotFoundException("Not found this Id: " + recurrenceId));
         entity.setStatus(RecurrenceStatus.PAUSED);
         repository.save(entity);
     }
 
     @Transactional
-    public void activate(UUID recurrenceId) {
-        var entity = repository.findById(recurrenceId)
+    public void activate(UUID recurrenceId, String username) {
+        var entity = repository.findByIdAndAccountUserUsername(recurrenceId, username)
             .orElseThrow(() -> new NotFoundException("Not found this Id: " + recurrenceId));
         entity.setStatus(RecurrenceStatus.ACTIVE);
         repository.save(entity);
+        if (isCreditCard(entity)) invoiceRecurrences.addToOpenInvoice(entity);
     }
 
     @Transactional
-    public void finish(UUID recurrenceId) {
-        var entity = repository.findById(recurrenceId)
+    public void finish(UUID recurrenceId, String username) {
+        var entity = repository.findByIdAndAccountUserUsername(recurrenceId, username)
             .orElseThrow(() -> new NotFoundException("Not found this Id: " + recurrenceId));
         entity.setStatus(RecurrenceStatus.ENDED);
         repository.save(entity);
     }
 
-    // TODO: ao deletar recorrência, as transações referentes também devem ser deletadas.
-    public void delete(UUID id) {
+    @Transactional
+    public void delete(UUID id, String username) {
         log.info("Deleting Recurrence");
 
-        var entity = repository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Not found this Id: " + id));
+        var entity = repository.findByIdAndAccountUserUsername(id, username)
+            .orElseThrow(() -> new NotFoundException("Recorrência não encontrada."));
+        transactionRepository.detachRecurrence(id);
         repository.delete(entity);
     }
 
-    private void validateSave(RecurrenceRequestDTO recurrence, LocalDate today) {
-        if (recurrence.getDayOneAlreadyOccurred() && recurrence.getExecutionType().equals(ExecutionType.MANUALLY)) {
-            throw new RecurrenceSaveException("A Recorrência não pode ser efetivada se o tipo de execução é manual.");
+    private void validateRequest(RecurrenceRequestDTO request, boolean creating) {
+        if (request == null || (creating ? request.getId() != null : request.getId() == null)
+            || request.getAccountId() == null || request.getCategoryId() == null || request.getWalletId() == null
+            || request.getAmount() == null || request.getAmount().signum() <= 0 || request.getAmount().stripTrailingZeros().scale() > 2
+            || request.getDescription() == null || request.getDescription().isBlank() || request.getDescription().length() > 200
+            || request.getType() == null || request.getStatus() == null || request.getFrequencyType() == null || request.getExecutionType() == null
+            || request.getDayOne() == null || request.getDayOne() < 1 || request.getDayOne() > 31
+            || (request.getFrequencyType() == FrequencyType.BIWEEKLY && (request.getDayTwo() == null || request.getDayTwo() <= request.getDayOne() || request.getDayTwo() > 31))
+            || (request.getFrequencyType() == FrequencyType.YEARLY && (request.getMonthOfTheYear() == null || request.getMonthOfTheYear() < 1 || request.getMonthOfTheYear() > 12))) {
+            throw new RecurrenceSaveException("Confira os dados e as datas da recorrência.");
         }
+        request.setDayOneAlreadyOccurred(Boolean.TRUE.equals(request.getDayOneAlreadyOccurred()));
+        request.setDayTwoAlreadyOccurred(Boolean.TRUE.equals(request.getDayTwoAlreadyOccurred()));
+        request.setMonthOfTheYearAlreadyOccurred(Boolean.TRUE.equals(request.getMonthOfTheYearAlreadyOccurred()));
+    }
 
-        if (recurrence.getMonthOfTheYear() != null) {
-            if (recurrence.getMonthOfTheYear() > today.getMonthValue() && recurrence.getMonthOfTheYearAlreadyOccurred()) {
-                throw new RecurrenceSaveException("Para que a Recorrência já tenha ocorrido, o mês precisa ser anterior ao atual.");
-            }
-        }
+    private boolean isCreditCard(Recurrence recurrence) {
+        return recurrence.getWallet() != null && recurrence.getWallet().getType() == WalletType.CREDIT_CARD;
+    }
 
-        if (recurrence.getDayOne() != null) {
-            if (recurrence.getDayOne() > today.getDayOfMonth() && recurrence.getDayOneAlreadyOccurred()) {
-                throw new RecurrenceSaveException("Para que a Recorrência já tenha ocorrido, o dia precisa ser anterior ao atual.");
-            }
+    private void configureCardRecurrence(RecurrenceRequestDTO request, Recurrence recurrence) {
+        if (!isCreditCard(recurrence)) return;
+        if (request.getType() != RecurrenceType.DEBIT) {
+            throw new RecurrenceSaveException("Recorrências no cartão devem ser despesas.");
         }
-
-        if (recurrence.getDayTwo() != null) {
-            if (recurrence.getDayTwo() > today.getDayOfMonth() && recurrence.getDayTwoAlreadyOccurred()) {
-                throw new RecurrenceSaveException("Para que a Recorrência já tenha ocorrido, o segundo dia precisa ser anterior ao atual.");
-            }
-        }
+        request.setExecutionType(ExecutionType.MANUALLY);
+        recurrence.setExecutionType(ExecutionType.MANUALLY);
     }
 
     private void validateUpdate(RecurrenceRequestDTO recurrence, LocalDate today) {
@@ -286,11 +316,11 @@ public class RecurrenceSaveService {
                 LocalDate firstDate = dateInMonth(currentMonth, recurrence.getDayOne());
                 LocalDate secondDate = dateInMonth(currentMonth, recurrence.getDayTwo());
 
-                if (!firstDate.isBefore(today)) {
+                if (!firstDate.isBefore(today) && (lastExecutionDate == null || firstDate.isAfter(lastExecutionDate))) {
                     yield firstDate;
                 }
 
-                if (!secondDate.isBefore(today)) {
+                if (!secondDate.isBefore(today) && (lastExecutionDate == null || secondDate.isAfter(lastExecutionDate))) {
                     yield secondDate;
                 }
 
@@ -304,7 +334,7 @@ public class RecurrenceSaveService {
                     recurrence.getDayOne()
                 );
 
-                if (candidate.isBefore(today)) {
+                if (candidate.isBefore(today) || (lastExecutionDate != null && !candidate.isAfter(lastExecutionDate))) {
                     candidate = dateInYear(
                         today.getYear() + 1,
                         recurrence.getMonthOfTheYear(),

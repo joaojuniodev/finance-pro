@@ -19,6 +19,21 @@ import java.util.Date;
 @RestControllerAdvice
 public class CustomizedExceptionHandler {
 
+    @ExceptionHandler(br.com.financepro.financePro.transaction.exception.InvalidTransactionUpdateException.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidTransactionUpdate(Exception ex, WebRequest request) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ex.getMessage(), request.getDescription(false), new Date()));
+    }
+
+    @ExceptionHandler(br.com.financepro.financePro.common.exceptions.RecurrenceSaveException.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidRecurrence(Exception ex, WebRequest request) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ex.getMessage(), request.getDescription(false), new Date()));
+    }
+
+    @ExceptionHandler(br.com.financepro.financePro.security.exception.RegistrationException.class)
+    public ResponseEntity<ExceptionResponse> handleRegistration(Exception ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ExceptionResponse(ex.getMessage(), request.getDescription(false), new Date()));
+    }
+
     @ExceptionHandler(br.com.financepro.financePro.goal.exception.InvalidGoalException.class)
     public final ResponseEntity<ExceptionResponse> handleInvalidGoal(Exception ex, WebRequest request) {
         return ResponseEntity.badRequest().body(new ExceptionResponse(ex.getMessage(), request.getDescription(false), new Date()));

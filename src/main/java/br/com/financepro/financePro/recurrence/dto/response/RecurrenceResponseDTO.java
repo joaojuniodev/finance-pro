@@ -6,6 +6,7 @@ import br.com.financepro.financePro.common.enums.FrequencyType;
 import br.com.financepro.financePro.common.enums.RecurrenceType;
 import br.com.financepro.financePro.recurrence.common.enums.RecurrenceStatus;
 import br.com.financepro.financePro.wallet.dto.WalletResponseDTO;
+import br.com.financepro.financePro.wallet.dto.WalletResponseDTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

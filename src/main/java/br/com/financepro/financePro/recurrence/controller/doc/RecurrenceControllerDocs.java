@@ -38,7 +38,7 @@ public interface RecurrenceControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<List<RecurrenceResponseDTO>> getAll(UUID accountId);
+    ResponseEntity<List<RecurrenceResponseDTO>> getAll(UUID accountId, java.security.Principal principal);
 
     @Operation(
         tags = {"Recurrence"},
@@ -59,7 +59,7 @@ public interface RecurrenceControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<AllRecurrenceResponseDTO> getOverview(UUID accountId);
+    ResponseEntity<AllRecurrenceResponseDTO> getOverview(UUID accountId, java.security.Principal principal);
 
     @Operation(
         tags = {"Recurrence"},
@@ -75,7 +75,7 @@ public interface RecurrenceControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<RecurrenceResponseDTO> getById(@PathVariable UUID id);
+    ResponseEntity<RecurrenceResponseDTO> getById(@PathVariable UUID id, java.security.Principal principal);
 
     @Operation(
         tags = {"Recurrence"},
@@ -89,7 +89,7 @@ public interface RecurrenceControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<RecurrenceResponseDTO> create(@RequestBody RecurrenceRequestDTO recurrence);
+    ResponseEntity<RecurrenceResponseDTO> create(@RequestBody RecurrenceRequestDTO recurrence, java.security.Principal principal);
 
     @Operation(
         tags = {"Recurrence"},
@@ -104,7 +104,7 @@ public interface RecurrenceControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<RecurrenceResponseDTO> update(@RequestBody RecurrenceRequestDTO recurrence);
+    ResponseEntity<RecurrenceResponseDTO> update(@RequestBody RecurrenceRequestDTO recurrence, java.security.Principal principal);
 
     @Operation(
         tags = {"Recurrence"},
@@ -119,7 +119,7 @@ public interface RecurrenceControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<?> confirm(@PathVariable UUID recurrenceId);
+    ResponseEntity<?> confirm(@PathVariable UUID recurrenceId, java.security.Principal principal);
 
     @Operation(
         tags = {"Recurrence"},
@@ -133,5 +133,5 @@ public interface RecurrenceControllerDocs {
             @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
         }
     )
-    ResponseEntity<?> delete(@PathVariable UUID id);
+    ResponseEntity<?> delete(@PathVariable UUID id, java.security.Principal principal);
 }

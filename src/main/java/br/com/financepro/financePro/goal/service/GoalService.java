@@ -93,7 +93,8 @@ public class GoalService {
     @Transactional
     public GoalResponseDTO incrementAmount(UUID id, BigDecimal amount, String username) {
         if (!validMoney(amount, false)) throw new InvalidGoalException("Informe um valor positivo com até duas casas decimais.");
-        Goal goal = ownedGoal(id, ownedAccount(username).getId());
+        Goal goal = repository.findForUpdate(id, ownedAccount(username).getId())
+            .orElseThrow(() -> new NotFoundException("Meta não encontrada."));
         BigDecimal updated = goal.getCurrentAmount().add(amount);
         if (updated.compareTo(goal.getTotalAmount()) > 0) {
             throw new InvalidGoalException("O valor acumulado não pode superar o objetivo.");

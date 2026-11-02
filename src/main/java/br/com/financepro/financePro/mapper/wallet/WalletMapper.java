@@ -4,7 +4,6 @@ import br.com.financepro.financePro.account.repository.AccountRepository;
 import br.com.financepro.financePro.bank.repository.BankRepository;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.goal.repository.GoalRepository;
-import br.com.financepro.financePro.invoice.repository.InvoiceRepository;
 import br.com.financepro.financePro.mapper.ObjectMapper;
 import br.com.financepro.financePro.mapper.bank.BankMapper;
 import br.com.financepro.financePro.mapper.invoice.InvoiceMapper;

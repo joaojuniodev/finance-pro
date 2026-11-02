@@ -47,7 +47,12 @@ public class Invoice {
     @OneToMany(mappedBy = "invoice")
     private List<InstallmentPlan> installmentsPlans = new ArrayList<>();
 
+    @OneToMany(mappedBy = "invoice")
+    private List<InvoiceRecurrenceCharge> recurrenceCharges = new ArrayList<>();
+
     public Invoice() {}
+
+    public List<InvoiceRecurrenceCharge> getRecurrenceCharges() { return recurrenceCharges; }
 
     public UUID getId() {
         return id;

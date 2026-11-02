@@ -15,5 +15,6 @@ public record InvoiceDetailsResponseDTO(
     BigDecimal totalAmount,
     BigDecimal paidAmount,
     BigDecimal pendingAmount,
-    List<InvoiceInstallmentResponseDTO> installments
+    List<InvoiceInstallmentResponseDTO> installments,
+    List<InvoiceRecurrenceChargeResponseDTO> recurrences
 ) {}

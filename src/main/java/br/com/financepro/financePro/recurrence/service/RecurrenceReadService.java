@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,6 +31,7 @@ public class RecurrenceReadService {
     @Autowired
     private RecurrenceMapper mapper;
 
+    @Transactional(readOnly = true)
     public List<RecurrenceResponseDTO> getAll(UUID accountId) {
         log.info("Getting All Recurrences");
 
@@ -43,6 +45,7 @@ public class RecurrenceReadService {
             .toList();
     }
 
+    @Transactional(readOnly = true)
     public AllRecurrenceResponseDTO getOverview(UUID accountId) {
         log.info("Getting Overview this Recurrence");
 
@@ -71,52 +74,40 @@ public class RecurrenceReadService {
             .map(RecurrenceResponseDTO::getAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        LocalDate today = LocalDate.now();
+        var dueToday = recurrences.stream().filter(rec -> rec.getStatus() == RecurrenceStatus.ACTIVE
+            && rec.getExecutionType() == ExecutionType.MANUALLY && today.equals(rec.getNextExecutionDate())).toList();
+        var overdue = recurrences.stream().filter(rec -> rec.getStatus() == RecurrenceStatus.ACTIVE
+            && rec.getNextExecutionDate() != null && rec.getNextExecutionDate().isBefore(today)).toList();
+        var upcoming = recurrences.stream().filter(rec -> rec.getStatus() == RecurrenceStatus.ACTIVE
+            && rec.getNextExecutionDate() != null && !rec.getNextExecutionDate().isBefore(today)
+            && !dueToday.contains(rec)).toList();
+
         return mapper.getAllRecurrenceResponseDTO(
             totalActives,
             recurrences,
-            getRecurrencesDueToday(),
-            getRecurrencesOverdue(),
-            getRecurrencesUpcoming(),
+            dueToday,
+            overdue,
+            upcoming,
             getHighlightsOfTheWeek(recurrences),
             totalIncomeAmount,
             totalExpenseAmount
         );
     }
 
-    private List<RecurrenceResponseDTO> getRecurrencesDueToday() {
-        return repository.findPendingThisTodayManualRecurrences(ExecutionType.MANUALLY, LocalDate.now())
-            .stream()
-            .map(mapper::toResponse)
-            .toList();
-    }
-
-    private List<RecurrenceResponseDTO> getRecurrencesOverdue() {
-        return repository.findDelayedRecurrences(LocalDate.now())
-            .stream()
-            .map(mapper::toResponse)
-            .toList();
-    }
-
-    private List<RecurrenceResponseDTO> getRecurrencesUpcoming() {
-        LocalDate today = LocalDate.now();
-        return repository.findUpcomingRecurrences(today, today.plusMonths(1))
-            .stream()
-            .map(mapper::toResponse)
-            .toList();
-    }
-
     private List<RecurrenceResponseDTO> getHighlightsOfTheWeek(List<RecurrenceResponseDTO> recurrences) {
         LocalDate startDate = LocalDate.now().plusDays(7);
         return recurrences.stream()
             .filter(rec -> rec.getStatus().equals(RecurrenceStatus.ACTIVE))
-            .filter(rec -> rec.getNextExecutionDate().isBefore(startDate))
+            .filter(rec -> rec.getNextExecutionDate() != null && !rec.getNextExecutionDate().isBefore(LocalDate.now()) && rec.getNextExecutionDate().isBefore(startDate))
             .toList();
     }
 
-    public RecurrenceResponseDTO getById(UUID id) {
+    @Transactional(readOnly = true)
+    public RecurrenceResponseDTO getById(UUID id, String username) {
         log.info("Getting Recurrence by Id");
 
-        var entity = repository.findById(id)
+        var entity = repository.findByIdAndAccountUserUsername(id, username)
             .orElseThrow(() -> new NotFoundException("Not found this Id: " + id));
         return mapper.toResponse(entity);
     }

@@ -12,8 +12,8 @@ import java.util.List;
 @Repository
 public interface InstallmentRepository extends JpaRepository<Installment, UUID> {
 
-    List<Installment> findAllByInstallmentPlanInvoiceIdAndMonthAndYear(
-        UUID invoiceId,
+    List<Installment> findAllByInstallmentPlanInvoiceWalletIdAndMonthAndYear(
+        UUID walletId,
         Integer month,
         Integer year
     );

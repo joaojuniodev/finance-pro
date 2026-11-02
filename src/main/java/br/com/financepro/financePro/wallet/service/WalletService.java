@@ -9,6 +9,7 @@ import br.com.financepro.financePro.common.enums.WalletType;
 import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.invoice.model.Invoice;
 import br.com.financepro.financePro.invoice.repository.InvoiceRepository;
+import br.com.financepro.financePro.invoice.service.InvoiceRecurrenceService;
 import br.com.financepro.financePro.mapper.transaction.TransactionMapper;
 import br.com.financepro.financePro.mapper.wallet.WalletMapper;
 import br.com.financepro.financePro.transaction.dto.response.TransactionSummaryDTO;
@@ -58,6 +59,9 @@ public class WalletService {
 
     @Autowired
     private InvoiceRepository invoiceRepository;
+
+    @Autowired
+    private InvoiceRecurrenceService invoiceRecurrences;
 
     @Transactional(readOnly = true)
     public List<WalletResponseDTO> getAll(UUID accountId) {
@@ -127,7 +131,7 @@ public class WalletService {
             walletCreated.getAccount(),
             walletCreated.getBalance(),
             TransactionType.CREDIT,
-            true,
+            false,
             false
         );
         return mapper.toResponse(walletCreated);
@@ -173,8 +177,11 @@ public class WalletService {
     public void delete(UUID id) {
         log.info("Deleting Wallet");
 
-        var entity = repository.findById(id)
+        var entity = repository.findByIdForUpdate(id)
             .orElseThrow(() -> new NotFoundException("Not found this Id: " + id));
+        accountBalanceService.updateBalance(
+            entity.getAccount(), entity.getBalance(), TransactionType.DEBIT, false, false
+        );
         repository.delete(entity);
     }
 
@@ -230,6 +237,7 @@ public class WalletService {
         }
 
         Invoice savedInvoice = invoiceRepository.save(invoice);
+        if (request.getInvoiceId() == null) invoiceRecurrences.addForNewInvoice(savedInvoice);
 
         if (!wallet.getInvoices().contains(savedInvoice)) {
             wallet.getInvoices().add(savedInvoice);
