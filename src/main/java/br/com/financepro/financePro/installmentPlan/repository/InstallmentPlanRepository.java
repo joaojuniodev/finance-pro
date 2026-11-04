@@ -12,5 +12,5 @@ import java.util.UUID;
 public interface InstallmentPlanRepository extends JpaRepository<InstallmentPlan, UUID> {
 
     @EntityGraph(attributePaths = {"invoice", "installments"})
-    List<InstallmentPlan> findAllByInvoice_Wallet_IdOrderByStartDateDesc(UUID walletId);
+    List<InstallmentPlan> findAllByInvoice_Wallet_IdAndInvoice_Wallet_Account_User_UsernameOrderByStartDateDesc(UUID walletId, String username);
 }

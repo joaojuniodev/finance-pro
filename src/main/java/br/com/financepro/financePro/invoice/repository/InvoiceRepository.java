@@ -34,4 +34,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
         LocalDate startDate,
         LocalDate endDate
     );
+
+    Optional<Invoice> findFirstByWalletIdAndClosingDateBetween(UUID walletId, LocalDate startDate, LocalDate endDate);
 }

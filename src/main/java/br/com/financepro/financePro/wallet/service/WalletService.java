@@ -10,6 +10,7 @@ import br.com.financepro.financePro.common.exceptions.NotFoundException;
 import br.com.financepro.financePro.invoice.model.Invoice;
 import br.com.financepro.financePro.invoice.repository.InvoiceRepository;
 import br.com.financepro.financePro.invoice.service.InvoiceRecurrenceService;
+import br.com.financepro.financePro.invoice.service.InvoiceCalendarService;
 import br.com.financepro.financePro.mapper.transaction.TransactionMapper;
 import br.com.financepro.financePro.mapper.wallet.WalletMapper;
 import br.com.financepro.financePro.transaction.dto.response.TransactionSummaryDTO;
@@ -62,6 +63,9 @@ public class WalletService {
 
     @Autowired
     private InvoiceRecurrenceService invoiceRecurrences;
+
+    @Autowired
+    private InvoiceCalendarService invoiceCalendar;
 
     @Transactional(readOnly = true)
     public List<WalletResponseDTO> getAll(UUID accountId) {
@@ -241,6 +245,12 @@ public class WalletService {
 
         if (!wallet.getInvoices().contains(savedInvoice)) {
             wallet.getInvoices().add(savedInvoice);
+        }
+        if (request.getInvoiceId() == null) {
+            invoiceCalendar.ensureYear(wallet, savedInvoice, savedInvoice.getClosingDate().getYear());
+            if (savedInvoice.getClosingDate().getYear() != LocalDate.now().getYear()) {
+                invoiceCalendar.ensureYear(wallet, savedInvoice, LocalDate.now().getYear());
+            }
         }
     }
 }

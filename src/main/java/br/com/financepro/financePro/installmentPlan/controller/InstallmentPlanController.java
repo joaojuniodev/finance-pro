@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/installmentPlans/v1")
@@ -23,12 +24,12 @@ public class InstallmentPlanController {
     private InstallmentPlanService service;
 
     @PostMapping
-    public ResponseEntity<InstallmentPlanResponseDTO> create(@RequestBody InstallmentPlanRequestDTO installment) {
-        return ResponseEntity.ok().body(service.create(installment));
+    public ResponseEntity<InstallmentPlanResponseDTO> create(@RequestBody InstallmentPlanRequestDTO installment, Principal principal) {
+        return ResponseEntity.ok().body(service.create(installment, principal.getName()));
     }
 
     @GetMapping("/wallet/{walletId}")
-    public ResponseEntity<List<InstallmentPlanResponseDTO>> getAllByWallet(@PathVariable UUID walletId) {
-        return ResponseEntity.ok(service.getAllByWallet(walletId));
+    public ResponseEntity<List<InstallmentPlanResponseDTO>> getAllByWallet(@PathVariable UUID walletId, Principal principal) {
+        return ResponseEntity.ok(service.getAllByWallet(walletId, principal.getName()));
     }
 }
