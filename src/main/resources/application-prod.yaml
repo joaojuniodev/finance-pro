@@ -10,7 +10,3 @@ spring:
       generate_statistics: true
     show-sql: false
     open-in-view: false
-security:
-  jwt:
-    token:
-      secret-key: ${JWT_SECRET}

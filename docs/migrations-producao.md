@@ -25,10 +25,11 @@ automaticamente convertido em um banco de produção por essa separação.
 
 Para o deploy, configure `SPRING_PROFILES_ACTIVE=prod` e as variáveis de
 conexão do PostgreSQL (`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`
-e `SPRING_DATASOURCE_PASSWORD`). Defina também `JWT_SECRET` com um segredo
-aleatório e exclusivo do ambiente: o perfil de produção exige essa variável,
-em vez de usar a chave fixa de desenvolvimento. O perfil de produção mantém a
-validação do esquema pelo Hibernate após a execução do Flyway.
+e `SPRING_DATASOURCE_PASSWORD`). Temporariamente, o perfil de produção usa a
+chave JWT fixa definida em `application.yaml`. Antes de disponibilizar a
+aplicação para uso real, substitua essa chave por um segredo privado e exclusivo
+do ambiente. O perfil de produção mantém a validação do esquema pelo Hibernate
+após a execução do Flyway.
 
 Gere o artefato a partir de um checkout limpo ou com `mvn clean package`.
 Uma compilação incremental pode manter em `target/classes` recursos antigos
